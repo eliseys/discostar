@@ -17,12 +17,12 @@ uniform vec3 LightPosition_worldspace;
 void main(){
     // Light emission properties
     // You probably want to put them as uniforms
-    vec3 LightColor = vec3(1.0, 0.2, 0.0);
+    vec3 LightColor = vec3(1.0, 0.0, 0.0);
     float LightPower = 20.0f;
 
     // Material properties
 //    vec3 MaterialDiffuseColor = texture( myTextureSampler, UV ).rgb;
-    vec3 MaterialDiffuseColor = vec3(0.2, 1.0, 0.0);
+    vec3 MaterialDiffuseColor = vec3(1.0, 0.0, 0.0);
     vec3 MaterialAmbientColor = vec3(0.5, 0.5, 0.5) * MaterialDiffuseColor;
 //    vec3 MaterialSpecularColor = vec3(0.0,0.0,0.0);
 

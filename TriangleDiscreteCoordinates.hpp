@@ -2,25 +2,18 @@
 // Created by Konstantin Malanchev on 21/02/2017.
 //
 
+
+#ifndef TUTORIALS_TRIANGLEDESCRETECOORDINATES_HPP
+#define TUTORIALS_TRIANGLEDESCRETECOORDINATES_HPP
+
+
 #include <boost/iterator/filter_iterator.hpp>
 #include <cmath>
 #include <functional>
 #include <iostream>
 #include <vector>
 
-
-#ifndef TUTORIALS_TRIANGLEDESCRETECOORDINATES_HPP
-#define TUTORIALS_TRIANGLEDESCRETECOORDINATES_HPP
-
-
-template<typename T>
-T exp2_int(T x){
-    T y(1);
-    for ( T i = 0; i < x; ++i ){
-        y *= 2;
-    }
-    return y;
-}
+#include "commons.hpp"
 
 
 template <typename T_INDEX>

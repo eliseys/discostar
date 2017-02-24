@@ -1,6 +1,12 @@
 cmake_minimum_required(VERSION 3.6)
 project(HerX1)
 
+find_package(OpenMP)
+if (OPENMP_FOUND)
+    set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${OpenMP_C_FLAGS}")
+    set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
+endif()
+
 find_package(Boost REQUIRED)
 find_package(jpeg REQUIRED)
 if (BOOST_FOUND)
@@ -47,5 +53,6 @@ set(SOURCE_FILES
         playground.cpp playground.hpp
         shader.cpp shader.hpp
         DescriteToGeometric.hpp
-        TriangleDiscreteCoordinates.hpp)
+        TriangleDiscreteCoordinates.hpp
+        images.hpp commons.hpp)
 add_executable(main ${SOURCE_FILES})

@@ -1,8 +1,7 @@
 #include <stdio.h>
 #include <iostream>
 #include <array>
-#include <boost/gil/gil_all.hpp>
-#include <boost/gil/extension/io/jpeg_io.hpp>
+#include <chrono>
 #include <vector>
 
 #include <GL/glew.h>
@@ -18,6 +17,7 @@ using namespace glm;
 #include "shader.hpp"
 #include "TriangleDiscreteCoordinates.hpp"
 #include "DescriteToGeometric.hpp"
+#include "images.hpp"
 
 
 
@@ -108,6 +108,12 @@ public:
 
 int playground()
 {
+    const int widthWindow = 512;
+    const int heightWindow = 512;
+    const float scale0 = 3.0f;
+    const float disk_position_x = -1.5f;
+    const bool saveImage = false;
+
 	// Initialise GLFW
 	if( !glfwInit() )
 	{
@@ -127,9 +133,9 @@ int playground()
 //	glfwWindowHint(GLFW_CLIENT_API, GLFW_OPENGL_API);
 
 	// Open a window and create its OpenGL context
-	int width = 512;
-	int height = 512;
-	window = glfwCreateWindow( width, height, "Playground", NULL, NULL);
+	window = glfwCreateWindow( widthWindow, heightWindow, "Playground", NULL, NULL);
+    // But on MacOS X with a retina screen it'll be larger
+    int width, height;
     glfwGetFramebufferSize(window, &width, &height);
 	if( window == NULL ){
 		fprintf( stderr, "Failed to open GLFW window. If you have an Intel GPU, they are not 3.3 compatible. Try the 2.1 version of the tutorials.\n" );
@@ -211,8 +217,6 @@ int playground()
 	GLint Model_ID = glGetUniformLocation(programID, "M");
 	GLint LightID =  glGetUniformLocation(programID, "LightPosition_worldspace");
 
-    const float disk_position_x = -1.5f;
-	const float scale0 = 3.0f;
 	glm::vec3 lightPos = glm::vec3(disk_position_x,0,0);
 
 	std::vector<vec3>           star_vertices;
@@ -434,6 +438,28 @@ int playground()
 			glDisableVertexAttribArray(2);
 		}
 
+        {
+            const auto pixels_size = static_cast<size_t>(width * height * 3);
+            unsigned short pixels[pixels_size];
+            glGetTexImage(GL_TEXTURE_2D, 0, GL_RGB, GL_UNSIGNED_SHORT, pixels);
+            float flux_red = 0.0f;
+            const float max = static_cast<float>(std::numeric_limits<unsigned short>::max()) + 1.0f;
+            const auto start = std::chrono::high_resolution_clock::now();
+#pragma omp parallel for private(i) shared(pixels, max) reduction(+:flux_red)
+            for( size_t i = 0; i < pixels_size; i += 3 ){
+                flux_red += static_cast<float>(pixels[i+0]) / max;
+            }
+            const auto end = std::chrono::high_resolution_clock::now();
+            std::cout << std::chrono::duration_cast<std::chrono::microseconds>(end - start).count() << " mcs\t"
+                      << flux_red << std::endl;
+        }
+
+        if ( saveImage ){
+            unsigned char pixels[width * height * 3];
+            glGetTexImage(GL_TEXTURE_2D, 0, GL_RGB, GL_UNSIGNED_BYTE, pixels);
+            save_pixels_to_jpeg("image.jpeg", pixels, static_cast<size_t>(width), static_cast<size_t>(height));
+        }
+
 		{
 			// Render to the screen
 			glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -471,16 +497,6 @@ int playground()
 			);
 			// Draw the triangles !
 			glDrawArrays(GL_TRIANGLES, 0, 6); // 2*3 indices starting at 0 -> 2 triangles
-
-//			unsigned short pixels[512*512*3];
-//		    glGetTexImage(GL_TEXTURE_2D, 0, GL_RGB, GL_UNSIGNED_SHORT, pixels);
-//		    auto imageView = boost::gil::interleaved_view(
-//		    		width,
-//		    		height,
-//		    		reinterpret_cast<boost::gil::bgr8c_pixel_t*>(pixels),
-//		    		width
-//		    );
-//		    boost::gil::jpeg_write_view("image.jpeg", imageView);
 
 			glDisableVertexAttribArray(0);
 			glDisableVertexAttribArray(1);
