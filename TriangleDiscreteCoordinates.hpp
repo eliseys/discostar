@@ -14,6 +14,7 @@
 #include <vector>
 
 #include "commons.hpp"
+#include "ObjectModel.hpp"
 
 
 template <typename T_INDEX>
@@ -113,7 +114,7 @@ public:
         return index(dc.rho, dc.psi);
     }
 
-    std::vector<T_INDEX> get_small_triangles() const{
+    std::vector<T_INDEX> get_elements() const{
         std::vector<T_INDEX> triangles;
         for ( size_t rho = 1; rho < rho_size; ++rho ){
             size_t delta_psi = 0;
@@ -136,10 +137,7 @@ public:
         return triangles;
     }
 
-    virtual void get_viun(std::vector<glm::vec3> &vertices,
-                          std::vector<T_INDEX>   &indeces,
-                          std::vector<glm::vec2> &uvs,
-                          std::vector<glm::vec3> &normals){}
+    virtual const ObjectModel get_object_model() const {return ObjectModel();}
 };
 
 

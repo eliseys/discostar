@@ -50,9 +50,12 @@ link_libraries(${ALL_LIBS})
 
 set(SOURCE_FILES
         main.cpp
-        playground.cpp playground.hpp
         shader.cpp shader.hpp
         DescriteToGeometric.hpp
         TriangleDiscreteCoordinates.hpp
-        images.hpp commons.hpp)
+        images.hpp
+        commons.hpp
+        Renderer.hpp
+        LightSource.hpp
+        ObjectModel.hpp)
 add_executable(main ${SOURCE_FILES})

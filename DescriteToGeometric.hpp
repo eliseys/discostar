@@ -9,14 +9,14 @@
 #include <vector>
 #include <glm/gtx/polar_coordinates.hpp>
 
+#include "ObjectModel.hpp"
 #include "TriangleDiscreteCoordinates.hpp"
 
 
 typedef typename glm::vec3::value_type value_type;
 
 
-template<typename T_INDEX>
-class Sphere: public TriangleDiscreteCoordinates<T_INDEX>{
+class Sphere: public TriangleDiscreteCoordinates<unsigned short>{
 protected:
     std::vector<glm::vec3> northern_hemisphere() const{
         std::vector<glm::vec3> vertices(this->size);
@@ -51,68 +51,57 @@ protected:
     }
 
 public:
-    Sphere(size_t bin_splits): TriangleDiscreteCoordinates<T_INDEX>(4, bin_splits){}
+    Sphere(size_t bin_splits): TriangleDiscreteCoordinates<unsigned short>(4, bin_splits){}
 
-    void get_viun(std::vector<glm::vec3> &vertices,
-                  std::vector<T_INDEX>   &indeces,
-                  std::vector<glm::vec2> &uvs,
-                  std::vector<glm::vec3> &normals){
-        auto verts = northern_hemisphere();
+    const ObjectModel get_object_model(){
+        ObjectModel om;
+
+        om.vertices = northern_hemisphere();
         // Add southern hemisphere vertices
         const size_t last_line = this->tr * (this->rho_size - 2) * (this->rho_size - 1) / 2 + 1;
         for ( size_t i = 0; i < last_line; ++i ){
-            auto southern_vert = verts[i];
+            auto southern_vert = om.vertices[i];
             southern_vert.y *= -1;
-            verts.push_back(southern_vert);
+            om.vertices.push_back(southern_vert);
         }
 
-        vertices.insert(vertices.begin(), verts.begin(), verts.end());
-
-        auto ind = this->get_small_triangles();
-        // generate southern hemisphere triangles
-        auto southern_ind = ind;
-        for (auto &i : southern_ind){
-            if (i < last_line){
-                i += this->size;
-            }
-        }
-        ind.insert(ind.end(), southern_ind.begin(), southern_ind.end());
-
-        indeces.insert(indeces.begin(), ind.begin(), ind.end());
-
-        uvs.clear();
-        for ( auto &vert : verts ){
+        for ( auto &vert : om.vertices ){
             const auto polar  = glm::polar(vert);
             const auto theta  = static_cast<value_type>(polar.x);
             const auto phi    = static_cast<value_type>(polar.y);
             const auto v      = static_cast<value_type>( (theta + M_PI_2) / M_PI );
             const auto u      = static_cast<value_type>( (phi + M_PI) / ( 2 * M_PI ) );
-            uvs.emplace_back( u, v );
+            om.uvs.emplace_back( u, v );
         }
 
-        normals.clear();
-        normals.insert(normals.begin(), vertices.begin(), vertices.end());
+        om.normals.insert(om.normals.begin(), om.vertices.begin(), om.vertices.end());
+
+        om.elements = this->get_elements();
+        // generate southern hemisphere triangles
+        auto southern_ind = om.elements;
+        for (auto &i : southern_ind){
+            if (i < last_line){
+                i += this->size;
+            }
+        }
+        om.elements.insert(om.elements.end(), southern_ind.begin(), southern_ind.end());
+
+        return om;
     }
 };
 
 
-template<typename T_INDEX>
-class Circle: public TriangleDiscreteCoordinates<T_INDEX> {
+class Circle: public TriangleDiscreteCoordinates<unsigned short> {
 
 public:
-    Circle(size_t bin_splits): TriangleDiscreteCoordinates<T_INDEX>(6, bin_splits){}
+    Circle(size_t bin_splits): TriangleDiscreteCoordinates<unsigned short>(6, bin_splits){}
 
-    void get_viun(std::vector<glm::vec3> &vertices,
-                  std::vector<T_INDEX>   &indeces,
-                  std::vector<glm::vec2> &uvs,
-                  std::vector<glm::vec3> &normals) {
-        const auto ind = this->get_small_triangles();
-        indeces.clear();
-        indeces.insert(indeces.begin(), ind.begin(), ind.end());
+    const ObjectModel get_object_model() const{
+        ObjectModel om;
 
-        vertices.resize(this->size);
-        uvs     .resize(this->size);
-        normals .resize(this->size);
+        om.vertices.resize(this->size);
+        om.uvs     .resize(this->size);
+        om.normals .resize(this->size);
         for ( size_t t = 0; t < this->tr; ++t ) {
             for (auto it = this->triangle_begin(t); it != this->triangle_end(t); ++it) {
                 const auto rho        = static_cast<value_type>( it->rho );
@@ -125,11 +114,15 @@ public:
                 const auto y          = static_cast<value_type>( 0 );
                 const auto z          = static_cast<value_type>( r * cos(phi) );
 
-                vertices[this->index(*it)] = glm::vec3(x, y, z);
-                normals [this->index(*it)] = glm::vec3(0, 1, 0);
-                uvs     [this->index(*it)] = glm::vec2(r, static_cast<value_type>(psi / (psi_length - 1)));
+                om.vertices[this->index(*it)] = glm::vec3(x, y, z);
+                om.normals [this->index(*it)] = glm::vec3(0, 1, 0);
+                om.uvs     [this->index(*it)] = glm::vec2(r, static_cast<value_type>(psi / (psi_length - 1)));
             }
         }
+
+        om.elements = this->get_elements();
+
+        return om;
     }
 };
 
