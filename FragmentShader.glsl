@@ -13,13 +13,9 @@ layout(location = 0) out vec3 color;
 // Values that stay constant for the whole mesh.
 //uniform sampler2D myTextureSampler;
 uniform vec3 LightPosition_worldspace;
+uniform vec3 LightColor;
 
 void main(){
-    // Light emission properties
-    // You probably want to put them as uniforms
-    vec3 LightColor = vec3(1.0, 0.0, 0.0);
-    float LightPower = 20.0f;
-
     // Material properties
 //    vec3 MaterialDiffuseColor = texture( myTextureSampler, UV ).rgb;
     vec3 MaterialDiffuseColor = vec3(1.0, 0.0, 0.0);
@@ -56,7 +52,7 @@ void main(){
     	// Ambient : simulates indirect lighting
     	MaterialAmbientColor +
     	// Diffuse : "color" of the object
-    	MaterialDiffuseColor * LightColor * LightPower * cosTheta / (distance*distance);
+    	MaterialDiffuseColor * LightColor * cosTheta / (distance*distance);
     	// Specular : reflective highlight, like a mirror
 //    	MaterialSpecularColor * LightColor * LightPower * pow(cosAlpha,5) / (distance*distance);
 

@@ -17,7 +17,6 @@
 #include "ObjectModel.hpp"
 
 
-template <typename T_INDEX>
 class TriangleDiscreteCoordinates {
 public:
     struct DiscreteCoordinate{
@@ -103,34 +102,28 @@ public:
         return rho;
     }
 
-    T_INDEX index(size_t rho, size_t psi) const{
+    unsigned short index(size_t rho, size_t psi) const{
         if ( rho == 0 ){
             return 0;
         }
         psi %= psi_size(rho);
-        return static_cast<T_INDEX>( tr * rho * (rho - 1) / 2 + psi + 1 );
+        return static_cast<unsigned short>( tr * rho * (rho - 1) / 2 + psi + 1 );
     }
-    T_INDEX index(DiscreteCoordinate dc) const{
+    unsigned short index(DiscreteCoordinate dc) const{
         return index(dc.rho, dc.psi);
     }
 
-    std::vector<T_INDEX> get_elements() const{
-        std::vector<T_INDEX> triangles;
+    std::vector<unsigned short> get_elements() const{
+        std::vector<unsigned short> triangles;
         for ( size_t rho = 1; rho < rho_size; ++rho ){
-            size_t delta_psi = 0;
             for ( size_t psi = 0; psi < psi_size(rho); ++psi ){
-                if ( psi != 0  and  psi % psi_triangle_size(rho) == 0 ){
-                    delta_psi++;
-                }
-
                     triangles.push_back(index(rho,     psi));
                     triangles.push_back(index(rho,     psi + 1));
-                    triangles.push_back(index(rho - 1, psi - delta_psi));
-
+                    triangles.push_back(index(rho - 1, psi - what_triangle(rho, psi)));
                 if ( rho < rho_size - 1 ){
                     triangles.push_back(index(rho,     psi + 1));
                     triangles.push_back(index(rho,     psi));
-                    triangles.push_back(index(rho+1,   psi + delta_psi + 1));
+                    triangles.push_back(index(rho + 1, psi + what_triangle(rho, psi) + 1));
                 }
             }
         }

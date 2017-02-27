@@ -16,7 +16,7 @@
 typedef typename glm::vec3::value_type value_type;
 
 
-class Sphere: public TriangleDiscreteCoordinates<unsigned short>{
+class Sphere: public TriangleDiscreteCoordinates{
 protected:
     std::vector<glm::vec3> northern_hemisphere() const{
         std::vector<glm::vec3> vertices(this->size);
@@ -27,12 +27,12 @@ protected:
             const glm::vec3 C = glm::euclidean(glm::vec2(0, M_PI_2 * (t + 1)));
             for ( auto it = this->triangle_begin(t); it != this->triangle_end(t); ++it ){
                 const auto rho        = static_cast<value_type>( it->rho );
-                const auto rho_length = static_cast<value_type>( this->rho_size );
+                const auto rho_length = static_cast<value_type>( this->rho_size ) - 1;
                 const auto psi_length = static_cast<value_type>( this->psi_triangle_size(it->rho) );
                 const auto psi        = static_cast<value_type>( it->psi % this->psi_triangle_size(it->rho) );
 
-                value_type alpha ( 1 - rho / (rho_length - 1) );
-                value_type beta  ( (1 - alpha) * ( 1 - psi / (psi_length - 1) ) );
+                value_type alpha ( 1 - rho / rho_length );
+                value_type beta  ( (1 - alpha) * ( 1 - psi / psi_length ) );
                 value_type gamma ( 1 - alpha - beta );
                 if ( it->rho == 0 ) {
                     alpha = 1;
@@ -51,9 +51,9 @@ protected:
     }
 
 public:
-    Sphere(size_t bin_splits): TriangleDiscreteCoordinates<unsigned short>(4, bin_splits){}
+    Sphere(size_t bin_splits): TriangleDiscreteCoordinates(4, bin_splits){}
 
-    const ObjectModel get_object_model(){
+    const ObjectModel get_object_model() const{
         ObjectModel om;
 
         om.vertices = northern_hemisphere();
@@ -91,10 +91,10 @@ public:
 };
 
 
-class Circle: public TriangleDiscreteCoordinates<unsigned short> {
+class Circle: public TriangleDiscreteCoordinates{
 
 public:
-    Circle(size_t bin_splits): TriangleDiscreteCoordinates<unsigned short>(6, bin_splits){}
+    Circle(size_t bin_splits): TriangleDiscreteCoordinates(6, bin_splits){}
 
     const ObjectModel get_object_model() const{
         ObjectModel om;
@@ -105,11 +105,11 @@ public:
         for ( size_t t = 0; t < this->tr; ++t ) {
             for (auto it = this->triangle_begin(t); it != this->triangle_end(t); ++it) {
                 const auto rho        = static_cast<value_type>( it->rho );
-                const auto rho_length = static_cast<value_type>( this->rho_size );
-                const auto psi_length = static_cast<value_type>( this->psi_size(it->rho));
-                const auto psi        = static_cast<value_type>( it->psi % this->psi_size(it->rho));
-                const auto r          = static_cast<value_type>( rho / (rho_length - 1) );
-                const auto phi        = static_cast<value_type>( 2 * M_PI * psi / (psi_length - 1) );
+                const auto rho_length = static_cast<value_type>( this->rho_size ) - 1;
+                const auto psi_length = static_cast<value_type>( this->psi_size(it->rho) );
+                const auto psi        = static_cast<value_type>( it->psi );
+                const auto r          = static_cast<value_type>( rho / rho_length );
+                const auto phi        = static_cast<value_type>( 2 * M_PI * psi / psi_length );
                 const auto x          = static_cast<value_type>( r * sin(phi) );
                 const auto y          = static_cast<value_type>( 0 );
                 const auto z          = static_cast<value_type>( r * cos(phi) );

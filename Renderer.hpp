@@ -6,16 +6,19 @@
 #define HERX1_RENDERER_HPP
 
 
+#include <array>
 #include <exception>
 #include <iostream>
 #include <string>
+#include <vector>
 
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 #include <glm/glm.hpp>
 
-#include "ObjectModel.hpp"
 #include "LightSource.hpp"
+#include "MVP.hpp"
+#include "ObjectModel.hpp"
 #include "shader.hpp"
 
 
@@ -34,7 +37,7 @@ protected:
 
     // IDs for render into buffer
     GLuint programID;
-    GLint MVP_ID, MV_ID, View_ID, Model_ID, LightID;
+    GLint MVP_ID, MV_ID, View_ID, Model_ID, LightPosID, LightColID;
 
     // IDs for showing on screen
     GLuint quad_programID;
@@ -52,6 +55,7 @@ protected:
     std::vector<GLuint> normal_buffers;
     std::vector<GLuint> element_buffers;
 
+    // Screen model attributes
     static constexpr GLfloat g_quad_vertex_buffer_data[] = {
             -1.0f, -1.0f, 0.0f,
             1.0f, -1.0f, 0.0f,
@@ -88,7 +92,12 @@ public:
             window_width(width),
             window_height(height),
             object_models(object_models),
-            light_source(light_source){
+            light_source(light_source),
+            vertex_buffers (object_models.size()),
+            uv_buffers     (object_models.size()),
+            normal_buffers (object_models.size()),
+            element_buffers(object_models.size())
+    {
         // Initialise GLFW
         if( not glfwInit() ){
             throw GlfwException("Failed to initialize GLFW");
@@ -138,15 +147,12 @@ public:
                 "VertexShader.glsl",
                 "FragmentShader.glsl"
         );
-        MVP_ID   = glGetUniformLocation(programID, "MVP");
-        MV_ID    = glGetUniformLocation(programID, "MV");
-        View_ID  = glGetUniformLocation(programID, "V");
-        Model_ID = glGetUniformLocation(programID, "M");
-        LightID  = glGetUniformLocation(programID, "LightPosition_worldspace");
-        vertex_buffers .resize(object_models.size());
-        uv_buffers     .resize(object_models.size());
-        normal_buffers .resize(object_models.size());
-        element_buffers.resize(object_models.size());
+        MVP_ID     = glGetUniformLocation(programID, "MVP");
+        MV_ID      = glGetUniformLocation(programID, "MV");
+        View_ID    = glGetUniformLocation(programID, "V");
+        Model_ID   = glGetUniformLocation(programID, "M");
+        LightPosID = glGetUniformLocation(programID, "LightPosition_worldspace");
+        LightColID = glGetUniformLocation(programID, "LightColor");
         for ( size_t i = 0; i < object_models.size(); ++i ){
             glGenBuffers(1, &vertex_buffers[i]);
             glBindBuffer(GL_ARRAY_BUFFER, vertex_buffers[i]);
@@ -177,7 +183,7 @@ public:
             glBufferData(
                     GL_ARRAY_BUFFER,
                     object_models[i].elements.size() * sizeof(unsigned short),
-                    &object_models[i].elements[i],
+                    &object_models[i].elements[0],
                     GL_STATIC_DRAW
             );
         }
@@ -197,7 +203,7 @@ public:
         glBindFramebuffer(GL_FRAMEBUFFER, framebuffer_name);
         glGenTextures(1, &rendered_texture);
         glBindTexture(GL_TEXTURE_2D, rendered_texture);
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, 0);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, frame_width, frame_height, 0, GL_RGB, GL_UNSIGNED_BYTE, 0);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
@@ -225,7 +231,131 @@ public:
         glDeleteBuffers(1, &quad_vertex_buffer);
 
         glfwTerminate();
-//        delete window;
+    }
+
+    std::array<double, 3> get_rgb_fluxes(const std::vector<MVP> &mvps){
+        glBindFramebuffer(GL_FRAMEBUFFER, framebuffer_name);
+        glViewport(0, 0, frame_width, frame_height);
+
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+        glUseProgram(programID);
+        glUniform3f(LightPosID, light_source.position.x, light_source.position.y, light_source.position.z);
+        glUniform3f(LightColID, light_source.color   .x, light_source.color   .y, light_source.color   .z);
+
+        for ( size_t i = 0; i < object_models.size(); ++i ) {
+            glUniformMatrix4fv(MVP_ID,   1, GL_FALSE, &mvps[i].mvp()      [0][0]);
+            glUniformMatrix4fv(MV_ID,    1, GL_FALSE, &mvps[i].mv()       [0][0]);
+            glUniformMatrix4fv(View_ID,  1, GL_FALSE, &mvps[i].view       [0][0]);
+            glUniformMatrix4fv(Model_ID, 1, GL_FALSE, &mvps[i].get_model()[0][0]);
+
+            glEnableVertexAttribArray(0);
+            glBindBuffer(GL_ARRAY_BUFFER, vertex_buffers[i]);
+            glVertexAttribPointer(
+                    0,                  // attribute 0. No particular reason for 0, but must match the layout in the shader.
+                    3,                  // size
+                    GL_FLOAT,           // type
+                    GL_FALSE,           // normalized?
+                    0,                  // stride
+                    (void *) 0          // array buffer offset
+            );
+
+            glEnableVertexAttribArray(1);
+            glBindBuffer(GL_ARRAY_BUFFER, uv_buffers[i]);
+            glVertexAttribPointer(
+                    1,                  // attribute
+                    2,                  // size
+                    GL_FLOAT,           // type
+                    GL_FALSE,           // normalized?
+                    0,                  // stride
+                    (void *) 0          // array buffer offset
+            );
+
+            // 3rd attribute buffer : normals
+            glEnableVertexAttribArray(2);
+            glBindBuffer(GL_ARRAY_BUFFER, normal_buffers[i]);
+            glVertexAttribPointer(
+                    2,                  // attribute
+                    3,                  // size
+                    GL_FLOAT,           // type
+                    GL_FALSE,           // normalized?
+                    0,                  // stride
+                    (void *) 0          // array buffer offset
+            );
+
+            // Index buffer
+            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, element_buffers[i]);
+            // Draw the triangles!
+            glDrawElements(
+                    GL_TRIANGLES,                               // mode
+                    (GLsizei) object_models[i].elements.size(), // count
+                    GL_UNSIGNED_SHORT,                          // type
+                    (void *) 0                                  // element array buffer offset
+            );
+
+            glDisableVertexAttribArray(0);
+            glDisableVertexAttribArray(1);
+            glDisableVertexAttribArray(2);
+        }
+
+        std::array<double, 3> fluxes{0,0,0};
+        {
+            const auto pixels_size = static_cast<size_t>(frame_width * frame_height * fluxes.size());
+            unsigned short pixels[pixels_size];
+            glGetTexImage(GL_TEXTURE_2D, 0, GL_RGB, GL_UNSIGNED_SHORT, pixels);
+            const double max = static_cast<double>(std::numeric_limits<unsigned short>::max()) + 1.;
+//#pragma omp parallel for private(i) shared(pixels, max) reduction(+:flux_red)
+            for ( size_t i = 0; i < pixels_size; i += fluxes.size() ) {
+                    for( size_t j = 0; j < fluxes.size(); ++j ) {
+                        fluxes[j] += static_cast<double>(pixels[i + j]) / max;
+                }
+            }
+        }
+
+        // Render to the screen
+        {
+            glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+            glViewport(0, 0, frame_width, frame_height);
+            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+            glUseProgram(quad_programID);
+            glActiveTexture(GL_TEXTURE0);
+            glBindTexture(GL_TEXTURE_2D, rendered_texture);
+            glUniform1i(rendered_textureID, 0);
+
+            glEnableVertexAttribArray(0);
+            glBindBuffer(GL_ARRAY_BUFFER, quad_vertex_buffer);
+            glVertexAttribPointer(
+                    0,                  // attribute 0. No particular reason for 0, but must match the layout in the shader.
+                    3,                  // size
+                    GL_FLOAT,           // type
+                    GL_FALSE,           // normalized?
+                    0,                  // stride
+                    (void *) 0          // array buffer offset
+            );
+
+            glEnableVertexAttribArray(1);
+            glBindBuffer(GL_ARRAY_BUFFER, quad_uv_buffer);
+            glVertexAttribPointer(
+                    1,                  // attribute 0. No particular reason for 0, but must match the layout in the shader.
+                    2,                  // size
+                    GL_FLOAT,           // type
+                    GL_FALSE,           // normalized?
+                    0,                  // stride
+                    (void *) 0          // array buffer offset
+            );
+            glDrawArrays(GL_TRIANGLES, 0, 6); // 2*3 indices starting at 0 -> 2 triangles
+
+            glDisableVertexAttribArray(0);
+            glDisableVertexAttribArray(1);
+        }
+
+        // Swap buffers
+        glfwSwapBuffers(window);
+        glfwPollEvents();
+
+        return fluxes;
     }
 };
 

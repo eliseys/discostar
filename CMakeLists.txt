@@ -57,5 +57,5 @@ set(SOURCE_FILES
         commons.hpp
         Renderer.hpp
         LightSource.hpp
-        ObjectModel.hpp)
+        ObjectModel.hpp MVP.hpp MvpFromInput.hpp)
 add_executable(main ${SOURCE_FILES})
