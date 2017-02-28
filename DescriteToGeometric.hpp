@@ -114,9 +114,9 @@ public:
         for ( size_t t = 0; t < this->tr; ++t ) {
             for (auto it = this->triangle_begin(t); it != this->triangle_end(t); ++it) {
                 const auto cyl = cylindrical(*it);
-                const auto x   = static_cast<value_type>( cyl.r * sin(cyl.g) );
+                const auto x   = static_cast<value_type>( cyl.r * sinf(cyl.g) );
                 const auto y   = static_cast<value_type>( 0 );
-                const auto z   = static_cast<value_type>( cyl.r * cos(cyl.g) );
+                const auto z   = static_cast<value_type>( cyl.r * cosf(cyl.g) );
 
                 om.vertices[this->index(*it)] = glm::vec3(x, y, z);
                 om.normals [this->index(*it)] = glm::vec3(0, 1, 0);
