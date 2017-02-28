@@ -84,7 +84,7 @@ public:
         psi %= psi_size(rho);
         return psi / psi_triangle_size(rho);
     }
-    size_t what_triangle(DiscreteCoordinate dc) const{
+    size_t what_triangle(const DiscreteCoordinate &dc) const{
         return what_triangle(dc.rho, dc.psi);
     }
 
@@ -109,7 +109,7 @@ public:
         psi %= psi_size(rho);
         return static_cast<unsigned short>( tr * rho * (rho - 1) / 2 + psi + 1 );
     }
-    unsigned short index(DiscreteCoordinate dc) const{
+    unsigned short index(const DiscreteCoordinate &dc) const{
         return index(dc.rho, dc.psi);
     }
 

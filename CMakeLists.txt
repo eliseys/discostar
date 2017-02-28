@@ -51,11 +51,12 @@ link_libraries(${ALL_LIBS})
 set(SOURCE_FILES
         main.cpp
         shader.cpp shader.hpp
-        DescriteToGeometric.hpp
+        DescriteToGeometric.hpp disks.hpp
         TriangleDiscreteCoordinates.hpp
         images.hpp
         commons.hpp
         Renderer.hpp
         LightSource.hpp
-        ObjectModel.hpp MVP.hpp MvpFromInput.hpp)
+        ObjectModel.hpp
+        MVP.hpp MvpFromInput.hpp)
 add_executable(main ${SOURCE_FILES})

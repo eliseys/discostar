@@ -47,6 +47,7 @@ protected:
     // The framebuffer, which regroups 0, 1, or more textures, and 0 or 1 depth buffer.
     GLuint framebuffer_name = 0;
     GLuint rendered_texture;
+    GLuint depth_render_buffer;
     GLenum draw_buffers[1];
 
     // Model object attributes
@@ -208,6 +209,10 @@ public:
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+        glGenRenderbuffers(1, &depth_render_buffer);
+        glBindRenderbuffer(GL_RENDERBUFFER, depth_render_buffer);
+        glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, frame_width, frame_height);
+        glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, depth_render_buffer);
         glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, rendered_texture, 0);
         draw_buffers[0] = GL_COLOR_ATTACHMENT0;
         glDrawBuffers(1, draw_buffers); // "1" is the size of DrawBuffers

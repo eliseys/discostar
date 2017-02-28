@@ -92,9 +92,18 @@ public:
 
 
 class Circle: public TriangleDiscreteCoordinates{
-
 public:
     Circle(size_t bin_splits): TriangleDiscreteCoordinates(6, bin_splits){}
+
+    glm::vec2 cylindrical(const DiscreteCoordinate &dc) const{
+        const auto rho        = static_cast<value_type>( dc.rho );
+        const auto rho_length = static_cast<value_type>( this->rho_size ) - 1;
+        const auto psi_length = static_cast<value_type>( this->psi_size(dc.rho) );
+        const auto psi        = static_cast<value_type>( dc.psi );
+        const auto r          = static_cast<value_type>( rho / rho_length );
+        const auto phi        = static_cast<value_type>( 2 * M_PI * psi / psi_length );
+        return glm::vec2(r, phi);
+    }
 
     const ObjectModel get_object_model() const{
         ObjectModel om;
@@ -104,19 +113,14 @@ public:
         om.normals .resize(this->size);
         for ( size_t t = 0; t < this->tr; ++t ) {
             for (auto it = this->triangle_begin(t); it != this->triangle_end(t); ++it) {
-                const auto rho        = static_cast<value_type>( it->rho );
-                const auto rho_length = static_cast<value_type>( this->rho_size ) - 1;
-                const auto psi_length = static_cast<value_type>( this->psi_size(it->rho) );
-                const auto psi        = static_cast<value_type>( it->psi );
-                const auto r          = static_cast<value_type>( rho / rho_length );
-                const auto phi        = static_cast<value_type>( 2 * M_PI * psi / psi_length );
-                const auto x          = static_cast<value_type>( r * sin(phi) );
-                const auto y          = static_cast<value_type>( 0 );
-                const auto z          = static_cast<value_type>( r * cos(phi) );
+                const auto cyl = cylindrical(*it);
+                const auto x   = static_cast<value_type>( cyl.r * sin(cyl.g) );
+                const auto y   = static_cast<value_type>( 0 );
+                const auto z   = static_cast<value_type>( cyl.r * cos(cyl.g) );
 
                 om.vertices[this->index(*it)] = glm::vec3(x, y, z);
                 om.normals [this->index(*it)] = glm::vec3(0, 1, 0);
-                om.uvs     [this->index(*it)] = glm::vec2(r, static_cast<value_type>(psi / (psi_length - 1)));
+                om.uvs     [this->index(*it)] = glm::vec2(cyl.r, static_cast<value_type>(cyl.g / (2 * M_PI)));
             }
         }
 
