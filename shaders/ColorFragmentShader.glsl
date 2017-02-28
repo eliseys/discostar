@@ -5,6 +5,7 @@ in vec3 Position_worldspace;
 in vec3 Normal_cameraspace;
 in vec3 LightDirection_cameraspace;
 in vec3 EyeDirection_cameraspace;
+in vec4 ShadowCoord;
 
 // Ouput data
 //out vec3 color;
@@ -14,6 +15,8 @@ layout(location = 0) out vec3 color;
 //uniform sampler2D myTextureSampler;
 uniform vec3 LightPosition_worldspace;
 uniform vec3 LightColor;
+uniform sampler2DShadow shadowMap;
+
 
 void main(){
     // Material properties
@@ -21,6 +24,8 @@ void main(){
     vec3 MaterialDiffuseColor = vec3(1.0, 0.0, 0.0);
     vec3 MaterialAmbientColor = vec3(0.5, 0.5, 0.5) * MaterialDiffuseColor;
 //    vec3 MaterialSpecularColor = vec3(0.0,0.0,0.0);
+
+    float visibility = texture( shadowMap, vec3(ShadowCoord.xy, (ShadowCoord.z)/ShadowCoord.w) );
 
     // Distance to the light
     float distance = length( LightPosition_worldspace - Position_worldspace );
@@ -52,7 +57,7 @@ void main(){
     	// Ambient : simulates indirect lighting
     	MaterialAmbientColor +
     	// Diffuse : "color" of the object
-    	MaterialDiffuseColor * LightColor * cosTheta / (distance*distance);
+    	MaterialDiffuseColor * visibility * LightColor * cosTheta / (distance*distance);
     	// Specular : reflective highlight, like a mirror
 //    	MaterialSpecularColor * LightColor * LightPower * pow(cosAlpha,5) / (distance*distance);
 

@@ -83,7 +83,7 @@ public:
             i = lower_index(coordinate(i));
         }
         om.elements.insert(om.elements.end(), lower_half.begin(), lower_half.end());
-        {
+        { // TODO: move cylinder to separate class
             const size_t rho = this->rho_size - 1;
             for ( size_t psi = 0; psi < this->psi_size(rho); ++psi ){
                 om.elements.push_back(      index(rho, psi    ));

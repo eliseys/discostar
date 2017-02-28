@@ -175,8 +175,8 @@ int playground()
     glBindVertexArray(VertexArrayID);
 
     GLuint programID = LoadShaders(
-            "VertexShader.glsl",
-            "FragmentShader.glsl"
+            "ColorVertexShader.glsl",
+            "ColorFragmentShader.glsl"
     );
 
 	GLuint quad_programID = LoadShaders(
