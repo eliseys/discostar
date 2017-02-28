@@ -21,6 +21,9 @@
 #include "ObjectModel.hpp"
 #include "shader.hpp"
 
+#ifdef ENABLE_OPENMP
+#include "omp.h"
+#endif // ENABLE_OPENMP
 
 struct GlfwException: public std::runtime_error{
     GlfwException(const char *what_arg):        std::runtime_error(what_arg){}
@@ -310,12 +313,17 @@ public:
             const auto pixels_size = static_cast<size_t>(frame_width * frame_height * fluxes.size());
             unsigned short pixels[pixels_size];
             glGetTexImage(GL_TEXTURE_2D, 0, GL_RGB, GL_UNSIGNED_SHORT, pixels);
-            const double max = static_cast<double>(std::numeric_limits<unsigned short>::max()) + 1.;
-//#pragma omp parallel for private(i) shared(pixels, max) reduction(+:flux_red)
-            for ( size_t i = 0; i < pixels_size; i += fluxes.size() ) {
-                    for( size_t j = 0; j < fluxes.size(); ++j ) {
-                        fluxes[j] += static_cast<double>(pixels[i + j]) / max;
+            const double max_ = static_cast<double>(std::numeric_limits<unsigned short>::max()) + 1.;
+            size_t i;
+            for( size_t j = 0; j < fluxes.size(); ++j ) {
+                double flux = fluxes[j];
+                #ifdef ENABLE_OPENMP
+                #pragma omp parallel for private(i) shared(pixels, j) reduction(+:flux)
+                #endif // ENABLE_OPENMP
+                for ( i = 0; i < pixels_size; i += fluxes.size() ) {
+                        flux += static_cast<double>(pixels[i + j]) / max_;
                 }
+                fluxes[j] = flux;
             }
         }
 
