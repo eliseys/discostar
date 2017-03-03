@@ -25,7 +25,8 @@ void main(){
     vec3 MaterialAmbientColor = vec3(0.5, 0.5, 0.5) * MaterialDiffuseColor;
 //    vec3 MaterialSpecularColor = vec3(0.0,0.0,0.0);
 
-    float visibility = texture( shadowMap, vec3(ShadowCoord.xy, (ShadowCoord.z)/ShadowCoord.w) );
+    float bias = 0.005;
+    float visibility = texture( shadowMap, vec3(ShadowCoord.xy, (ShadowCoord.z-bias)/ShadowCoord.w) );
 
     // Distance to the light
     float distance = length( LightPosition_worldspace - Position_worldspace );

@@ -30,27 +30,28 @@ struct GlfwException: public std::runtime_error{
 
 class Renderer{
 protected:
-    int color_frame_width, color_frame_height, depth_frame_width, depth_frame_height;
+    int color_frame_width, color_frame_height;
+    int shadow_frame_size;
 
     GLuint vertex_arrayID;
 
-    // IDs for shadow depth buffer
+    // IDs for shadow map
     GLuint shadow_programID;
-    GLint  depth_MVP_ID;
-    GLuint shadow_framefubber_name;
+    GLint  shadow_MVP_ID;
+    GLuint shadow_framebuffer_name = 0;
     GLuint rendered_shadow_texture;
 
     // IDs for render into buffer
     GLuint programID;
-    GLint MVP_ID, MV_ID, View_ID, Model_ID, LightPosID, LightColID, DepthBiasID, ShadowMapID;
+    GLint MVP_ID, MV_ID, View_ID, Model_ID, LightPosID, LightColID, ShadowBiasID, ShadowMapID;
 
     // IDs for color frame buffer
     GLuint quad_programID;
-    GLint  rendered_textureID;
+    GLint  color_textureID;
     GLuint quad_vertex_buffer;
     GLuint quad_uv_buffer;
     // The framebuffer, which regroups 0, 1, or more textures, and 0 or 1 depth buffer.
-    GLuint color_framebuffer_name;
+    GLuint color_framebuffer_name = 0;
     GLuint rendered_color_texture;
     GLuint depth_render_buffer;
     GLenum draw_buffers[1];
@@ -92,7 +93,7 @@ public:
     const std::vector<ObjectModel> object_models;
     const LightSource light_source;
 
-    const int depth_to_color_size = 2;
+    const int shadow_to_color_size = 1;
 
     GLFWwindow *window;
 
@@ -132,8 +133,7 @@ public:
             throw GlfwException("Failed to open GLFW window");
         }
         glfwGetFramebufferSize( window, &color_frame_height, &color_frame_width );
-        depth_frame_height = color_frame_height * depth_to_color_size;
-        depth_frame_width  = color_frame_width  * depth_to_color_size;
+        shadow_frame_size = (color_frame_height ? color_frame_height > color_frame_width : color_frame_width) * shadow_to_color_size;
         glfwMakeContextCurrent(window);
 
         // Initialize GLEW
@@ -157,24 +157,25 @@ public:
         glGenVertexArrays(1, &vertex_arrayID);
         glBindVertexArray(vertex_arrayID);
 
-        // Depth shadow depth frame buffer
+        // Depth shadow shadow frame buffer
         shadow_programID = LoadShaders(
                 "shaders/ShadowVertexShader.glsl",
                 "shaders/ShadowFragmentShader.glsl"
         );
-        depth_MVP_ID = glGetUniformLocation(shadow_programID, "depthMVP");
-        glGenFramebuffers(1, &shadow_framefubber_name);
-        glBindFramebuffer(GL_FRAMEBUFFER, shadow_framefubber_name);
+        shadow_MVP_ID = glGetUniformLocation(shadow_programID, "shadowMVP");
+        glGenFramebuffers(2, &shadow_framebuffer_name);
+        glBindFramebuffer(GL_FRAMEBUFFER, shadow_framebuffer_name);
         glGenTextures(1, &rendered_shadow_texture);
         glBindTexture(GL_TEXTURE_2D, rendered_shadow_texture);
         glTexImage2D(
                 GL_TEXTURE_2D,
                 0,
                 GL_DEPTH_COMPONENT16,
-                depth_frame_width,
-                depth_frame_height,
+                shadow_frame_size,
+                shadow_frame_size,
                 0,
-                GL_DEPTH_COMPONENT, GL_FLOAT,
+                GL_DEPTH_COMPONENT,
+                GL_FLOAT,
                 0
         );
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
@@ -182,27 +183,27 @@ public:
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_FUNC, GL_LEQUAL);
-//        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_R_TO_TEXTURE);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_R_TO_TEXTURE);
         glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, rendered_shadow_texture, 0);
         glDrawBuffer(GL_NONE);
+//        glReadBuffer(GL_NONE);
         if ( glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE ) {
-            GlfwException("Cannot create fram buffer");
+            GlfwException("Cannot create shadow frame buffer");
         }
-
 
         // TODO: rewrite shader.?pp
         programID = LoadShaders(
                 "shaders/ColorVertexShader.glsl",
                 "shaders/ColorFragmentShader.glsl"
         );
-        MVP_ID      = glGetUniformLocation(programID, "MVP");
-        MV_ID       = glGetUniformLocation(programID, "MV");
-        View_ID     = glGetUniformLocation(programID, "V");
-        Model_ID    = glGetUniformLocation(programID, "M");
-        LightPosID  = glGetUniformLocation(programID, "LightPosition_worldspace");
-        LightColID  = glGetUniformLocation(programID, "LightColor");
-        DepthBiasID = glGetUniformLocation(programID, "DepthBiasMVP");
-        ShadowMapID = glGetUniformLocation(programID, "shadowMap");
+        MVP_ID       = glGetUniformLocation(programID, "MVP");
+        MV_ID        = glGetUniformLocation(programID, "MV");
+        View_ID      = glGetUniformLocation(programID, "V");
+        Model_ID     = glGetUniformLocation(programID, "M");
+        LightPosID   = glGetUniformLocation(programID, "LightPosition_worldspace");
+        LightColID   = glGetUniformLocation(programID, "LightColor");
+        ShadowBiasID = glGetUniformLocation(programID, "DepthBiasMVP");
+        ShadowMapID  = glGetUniformLocation(programID, "shadowMap");
         for ( size_t i = 0; i < object_models.size(); ++i ){
             glGenBuffers(1, &vertex_buffers[i]);
             glBindBuffer(GL_ARRAY_BUFFER, vertex_buffers[i]);
@@ -242,7 +243,7 @@ public:
                 "shaders/TextureVertexShader.glsl",
                 "shaders/TextureFragmentShader.glsl"
         );
-        rendered_textureID = glGetUniformLocation(quad_programID, "renderedTexture");
+        color_textureID = glGetUniformLocation(quad_programID, "renderedTexture");
         glGenBuffers(1, &quad_vertex_buffer);
         glBindBuffer(GL_ARRAY_BUFFER, quad_vertex_buffer);
         glBufferData(GL_ARRAY_BUFFER, sizeof(g_quad_vertex_buffer_data), g_quad_vertex_buffer_data, GL_STATIC_DRAW);
@@ -264,52 +265,30 @@ public:
         draw_buffers[0] = GL_COLOR_ATTACHMENT0;
         glDrawBuffers(1, draw_buffers); // "1" is the size of DrawBuffers
         if ( glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE ) {
-            GlfwException("Cannot create fram buffer");
+            GlfwException("Cannot create color frame buffer");
         }
     }
 
-    ~Renderer(){
-        for ( size_t i = 0; i < object_models.size(); ++i ){
-            glDeleteBuffers(1, &vertex_buffers[i]);
-            glDeleteBuffers(1, &uv_buffers[i]);
-            glDeleteBuffers(1, &normal_buffers[i]);
-            glDeleteBuffers(1, &element_buffers[i]);
-        }
-        glDeleteProgram(programID);
-        glDeleteProgram(quad_programID);
-        glDeleteVertexArrays(1, &vertex_arrayID);
-        glDeleteFramebuffers(1, &color_framebuffer_name);
-        glDeleteTextures(1, &rendered_color_texture);
-        glDeleteBuffers(1, &quad_vertex_buffer);
-
-        glfwTerminate();
-    }
 
     std::array<double, 3> get_rgb_fluxes(const std::vector<MVP> &mvps){
+        std::array<double, 3> fluxes{0,0,0};
+
+        // TODO: move somewhere
+        const glm::mat4 shadow_projection = glm::perspective( 90.0f, 1.0f, 0.1f, 10.0f );
+//        const glm::mat4 shadow_projection = glm::ortho( -10.0f, 10.0f, -10.0f, 10.0f, -10.0f, 20.0f );
+        const glm::mat4 shadow_view = glm::lookAt(light_source.position, glm::vec3(0,0,0), glm::vec3(0,1,0));
+
         // Render shadow depth map
-        glBindFramebuffer(GL_FRAMEBUFFER, shadow_framefubber_name);
-        glViewport(0, 0, depth_frame_width, depth_frame_height);
-        // We don't use bias in the shader, but instead we draw back faces,
-        // which are already separated from the front faces by a small distance
-        // (if your geometry is made this way)
-//        glEnable(GL_CULL_FACE);
-//        glCullFace(GL_BACK); // Cull back-facing triangles -> draw only front-facing triangles
+        glBindFramebuffer(GL_FRAMEBUFFER, shadow_framebuffer_name);
+        glViewport(0, 0, shadow_frame_size, shadow_frame_size);
         // Clear the screen
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         // Use our shader
         glUseProgram(shadow_programID);
-        // TODO: Move to upper level
-        const auto depth_projection = glm::perspective(
-                90.0f,
-                static_cast<float>(depth_frame_width) / static_cast<float>(depth_frame_height),
-                0.0f,
-                100.0f
-        );
-        const auto depth_view = glm::lookAt(light_source.position, glm::vec3(0,0,0), glm::vec3(0,1,0));
-        std::vector<glm::mat4> depth_mvps;
+        std::vector<glm::mat4> shadow_mvps;
         for ( size_t i = 0; i < object_models.size(); ++i ) {
-            depth_mvps.push_back( depth_projection * depth_view * mvps[i].get_model() );
-            glUniformMatrix4fv(depth_MVP_ID, 1, GL_FALSE, &mvps[i].get_model()[0][0]);
+            shadow_mvps.push_back( shadow_projection * shadow_view * mvps[i].get_model() );
+            glUniformMatrix4fv(shadow_MVP_ID, 1, GL_FALSE, &shadow_mvps.back()[0][0]);
 
             glEnableVertexAttribArray(0);
             glBindBuffer(GL_ARRAY_BUFFER, vertex_buffers[i]);
@@ -333,6 +312,19 @@ public:
             glDisableVertexAttribArray(0);
         }
 
+        {
+            // Calculate fluxes
+            // TODO: initialize once
+            const auto pixels_size = static_cast<size_t>(shadow_frame_size * shadow_frame_size);
+            float pixels[pixels_size];
+            glGetTexImage(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT16, GL_FLOAT, pixels);
+            for ( size_t i = 0; i < pixels_size; ++i ) {
+                if ( pixels[i] != 0.0f ){
+                    std::cout << pixels[i] << std::endl;
+                }
+            }
+        }
+
         // Render color map
         glBindFramebuffer(GL_FRAMEBUFFER, color_framebuffer_name);
         glViewport(0, 0, color_frame_width, color_frame_height);
@@ -340,18 +332,17 @@ public:
         glUseProgram(programID);
         glUniform3f(LightPosID, light_source.position.x, light_source.position.y, light_source.position.z);
         glUniform3f(LightColID, light_source.color   .x, light_source.color   .y, light_source.color   .z);
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, rendered_shadow_texture);
+        glUniform1i(ShadowMapID, 0);
         for ( size_t i = 0; i < object_models.size(); ++i ) {
-            const auto depth_bias_mvp = biasMatrix * depth_mvps[i];
+            const auto shadow_bias_mvp = biasMatrix * shadow_mvps[i];
 
-            glUniformMatrix4fv(MVP_ID,      1, GL_FALSE, &mvps[i].mvp()      [0][0]);
-            glUniformMatrix4fv(MV_ID,       1, GL_FALSE, &mvps[i].mv()       [0][0]);
-            glUniformMatrix4fv(View_ID,     1, GL_FALSE, &mvps[i].view       [0][0]);
-            glUniformMatrix4fv(Model_ID,    1, GL_FALSE, &mvps[i].get_model()[0][0]);
-            glUniformMatrix4fv(DepthBiasID, 1, GL_FALSE, &depth_bias_mvp     [0][0]);
-
-            glActiveTexture(GL_TEXTURE0);
-            glBindTexture(GL_TEXTURE_2D, rendered_shadow_texture);
-            glUniform1i(ShadowMapID, 1);
+            glUniformMatrix4fv(MVP_ID,       1, GL_FALSE, &mvps[i].mvp()      [0][0]);
+            glUniformMatrix4fv(MV_ID,        1, GL_FALSE, &mvps[i].mv()       [0][0]);
+            glUniformMatrix4fv(View_ID,      1, GL_FALSE, &mvps[i].view       [0][0]);
+            glUniformMatrix4fv(Model_ID,     1, GL_FALSE, &mvps[i].get_model()[0][0]);
+            glUniformMatrix4fv(ShadowBiasID, 1, GL_FALSE, &shadow_bias_mvp    [0][0]);
 
             glEnableVertexAttribArray(0);
             glBindBuffer(GL_ARRAY_BUFFER, vertex_buffers[i]);
@@ -402,32 +393,27 @@ public:
             glDisableVertexAttribArray(2);
         }
 
-        // Calculate fluxes
-        std::array<double, 3> fluxes{0,0,0};
-        {
-            const auto pixels_size = static_cast<size_t>(color_frame_width * color_frame_height * fluxes.size());
-            unsigned short pixels[pixels_size];
-            glGetTexImage(GL_TEXTURE_2D, 0, GL_RGB, GL_UNSIGNED_SHORT, pixels);
-            const double max = static_cast<double>(std::numeric_limits<unsigned short>::max()) + 1.;
-//#pragma omp parallel for private(i) shared(pixels, max) reduction(+:flux_red)
-            for ( size_t i = 0; i < pixels_size; i += fluxes.size() ) {
-                    for( size_t j = 0; j < fluxes.size(); ++j ) {
-                        fluxes[j] += static_cast<double>(pixels[i + j]) / max;
-                }
-            }
-        }
-
         // Render to the screen
         {
             glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
             glViewport(0, 0, color_frame_width, color_frame_height);
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
             glUseProgram(quad_programID);
             glActiveTexture(GL_TEXTURE0);
             glBindTexture(GL_TEXTURE_2D, rendered_color_texture);
-            glUniform1i(rendered_textureID, 0);
+            glUniform1i(color_textureID, 0);
+//
+            // Calculate fluxes
+            const auto pixels_size = static_cast<size_t>(color_frame_width * color_frame_height * fluxes.size());
+            unsigned short pixels[pixels_size];
+            glGetTexImage(GL_TEXTURE_2D, 0, GL_RGB, GL_UNSIGNED_SHORT, pixels);
+            const auto max = static_cast<double>(std::numeric_limits<unsigned short>::max());
+//#pragma omp parallel for private(i) shared(pixels, max) reduction(+:flux_red)
+            for ( size_t i = 0; i < pixels_size; i += fluxes.size() ) {
+                for( size_t j = 0; j < fluxes.size(); ++j ) {
+                    fluxes[j] += static_cast<double>(pixels[i + j]) / max;
+                }
+            }
 
             glEnableVertexAttribArray(0);
             glBindBuffer(GL_ARRAY_BUFFER, quad_vertex_buffer);
@@ -443,7 +429,41 @@ public:
             glEnableVertexAttribArray(1);
             glBindBuffer(GL_ARRAY_BUFFER, quad_uv_buffer);
             glVertexAttribPointer(
-                    1,                  // attribute 0. No particular reason for 0, but must match the layout in the shader.
+                    1,                  // attribute 1
+                    2,                  // size
+                    GL_FLOAT,           // type
+                    GL_FALSE,           // normalized?
+                    0,                  // stride
+                    (void *) 0          // array buffer offset
+            );
+            glDrawArrays(GL_TRIANGLES, 0, 6); // 2*3 indices starting at 0 -> 2 triangles
+
+            glDisableVertexAttribArray(0);
+            glDisableVertexAttribArray(1);
+
+
+
+            glViewport(0, 0, color_frame_width/2, color_frame_height/2);
+            glUseProgram(quad_programID);
+            glActiveTexture(GL_TEXTURE0);
+            glBindTexture(GL_TEXTURE_2D, rendered_shadow_texture);
+            glUniform1i(color_textureID, 0);
+
+            glEnableVertexAttribArray(0);
+            glBindBuffer(GL_ARRAY_BUFFER, quad_vertex_buffer);
+            glVertexAttribPointer(
+                    0,                  // attribute 0. No particular reason for 0, but must match the layout in the shader.
+                    3,                  // size
+                    GL_FLOAT,           // type
+                    GL_FALSE,           // normalized?
+                    0,                  // stride
+                    (void *) 0          // array buffer offset
+            );
+
+            glEnableVertexAttribArray(1);
+            glBindBuffer(GL_ARRAY_BUFFER, quad_uv_buffer);
+            glVertexAttribPointer(
+                    1,                  // attribute 1.
                     2,                  // size
                     GL_FLOAT,           // type
                     GL_FALSE,           // normalized?
@@ -461,6 +481,28 @@ public:
         glfwPollEvents();
 
         return fluxes;
+    }
+
+
+    ~Renderer(){
+        for ( size_t i = 0; i < object_models.size(); ++i ){
+            glDeleteBuffers(1, &vertex_buffers[i]);
+            glDeleteBuffers(1, &uv_buffers[i]);
+            glDeleteBuffers(1, &normal_buffers[i]);
+            glDeleteBuffers(1, &element_buffers[i]);
+        }
+        glDeleteProgram(shadow_programID);
+        glDeleteProgram(programID);
+        glDeleteProgram(quad_programID);
+        glDeleteVertexArrays(1, &vertex_arrayID);
+        glDeleteFramebuffers(1, &color_framebuffer_name);
+        glDeleteFramebuffers(1, &shadow_framebuffer_name);
+        glDeleteTextures(1, &rendered_color_texture);
+        glDeleteTextures(1, &rendered_shadow_texture);
+        glDeleteBuffers(1, &quad_vertex_buffer);
+        glDeleteBuffers(1, &quad_uv_buffer);
+
+        glfwTerminate();
     }
 };
 

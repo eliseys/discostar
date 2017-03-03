@@ -4,8 +4,8 @@
 layout(location = 0) in vec3 vertexPosition_modelspace;
 
 // Values that stay constant for the whole mesh.
-uniform mat4 depthMVP;
+uniform mat4 shadowMVP;
 
 void main(){
-	gl_Position =  depthMVP * vec4(vertexPosition_modelspace,1);
+	gl_Position =  shadowMVP * vec4(vertexPosition_modelspace,1);
 }
