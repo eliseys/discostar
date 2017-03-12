@@ -47,7 +47,7 @@ protected:
 
     // IDs for color frame buffer
     GLuint quad_programID;
-    GLint  color_textureID;
+    GLint  quad_textureID;
     GLuint quad_vertex_buffer;
     GLuint quad_uv_buffer;
     // The framebuffer, which regroups 0, 1, or more textures, and 0 or 1 depth buffer.
@@ -104,12 +104,12 @@ protected:
 //    	glfwWindowHint(GLFW_CLIENT_API, GLFW_OPENGL_API);
 
         // TODO: Can we work on headless systems?
-        window = glfwCreateWindow( window_width, window_height, "Playground", NULL, NULL);
+        window = glfwCreateWindow( window_width, window_height, "Binary", NULL, NULL);
         if( window == NULL ){
             throw GlfwException("Failed to open GLFW window");
         }
         glfwGetFramebufferSize( window, &color_frame_height, &color_frame_width );
-        shadow_frame_size = (color_frame_height ? color_frame_height > color_frame_width : color_frame_width) * shadow_to_color_size;
+        shadow_frame_size = (color_frame_height > color_frame_width ? color_frame_height : color_frame_width) * shadow_to_color_size;
         glfwMakeContextCurrent(window);
 
         // Initialize GLEW
@@ -124,6 +124,11 @@ protected:
         glDepthFunc(GL_LESS);
         // Cull triangles which normal is not towards the camera
 //        glEnable(GL_CULL_FACE);
+
+        // TODO: WTF?
+        GLuint VertexArrayID;
+        glGenVertexArrays(1, &VertexArrayID);
+        glBindVertexArray(VertexArrayID);
     }
 
     void initialize_shadow_renderer(){
@@ -133,14 +138,14 @@ protected:
                 "shaders/ShadowFragmentShader.glsl"
         );
         shadow_MVP_ID = glGetUniformLocation(shadow_programID, "shadowMVP");
-        glGenFramebuffers(2, &shadow_framebuffer_name);
+        glGenFramebuffers(1, &shadow_framebuffer_name);
         glBindFramebuffer(GL_FRAMEBUFFER, shadow_framebuffer_name);
         glGenTextures(1, &rendered_shadow_texture);
         glBindTexture(GL_TEXTURE_2D, rendered_shadow_texture);
         glTexImage2D(
                 GL_TEXTURE_2D,
                 0,
-                GL_DEPTH_COMPONENT16,
+                GL_DEPTH_COMPONENT,
                 shadow_frame_size,
                 shadow_frame_size,
                 0,
@@ -154,15 +159,15 @@ protected:
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_FUNC, GL_LEQUAL);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_R_TO_TEXTURE);
-        glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, rendered_shadow_texture, 0);
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, rendered_shadow_texture, 0);
         glDrawBuffer(GL_NONE);
-//        glReadBuffer(GL_NONE);
+        glReadBuffer(GL_NONE);
         if ( glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE ) {
             GlfwException("Cannot create shadow frame buffer");
         }
     }
 
-    void initialize_objects_buffers(){
+    void initialize_object_buffers(){
         for (size_t i = 0; i < object_models.size(); ++i) {
             glGenBuffers(1, &vertex_buffers[i]);
             glBindBuffer(GL_ARRAY_BUFFER, vertex_buffers[i]);
@@ -213,20 +218,6 @@ protected:
         LightColID = glGetUniformLocation(programID, "LightColor");
         ShadowBiasID = glGetUniformLocation(programID, "DepthBiasMVP");
         ShadowMapID = glGetUniformLocation(programID, "shadowMap");
-    }
-
-    void initialize_window_renderer(){
-        quad_programID = LoadShaders(
-                "shaders/TextureVertexShader.glsl",
-                "shaders/TextureFragmentShader.glsl"
-        );
-        color_textureID = glGetUniformLocation(quad_programID, "renderedTexture");
-        glGenBuffers(1, &quad_vertex_buffer);
-        glBindBuffer(GL_ARRAY_BUFFER, quad_vertex_buffer);
-        glBufferData(GL_ARRAY_BUFFER, sizeof(g_quad_vertex_buffer_data), g_quad_vertex_buffer_data, GL_STATIC_DRAW);
-        glGenBuffers(1, &quad_uv_buffer);
-        glBindBuffer(GL_ARRAY_BUFFER, quad_uv_buffer);
-        glBufferData(GL_ARRAY_BUFFER, sizeof(g_quad_uv_buffer_data), g_quad_uv_buffer_data, GL_STATIC_DRAW);
         glGenFramebuffers(1, &color_framebuffer_name);
         glBindFramebuffer(GL_FRAMEBUFFER, color_framebuffer_name);
         glGenTextures(1, &rendered_color_texture);
@@ -244,6 +235,21 @@ protected:
         if ( glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE ) {
             GlfwException("Cannot create color frame buffer");
         }
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    }
+
+    void initialize_window_renderer(){
+        quad_programID = LoadShaders(
+                "shaders/TextureVertexShader.glsl",
+                "shaders/TextureFragmentShader.glsl"
+        );
+        quad_textureID = glGetUniformLocation(quad_programID, "renderedTexture");
+        glGenBuffers(1, &quad_vertex_buffer);
+        glBindBuffer(GL_ARRAY_BUFFER, quad_vertex_buffer);
+        glBufferData(GL_ARRAY_BUFFER, sizeof(g_quad_vertex_buffer_data), g_quad_vertex_buffer_data, GL_STATIC_DRAW);
+        glGenBuffers(1, &quad_uv_buffer);
+        glBindBuffer(GL_ARRAY_BUFFER, quad_uv_buffer);
+        glBufferData(GL_ARRAY_BUFFER, sizeof(g_quad_uv_buffer_data), g_quad_uv_buffer_data, GL_STATIC_DRAW);
     }
 
 public:
@@ -281,7 +287,7 @@ public:
         glGenVertexArrays(1, &vertex_arrayID);
         glBindVertexArray(vertex_arrayID);
 
-        initialize_objects_buffers();
+        initialize_object_buffers();
         initialize_shadow_renderer();
         initialize_color_renderer();
         initialize_window_renderer();
@@ -292,8 +298,8 @@ public:
         std::array<double, 3> fluxes{0,0,0};
 
         // TODO: move somewhere
-        const glm::mat4 shadow_projection = glm::perspective( 90.0f, 1.0f, 0.1f, 10.0f );
-//        const glm::mat4 shadow_projection = glm::ortho( -10.0f, 10.0f, -10.0f, 10.0f, -10.0f, 20.0f );
+//        const glm::mat4 shadow_projection = glm::perspective( 90.0f, 1.0f, 0.1f, 10.0f );
+        const glm::mat4 shadow_projection = glm::ortho( -10.0f, 10.0f, -10.0f, 10.0f, -10.0f, 20.0f );
         const glm::mat4 shadow_view = glm::lookAt(light_source.position, glm::vec3(0,0,0), glm::vec3(0,1,0));
 
         // Render shadow depth map
@@ -330,17 +336,17 @@ public:
             glDisableVertexAttribArray(0);
         }
 
-        {
-            // Calculate fluxes
-            const auto pixels_size = static_cast<size_t>(shadow_frame_size * shadow_frame_size);
-            float pixels[pixels_size];
-            glGetTexImage(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT16, GL_FLOAT, pixels);
-            for ( size_t i = 0; i < pixels_size; ++i ) {
-                if ( pixels[i] != 0.0f ){
-                    std::cout << pixels[i] << std::endl;
-                }
-            }
-        }
+//        {
+//            // Find nonzero pixels in the shadow texture
+//            const auto pixels_size = static_cast<size_t>(shadow_frame_size * shadow_frame_size);
+//            float pixels[pixels_size];
+//            glGetTexImage(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT16, GL_FLOAT, pixels);
+//            for ( size_t i = 0; i < pixels_size; ++i ) {
+//                if ( pixels[i] != 0.0f ){
+//                    std::cout << pixels[i] << std::endl;
+//                }
+//            }
+//        }
 
         // Render color map
         glBindFramebuffer(GL_FRAMEBUFFER, color_framebuffer_name);
@@ -410,6 +416,7 @@ public:
             glDisableVertexAttribArray(2);
         }
 
+
         // Render to the screen
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
         glViewport(0, 0, color_frame_width, color_frame_height);
@@ -417,7 +424,7 @@ public:
         glUseProgram(quad_programID);
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, rendered_color_texture);
-        glUniform1i(color_textureID, 0);
+        glUniform1i(quad_textureID, 0);
 
         // Calculate fluxes
         {
@@ -465,7 +472,7 @@ public:
         glUseProgram(quad_programID);
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, rendered_shadow_texture);
-        glUniform1i(color_textureID, 0);
+        glUniform1i(quad_textureID, 0);
 
         glEnableVertexAttribArray(0);
         glBindBuffer(GL_ARRAY_BUFFER, quad_vertex_buffer);
@@ -492,6 +499,7 @@ public:
 
         glDisableVertexAttribArray(0);
         glDisableVertexAttribArray(1);
+
 
         // Swap buffers
         glfwSwapBuffers(window);
