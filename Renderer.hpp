@@ -298,8 +298,8 @@ public:
         std::array<double, 3> fluxes{0,0,0};
 
         // TODO: move somewhere
-//        const glm::mat4 shadow_projection = glm::perspective( 90.0f, 1.0f, 0.1f, 10.0f );
-        const glm::mat4 shadow_projection = glm::ortho( -10.0f, 10.0f, -10.0f, 10.0f, -10.0f, 20.0f );
+        const glm::mat4 shadow_projection = glm::perspective( 90.0f, 1.0f, 0.1f, 10.0f );
+//        const glm::mat4 shadow_projection = glm::ortho( -10.0f, 10.0f, -10.0f, 10.0f, -10.0f, 20.0f );
         const glm::mat4 shadow_view = glm::lookAt(light_source.position, glm::vec3(0,0,0), glm::vec3(0,1,0));
 
         // Render shadow depth map

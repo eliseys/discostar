@@ -25,11 +25,13 @@ void main(){
     vec3 MaterialAmbientColor = vec3(0.5, 0.5, 0.5) * MaterialDiffuseColor;
 //    vec3 MaterialSpecularColor = vec3(0.0,0.0,0.0);
 
-    float bias = 0.005;
-    float visibility = texture( shadowMap, vec3(ShadowCoord.xy, (ShadowCoord.z-bias)/ShadowCoord.w) );
-
     // Distance to the light
     float distance = length( LightPosition_worldspace - Position_worldspace );
+
+    float bias = 0.1;
+    float visibility = 0;
+    visibility = texture( shadowMap,  vec3(ShadowCoord.xy, ShadowCoord.z-bias)/ShadowCoord.w );
+    visibility = float(distance < length(LightPosition_worldspace) || visibility > 0);
 
 	// Normal of the computed fragment, in camera space
     vec3 n = normalize( Normal_cameraspace );
