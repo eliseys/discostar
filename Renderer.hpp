@@ -380,7 +380,7 @@ public:
         glUseProgram(programID);
         glUniform3f(LightPosID, light_source.position.x, light_source.position.y, light_source.position.z);
         glUniform3f(LightColID, light_source.color   .x, light_source.color   .y, light_source.color   .z);
-        glUniform4f(DarkingID, limb_darking.x, limb_darking.y, limb_darking.z, limb_darking.w);
+        glUniform4f(DarkingID, limb_darking[0], limb_darking[1], limb_darking[2], limb_darking[3]);
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, rendered_shadow_texture);
         glUniform1i(ShadowMapID, 0);

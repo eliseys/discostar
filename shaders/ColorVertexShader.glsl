@@ -18,7 +18,7 @@ out vec2 UV;
 out vec3 Position_worldspace;
 out vec3 Normal_cameraspace;
 out vec3 LightDirection_cameraspace;
-out vec3 EyeDirection_cameraspace;
+//out vec3 EyeDirection_cameraspace;
 out vec4 ShadowCoord;
 
 
@@ -36,12 +36,13 @@ void main() {
 
     // Vector that goes from the vertex to the camera, in camera space.
     // In camera space, the camera is at the origin (0,0,0).
-    EyeDirection_cameraspace = vec3(0,0,0) - ( V * vec4(vertexPosition_modelspace,1)).xyz;
+//    EyeDirection_cameraspace = vec3(0,0,0) - ( V * vec4(vertexPosition_modelspace,1)).xyz;
+//    EyeDirection_cameraspace = vec3(0,0,1);
 
     // Vector that goes from the vertex to the light, in camera space. M is ommited because it's identity.
-    vec3 LightPosition_cameraspace = ( V * vec4(LightPosition_worldspace,1)).xyz;
+    vec3 LightPosition_cameraspace = ( V * vec4(LightPosition_worldspace,1) ).xyz;
     LightDirection_cameraspace = LightPosition_cameraspace - (MV * vec4(vertexPosition_modelspace,1)).xyz;
 
     // Normal of the the vertex, in camera space
-    Normal_cameraspace = ( MV * vec4(vertexNormal_modelspace,0)).xyz; // Only correct if ModelMatrix does not scale the model ! Use its inverse transpose if not.
+    Normal_cameraspace = ( MV * vec4(vertexNormal_modelspace,0) ).xyz; // Only correct if ModelMatrix does not scale the model ! Use its inverse transpose if not.
 }
