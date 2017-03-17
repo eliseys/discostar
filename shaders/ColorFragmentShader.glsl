@@ -17,6 +17,7 @@ uniform vec3 LightPosition_worldspace;
 uniform vec3 LightColor;
 uniform sampler2DShadow shadowMap;
 uniform sampler2D textureSampler;
+uniform vec4 limbDarkingCoeffs;
 
 
 void main(){
@@ -47,25 +48,24 @@ void main(){
     float cosTheta = clamp( dot( n,l ), 0, 1 );
 
     // Eye vector (towards the camera)
-//    vec3 E = normalize(EyeDirection_cameraspace);
+    vec3 E = normalize(EyeDirection_cameraspace);
     // Direction in which the triangle reflects the light
 //    vec3 R = reflect(-l,n);
     // Cosine of the angle between the Eye vector and the Reflect vector,
     // clamped to 0
     //  - Looking into the reflection -> 1
     //  - Looking elsewhere -> < 1
-//    float cosAlpha = clamp( dot( E,R ), 0, 1 );
+    float cosAlpha = clamp( dot( n, E ), 0, 1 );
+
+    float limbDarking = 1 +
+                        limbDarkingCoeffs.x * (1 - cosAlpha) +
+                        limbDarkingCoeffs.y * (1 - cosAlpha*cosAlpha) +
+                        limbDarkingCoeffs.z * (1 - pow(cosAlpha, 3)) +
+                        limbDarkingCoeffs.w * (1 - pow(cosAlpha, 4));
 
 //    color = MaterialDiffuseColor * LightColor * LightPower * cosTheta / (distance*distance);
-    color =
-    	// Ambient : simulates indirect lighting
-    	MaterialAmbientColor +
-    	// Diffuse : "color" of the object
-    	MaterialDiffuseColor * visibility * LightColor * cosTheta / (distance*distance);
-    	// Specular : reflective highlight, like a mirror
-//    	MaterialSpecularColor * LightColor * LightPower * pow(cosAlpha,5) / (distance*distance);
-
-	// Output color = color of the texture at the specified UV
-//    	color = texture( myTextureSampler, UV ).rgb;
-//    	color = vec3(0.8,0.4,0.2);
+    color = (
+    	    MaterialAmbientColor +
+    	    MaterialDiffuseColor * visibility * LightColor * cosTheta / (distance*distance)
+    	) * limbDarking;
 }

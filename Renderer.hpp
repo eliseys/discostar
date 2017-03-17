@@ -46,7 +46,7 @@ protected:
 
     // IDs for render into buffer
     GLuint programID;
-    GLint MVP_ID, MV_ID, View_ID, Model_ID, LightPosID, LightColID, ShadowBiasID, ShadowMapID, TextureID;
+    GLint MVP_ID, MV_ID, View_ID, Model_ID, LightPosID, LightColID, ShadowBiasID, ShadowMapID, TextureID, DarkingID;
 
     // IDs for color frame buffer
     GLuint quad_programID;
@@ -246,6 +246,7 @@ protected:
         ShadowBiasID = glGetUniformLocation(programID, "DepthBiasMVP");
         ShadowMapID = glGetUniformLocation(programID, "shadowMap");
         TextureID = glGetUniformLocation(programID, "textureSampler");
+        DarkingID = glGetUniformLocation(programID, "limbDarkingCoeffs");
         glGenFramebuffers(1, &color_framebuffer_name);
         glBindFramebuffer(GL_FRAMEBUFFER, color_framebuffer_name);
         glGenTextures(1, &rendered_color_texture);
@@ -286,6 +287,7 @@ public:
     const std::vector<ObjectModel> object_models;
     const std::vector<TextureImage> texture_images;
     const LightSource light_source;
+    const glm::vec4 limb_darking;
 
     const int shadow_to_color_size = 1;
 
@@ -296,13 +298,15 @@ public:
             unsigned short height,
             const std::vector<ObjectModel> &object_models,
             const std::vector<TextureImage> &texture_images,
-            const LightSource &light_source
+            const LightSource &light_source,
+            const glm::vec4 &limb_darking
     ) throw(GlfwException):
             window_width(width),
             window_height(height),
             object_models(object_models),
             texture_images(texture_images),
             light_source(light_source),
+            limb_darking(limb_darking),
             vertex_buffers (object_models.size()),
             uv_buffers     (object_models.size()),
             normal_buffers (object_models.size()),
@@ -376,6 +380,7 @@ public:
         glUseProgram(programID);
         glUniform3f(LightPosID, light_source.position.x, light_source.position.y, light_source.position.z);
         glUniform3f(LightColID, light_source.color   .x, light_source.color   .y, light_source.color   .z);
+        glUniform4f(DarkingID, limb_darking.x, limb_darking.y, limb_darking.z, limb_darking.w);
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, rendered_shadow_texture);
         glUniform1i(ShadowMapID, 0);
@@ -465,7 +470,7 @@ public:
                 #pragma omp parallel for private(i) shared(pixels, j) reduction(+:flux)
                 #endif // ENABLE_OPENMP
                 for ( i = 0; i < pixels_size; i += fluxes.size() ) {
-                        flux += static_cast<double>(pixels[i + j]) / max_;
+                    flux += static_cast<double>(pixels[i + j]) / max_;
                 }
                 fluxes[j] = flux;
             }

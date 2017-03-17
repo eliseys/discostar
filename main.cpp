@@ -3,6 +3,7 @@
 
 #include "DescriteToGeometric.hpp"
 #include "disks.hpp"
+#include "LimbDarking.hpp"
 #include "MvpFromInput.hpp"
 #include "Renderer.hpp"
 
@@ -12,6 +13,7 @@ int main() {
     const float star_position_x =  1.5f;
     const float disk_position_x = -1.5f;
     const LightSource light(disk_position_x, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 10.0f);
+    const auto limb_darking = limbDarking(-0.3f, 0.0f, 0.0f, 0.0f);
     const Sphere star(4);
     const StandardDisk disk(4, 1.0f, 0.1f, 1.125f, 1e-3);
     const Belt belt(disk);
@@ -21,7 +23,7 @@ int main() {
     const MVP base_mvp_disk(3, 0, 0, disk_position_x);
 
     try{
-        Renderer r(512, 512, oms, tis, light);
+        Renderer r(512, 512, oms, tis, light, limb_darking);
         MvpFromInput mvp_input_star( r.window, base_mvp_star );
         MvpFromInput mvp_input_disk( r.window, base_mvp_disk );
         while( true ){
