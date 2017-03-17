@@ -47,5 +47,6 @@ void main(){
     	    MaterialAmbientColor +
     	    MaterialDiffuseColor * visibility * LightColor * cosTheta / (distance*distance)
     	) * limbDarking;
+    color = sqrt(color);
 //    color = vec3(0,0,limbDarking);
 }

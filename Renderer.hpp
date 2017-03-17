@@ -470,7 +470,8 @@ public:
                 #pragma omp parallel for private(i) shared(pixels, j) reduction(+:flux)
                 #endif // ENABLE_OPENMP
                 for ( i = 0; i < pixels_size; i += fluxes.size() ) {
-                    flux += static_cast<double>(pixels[i + j]) / max_;
+                    const double df = static_cast<double>(pixels[i + j]) / max_;
+                    flux += df * df;
                 }
                 fluxes[j] = flux;
             }
