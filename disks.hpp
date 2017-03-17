@@ -7,6 +7,9 @@
 
 
 #include <cmath>
+#include <map>
+
+#include <GL/glew.h>
 #include <glm/glm.hpp>
 
 #include "DescriteToGeometric.hpp"
@@ -14,14 +17,15 @@
 
 class StandardDisk: public Circle{
 public:
-    const float r_out, H_r_out, H_out, n;
+    const float r_out, H_r_out, H_out, n, Q_out;
     const size_t full_size;
 
-    StandardDisk(size_t bin_splits, float r_out, float H_r_out, float dlogH_dlogr):
+    StandardDisk(size_t bin_splits, float r_out, float H_r_out, float dlogH_dlogr, float Q_out):
             Circle(bin_splits),
             r_out(r_out),
             H_r_out(H_r_out),
             n(dlogH_dlogr),
+            Q_out(Q_out),
             H_out(r_out * H_r_out),
             full_size(2 * size){}
 
@@ -83,20 +87,96 @@ public:
             i = lower_index(coordinate(i));
         }
         om.elements.insert(om.elements.end(), lower_half.begin(), lower_half.end());
-        { // TODO: move cylinder to separate class
-            const size_t rho = this->rho_size - 1;
-            for ( size_t psi = 0; psi < this->psi_size(rho); ++psi ){
-                om.elements.push_back(      index(rho, psi    ));
-                om.elements.push_back(      index(rho, psi + 1));
-                om.elements.push_back(lower_index(rho, psi + 1));
-
-                om.elements.push_back(      index(rho, psi    ));
-                om.elements.push_back(lower_index(rho, psi    ));
-                om.elements.push_back(lower_index(rho, psi + 1));
-            }
-        }
+//        { // TODO: move cylinder to separate class
+//            const size_t rho = this->rho_size - 1;
+//            for ( size_t psi = 0; psi < this->psi_size(rho); ++psi ){
+//                om.elements.push_back(      index(rho, psi    ));
+//                om.elements.push_back(      index(rho, psi + 1));
+//                om.elements.push_back(lower_index(rho, psi + 1));
+//
+//                om.elements.push_back(      index(rho, psi    ));
+//                om.elements.push_back(lower_index(rho, psi    ));
+//                om.elements.push_back(lower_index(rho, psi + 1));
+//            }
+//        }
 
         return om;
+    }
+
+    const TextureImage get_texture_image() const{
+        size_t texture_size = exp2_int(splits + 1) > GL_MAX_TEXTURE_SIZE ? GL_MAX_TEXTURE_SIZE : exp2_int(splits + 1);
+        TextureImage ti(texture_size);
+        for (size_t i_phi = 0; i_phi < texture_size; ++i_phi ){
+//                const float phi = 2 * static_cast<float>(M_PI) * static_cast<float>(i_phi) / static_cast<float>(texture_size);
+            for ( size_t i_r = 1; i_r < texture_size; ++i_r ){
+                const float r = static_cast<float>(i_r) / static_cast<float>(texture_size-1);
+                ti[ i_phi * texture_size * 3 + i_r * 3 + 0 ] = Q_out * powf(r, -3.0f);
+                ti[ i_phi * texture_size * 3 + i_r * 3 + 1 ] = 0.0;
+                ti[ i_phi * texture_size * 3 + i_r * 3 + 2 ] = 0.0;
+            }
+            // for i_r = 0 use value from i_r = 1
+            ti[i_phi * texture_size * 3 + 0] =  ti[ i_phi * texture_size * 3 + 3 + 0 ];
+            ti[i_phi * texture_size * 3 + 1] =  ti[ i_phi * texture_size * 3 + 3 + 1 ];
+            ti[i_phi * texture_size * 3 + 2] =  ti[ i_phi * texture_size * 3 + 3 + 2 ];
+        }
+        return ti;
+    }
+};
+
+
+class Belt: public Basic3DObject{
+public:
+    const StandardDisk disk;
+    const size_t rho;
+    const size_t psi_size;
+
+    Belt(const StandardDisk &disk):
+            disk(disk),
+            rho( disk.rho_size - 1 ),
+            psi_size( disk.psi_size(rho) )
+    {};
+
+    unsigned short index(size_t psi) const{
+        return static_cast<unsigned short>((psi % psi_size) * 2);
+    }
+
+    unsigned short lower_index(size_t psi) const{
+        return static_cast<unsigned short>(index(psi) + 1);
+    }
+
+    const ObjectModel get_object_model() const{
+        ObjectModel om;
+        const auto disk_om = disk.get_object_model();
+
+        for ( size_t psi = 0; psi < disk.psi_size(rho); ++psi ){
+            const auto disk_i1 = disk.index(rho, psi);
+            const auto disk_i2 = disk.lower_index(rho, psi);
+
+            om.vertices.push_back(disk_om.vertices[disk_i1]);
+            om.normals .push_back(disk_om.vertices[disk_i1]);
+            om.uvs     .push_back(glm::vec2(0, disk_om.uvs[disk_i1].g));
+
+            om.vertices.push_back(disk_om.vertices[disk_i2]);
+            om.normals .push_back(disk_om.vertices[disk_i2]);
+            om.uvs     .push_back(glm::vec2(1, disk_om.uvs[disk_i2].g));
+
+            om.elements.push_back(      index(psi    ));
+            om.elements.push_back(      index(psi + 1));
+            om.elements.push_back(lower_index(psi + 1));
+
+            om.elements.push_back(      index(psi    ));
+            om.elements.push_back(lower_index(psi    ));
+            om.elements.push_back(lower_index(psi + 1));
+        }
+        return om;
+    }
+
+    const TextureImage get_texture_image() const{
+        TextureImage ti(1);
+        ti[0] = disk.Q_out;
+        ti[1] = 0.0f;
+        ti[2] = 0.0f;
+        return ti;
     }
 };
 

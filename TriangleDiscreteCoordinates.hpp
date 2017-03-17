@@ -15,9 +15,17 @@
 
 #include "commons.hpp"
 #include "ObjectModel.hpp"
+#include "TextureImage.hpp"
 
 
-class TriangleDiscreteCoordinates {
+class Basic3DObject{
+public:
+    virtual const ObjectModel get_object_model() const {return ObjectModel();}
+    virtual const TextureImage get_texture_image() const {return TextureImage(1, 0.5f);}
+};
+
+
+class TriangleDiscreteCoordinates: public Basic3DObject {
 public:
     struct DiscreteCoordinate{
         const size_t rho;
@@ -129,8 +137,6 @@ public:
         }
         return triangles;
     }
-
-    virtual const ObjectModel get_object_model() const {return ObjectModel();}
 };
 
 

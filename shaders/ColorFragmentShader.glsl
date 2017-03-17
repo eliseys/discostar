@@ -16,13 +16,14 @@ layout(location = 0) out vec3 color;
 uniform vec3 LightPosition_worldspace;
 uniform vec3 LightColor;
 uniform sampler2DShadow shadowMap;
+uniform sampler2D textureSampler;
 
 
 void main(){
     // Material properties
-//    vec3 MaterialDiffuseColor = texture( myTextureSampler, UV ).rgb;
-    vec3 MaterialDiffuseColor = vec3(1.0, 0.0, 0.0);
-    vec3 MaterialAmbientColor = vec3(0.5, 0.5, 0.5) * MaterialDiffuseColor;
+    vec3 MaterialDiffuseColor = vec3(1.0, 1.0, 1.0);
+//    vec3 MaterialDiffuseColor = vec3(1.0, 0.0, 0.0);
+    vec3 MaterialAmbientColor = texture( textureSampler, UV ).rgb;;
 //    vec3 MaterialSpecularColor = vec3(0.0,0.0,0.0);
 
     // Distance to the light

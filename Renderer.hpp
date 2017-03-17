@@ -46,7 +46,7 @@ protected:
 
     // IDs for render into buffer
     GLuint programID;
-    GLint MVP_ID, MV_ID, View_ID, Model_ID, LightPosID, LightColID, ShadowBiasID, ShadowMapID;
+    GLint MVP_ID, MV_ID, View_ID, Model_ID, LightPosID, LightColID, ShadowBiasID, ShadowMapID, TextureID;
 
     // IDs for color frame buffer
     GLuint quad_programID;
@@ -64,6 +64,7 @@ protected:
     std::vector<GLuint> uv_buffers;
     std::vector<GLuint> normal_buffers;
     std::vector<GLuint> element_buffers;
+    std::vector<GLuint> textures;
 
     const glm::mat4 biasMatrix = glm::mat4(
         0.5f, 0.0f, 0.0f, 0.0f,
@@ -171,7 +172,7 @@ protected:
     }
 
     void initialize_object_buffers(){
-        for (size_t i = 0; i < object_models.size(); ++i) {
+        for ( size_t i = 0; i < object_models.size(); ++i ) {
             glGenBuffers(1, &vertex_buffers[i]);
             glBindBuffer(GL_ARRAY_BUFFER, vertex_buffers[i]);
             glBufferData(
@@ -207,6 +208,29 @@ protected:
         }
     }
 
+    void texture_image_buffers(){
+        for ( size_t i = 0; i < texture_images.size(); ++i ){
+            glGenTextures(1, &textures[i]);
+            glBindTexture(GL_TEXTURE_2D, textures[i]);
+            glTexImage2D(
+                    GL_TEXTURE_2D,
+                    0,
+                    GL_RGB,
+                    static_cast<GLsizei>(texture_images[i].n),
+                    static_cast<GLsizei>(texture_images[i].n),
+                    0,
+                    GL_RGB,
+                    GL_FLOAT,
+                    texture_images[i].data()
+            );
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);  // u coordinate
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);  // v coordinate
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+            glGenerateMipmap(GL_TEXTURE_2D);
+        }
+    }
+
     void initialize_color_renderer() {
         // TODO: rewrite shader.?pp
         programID = LoadShaders(
@@ -221,6 +245,7 @@ protected:
         LightColID = glGetUniformLocation(programID, "LightColor");
         ShadowBiasID = glGetUniformLocation(programID, "DepthBiasMVP");
         ShadowMapID = glGetUniformLocation(programID, "shadowMap");
+        TextureID = glGetUniformLocation(programID, "textureSampler");
         glGenFramebuffers(1, &color_framebuffer_name);
         glBindFramebuffer(GL_FRAMEBUFFER, color_framebuffer_name);
         glGenTextures(1, &rendered_color_texture);
@@ -259,6 +284,7 @@ public:
     const unsigned short window_width;
     const unsigned short window_height;
     const std::vector<ObjectModel> object_models;
+    const std::vector<TextureImage> texture_images;
     const LightSource light_source;
 
     const int shadow_to_color_size = 1;
@@ -269,16 +295,19 @@ public:
             unsigned short width,
             unsigned short height,
             const std::vector<ObjectModel> &object_models,
+            const std::vector<TextureImage> &texture_images,
             const LightSource &light_source
     ) throw(GlfwException):
             window_width(width),
             window_height(height),
             object_models(object_models),
+            texture_images(texture_images),
             light_source(light_source),
             vertex_buffers (object_models.size()),
             uv_buffers     (object_models.size()),
             normal_buffers (object_models.size()),
-            element_buffers(object_models.size())
+            element_buffers(object_models.size()),
+            textures(texture_images.size())
     {
         initialize_glfw();
 
@@ -291,6 +320,7 @@ public:
         glBindVertexArray(vertex_arrayID);
 
         initialize_object_buffers();
+        texture_image_buffers();
         initialize_shadow_renderer();
         initialize_color_renderer();
         initialize_window_renderer();
@@ -339,18 +369,6 @@ public:
             glDisableVertexAttribArray(0);
         }
 
-//        {
-//            // Find nonzero pixels in the shadow texture
-//            const auto pixels_size = static_cast<size_t>(shadow_frame_size * shadow_frame_size);
-//            float pixels[pixels_size];
-//            glGetTexImage(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT16, GL_FLOAT, pixels);
-//            for ( size_t i = 0; i < pixels_size; ++i ) {
-//                if ( pixels[i] != 0.0f ){
-//                    std::cout << pixels[i] << std::endl;
-//                }
-//            }
-//        }
-
         // Render color map
         glBindFramebuffer(GL_FRAMEBUFFER, color_framebuffer_name);
         glViewport(0, 0, color_frame_width, color_frame_height);
@@ -369,6 +387,10 @@ public:
             glUniformMatrix4fv(View_ID,      1, GL_FALSE, &mvps[i].view       [0][0]);
             glUniformMatrix4fv(Model_ID,     1, GL_FALSE, &mvps[i].get_model()[0][0]);
             glUniformMatrix4fv(ShadowBiasID, 1, GL_FALSE, &shadow_bias_mvp    [0][0]);
+
+            glActiveTexture(GL_TEXTURE1);
+            glBindTexture(GL_TEXTURE_2D, textures[i]);
+            glUniform1i(TextureID, 1);
 
             glEnableVertexAttribArray(0);
             glBindBuffer(GL_ARRAY_BUFFER, vertex_buffers[i]);
