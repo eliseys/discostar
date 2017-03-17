@@ -16,7 +16,7 @@ int main() {
     const auto limb_darking = limbDarking(-0.3f, 0.0f, 0.0f, 0.0f);
     const Sphere star(4);
     const StandardDisk disk(5, 1.0f, 0.1f, 1.125f, 1e-3);
-    const Belt belt(disk);
+    const DiskBelt belt(disk);
     const std::vector<ObjectModel>  oms { star.get_object_model(),  disk.get_object_model(),  belt.get_object_model() };
     const std::vector<TextureImage> tis { star.get_texture_image(), disk.get_texture_image(), belt.get_texture_image() };
     const MVP base_mvp_star(3, 0, 0, star_position_x);

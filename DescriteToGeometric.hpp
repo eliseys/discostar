@@ -53,7 +53,7 @@ protected:
 public:
     Sphere(size_t bin_splits): TriangleDiscreteCoordinates(4, bin_splits){}
 
-    const ObjectModel get_object_model() const{
+    virtual const ObjectModel get_object_model() const{
         ObjectModel om;
 
         om.vertices = northern_hemisphere();
@@ -105,7 +105,7 @@ public:
         return glm::vec2(r, phi);
     }
 
-    const ObjectModel get_object_model() const{
+    virtual const ObjectModel get_object_model() const{
         ObjectModel om;
 
         om.vertices.resize(this->size);
