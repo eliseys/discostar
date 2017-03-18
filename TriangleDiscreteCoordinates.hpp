@@ -21,7 +21,7 @@
 class Basic3DObject{
 public:
     virtual const ObjectModel get_object_model() const {return ObjectModel();}
-    virtual const TextureImage get_texture_image() const {return TextureImage(1, 0.5f);}
+    virtual const TextureImage get_texture_image() const {return TextureImage(1, 0.1f);}
 };
 
 

@@ -281,6 +281,28 @@ protected:
         glBufferData(GL_ARRAY_BUFFER, sizeof(g_quad_uv_buffer_data), g_quad_uv_buffer_data, GL_STATIC_DRAW);
     }
 
+    std::array<double, 3> calculate_rgb_fluxes(){
+        std::array<double, 3> fluxes{0,0,0};
+        // TODO: initialize once
+        const auto pixels_size = static_cast<size_t>(color_frame_width * color_frame_height * fluxes.size());
+        unsigned short pixels[pixels_size];
+        glGetTexImage(GL_TEXTURE_2D, 0, GL_RGB, GL_UNSIGNED_SHORT, pixels);
+        const double max_ = static_cast<double>(std::numeric_limits<unsigned short>::max()) + 1.;
+        size_t i;
+        for( size_t j = 0; j < fluxes.size(); ++j ) {
+            double flux = fluxes[j];
+#ifdef ENABLE_OPENMP
+#pragma omp parallel for private(i) shared(pixels, j) reduction(+:flux)
+#endif // ENABLE_OPENMP
+            for ( i = 0; i < pixels_size; i += fluxes.size() ) {
+                const double df = static_cast<double>(pixels[i + j]) / max_;
+                flux += pow(df, 4);
+            }
+            fluxes[j] = flux;
+        }
+        return fluxes;
+    }
+
 public:
     const unsigned short window_width;
     const unsigned short window_height;
@@ -332,8 +354,6 @@ public:
 
 
     std::array<double, 3> get_rgb_fluxes(const std::vector<MVP> &mvps){
-        std::array<double, 3> fluxes{0,0,0};
-
         // TODO: move somewhere
         const glm::mat4 shadow_projection = glm::perspective( 90.0f, 1.0f, 0.1f, 10.0f );
 //        const glm::mat4 shadow_projection = glm::ortho( -10.0f, 10.0f, -10.0f, 10.0f, -10.0f, 20.0f );
@@ -446,36 +466,16 @@ public:
             glDisableVertexAttribArray(2);
         }
 
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, rendered_color_texture);
+        auto fluxes = calculate_rgb_fluxes();
 
         // Render to the screen
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
         glViewport(0, 0, color_frame_width, color_frame_height);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         glUseProgram(quad_programID);
-        glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, rendered_color_texture);
         glUniform1i(quad_textureID, 0);
-
-        // Calculate fluxes
-        {
-            // TODO: initialize once
-            const auto pixels_size = static_cast<size_t>(color_frame_width * color_frame_height * fluxes.size());
-            unsigned short pixels[pixels_size];
-            glGetTexImage(GL_TEXTURE_2D, 0, GL_RGB, GL_UNSIGNED_SHORT, pixels);
-            const double max_ = static_cast<double>(std::numeric_limits<unsigned short>::max()) + 1.;
-            size_t i;
-            for( size_t j = 0; j < fluxes.size(); ++j ) {
-                double flux = fluxes[j];
-                #ifdef ENABLE_OPENMP
-                #pragma omp parallel for private(i) shared(pixels, j) reduction(+:flux)
-                #endif // ENABLE_OPENMP
-                for ( i = 0; i < pixels_size; i += fluxes.size() ) {
-                    const double df = static_cast<double>(pixels[i + j]) / max_;
-                    flux += pow(df, 4);
-                }
-                fluxes[j] = flux;
-            }
-        }
 
         glEnableVertexAttribArray(0);
         glBindBuffer(GL_ARRAY_BUFFER, quad_vertex_buffer);
