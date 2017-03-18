@@ -66,6 +66,8 @@ protected:
     std::vector<GLuint> element_buffers;
     std::vector<GLuint> textures;
 
+    std::vector<unsigned short> pixels;
+
     const glm::mat4 biasMatrix = glm::mat4(
         0.5f, 0.0f, 0.0f, 0.0f,
         0.0f, 0.5f, 0.0f, 0.0f,
@@ -108,13 +110,16 @@ protected:
 //    	glfwWindowHint(GLFW_CLIENT_API, GLFW_OPENGL_API);
 
         // TODO: Can we work on headless systems?
-        window = glfwCreateWindow( window_width, window_height, "Binary", NULL, NULL);
-        if( window == NULL ){
+        window = glfwCreateWindow(window_width, window_height, "Binary", NULL, NULL);
+        if (window == NULL) {
             throw GlfwException("Failed to open GLFW window");
         }
-        glfwGetFramebufferSize( window, &color_frame_height, &color_frame_width );
-        shadow_frame_size = (color_frame_height > color_frame_width ? color_frame_height : color_frame_width) * shadow_to_color_size;
+        glfwGetFramebufferSize(window, &color_frame_height, &color_frame_width);
         glfwMakeContextCurrent(window);
+        shadow_frame_size = (color_frame_height > color_frame_width ? color_frame_height : color_frame_width) *
+                            shadow_to_color_size;
+        const auto pixels_size = static_cast<size_t>(color_frame_width * color_frame_height * 3);
+        pixels.resize(pixels_size);
 
         // Initialize GLEW
         glewExperimental = static_cast<GLboolean>(true); // Needed for core profile
@@ -285,9 +290,9 @@ protected:
         std::array<double, 3> fluxes{0,0,0};
         // TODO: initialize once
         const auto pixels_size = static_cast<size_t>(color_frame_width * color_frame_height * fluxes.size());
-        unsigned short pixels[pixels_size];
-        glGetTexImage(GL_TEXTURE_2D, 0, GL_RGB, GL_UNSIGNED_SHORT, pixels);
-        const double max_ = static_cast<double>(std::numeric_limits<unsigned short>::max()) + 1.;
+        std::vector<unsigned short> pixels(pixels_size);
+        glReadPixels(0, 0, color_frame_width, color_frame_height, GL_RGB, GL_UNSIGNED_SHORT, pixels.data());
+        const double max_ = static_cast<double>(std::numeric_limits<unsigned short>::max());
         size_t i;
         for( size_t j = 0; j < fluxes.size(); ++j ) {
             double flux = fluxes[j];
@@ -314,6 +319,7 @@ public:
     const int shadow_to_color_size = 1;
 
     GLFWwindow *window;
+    const bool show_in_window = true;
 
     Renderer(
             unsigned short width,
@@ -321,7 +327,8 @@ public:
             const std::vector<ObjectModel> &object_models,
             const std::vector<TextureImage> &texture_images,
             const LightSource &light_source,
-            const glm::vec4 &limb_darking
+            const glm::vec4 &limb_darking,
+            bool show_in_windpw = true
     ) throw(GlfwException):
             window_width(width),
             window_height(height),
@@ -329,6 +336,7 @@ public:
             texture_images(texture_images),
             light_source(light_source),
             limb_darking(limb_darking),
+            show_in_window(show_in_windpw),
             vertex_buffers (object_models.size()),
             uv_buffers     (object_models.size()),
             normal_buffers (object_models.size()),
@@ -471,74 +479,44 @@ public:
         auto fluxes = calculate_rgb_fluxes();
 
         // Render to the screen
-        glBindFramebuffer(GL_FRAMEBUFFER, 0);
-        glViewport(0, 0, color_frame_width, color_frame_height);
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        glUseProgram(quad_programID);
-        glUniform1i(quad_textureID, 0);
+        if ( show_in_window ) {
+            glBindFramebuffer(GL_FRAMEBUFFER, 0);
+            glViewport(0, 0, color_frame_width, color_frame_height);
+            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+            glUseProgram(quad_programID);
+            glUniform1i(quad_textureID, 0);
 
-        glEnableVertexAttribArray(0);
-        glBindBuffer(GL_ARRAY_BUFFER, quad_vertex_buffer);
-        glVertexAttribPointer(
-                0,                  // attribute 0. No particular reason for 0, but must match the layout in the shader.
-                3,                  // size
-                GL_FLOAT,           // type
-                GL_FALSE,           // normalized?
-                0,                  // stride
-                (void *) 0          // array buffer offset
-        );
+            glEnableVertexAttribArray(0);
+            glBindBuffer(GL_ARRAY_BUFFER, quad_vertex_buffer);
+            glVertexAttribPointer(
+                    0,                  // attribute 0. No particular reason for 0, but must match the layout in the shader.
+                    3,                  // size
+                    GL_FLOAT,           // type
+                    GL_FALSE,           // normalized?
+                    0,                  // stride
+                    (void *) 0          // array buffer offset
+            );
 
-        glEnableVertexAttribArray(1);
-        glBindBuffer(GL_ARRAY_BUFFER, quad_uv_buffer);
-        glVertexAttribPointer(
-                1,                  // attribute 1
-                2,                  // size
-                GL_FLOAT,           // type
-                GL_FALSE,           // normalized?
-                0,                  // stride
-                (void *) 0          // array buffer offset
-        );
-        glDrawArrays(GL_TRIANGLES, 0, 6); // 2*3 indices starting at 0 -> 2 triangles
+            glEnableVertexAttribArray(1);
+            glBindBuffer(GL_ARRAY_BUFFER, quad_uv_buffer);
+            glVertexAttribPointer(
+                    1,                  // attribute 1
+                    2,                  // size
+                    GL_FLOAT,           // type
+                    GL_FALSE,           // normalized?
+                    0,                  // stride
+                    (void *) 0          // array buffer offset
+            );
+            glDrawArrays(GL_TRIANGLES, 0, 6); // 2*3 indices starting at 0 -> 2 triangles
 
-        glDisableVertexAttribArray(0);
-        glDisableVertexAttribArray(1);
-
-
-        glViewport(0, 0, color_frame_width/2, color_frame_height/2);
-        glUseProgram(quad_programID);
-        glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, rendered_shadow_texture);
-        glUniform1i(quad_textureID, 0);
-
-        glEnableVertexAttribArray(0);
-        glBindBuffer(GL_ARRAY_BUFFER, quad_vertex_buffer);
-        glVertexAttribPointer(
-                0,                  // attribute 0. No particular reason for 0, but must match the layout in the shader.
-                3,                  // size
-                GL_FLOAT,           // type
-                GL_FALSE,           // normalized?
-                0,                  // stride
-                (void *) 0          // array buffer offset
-        );
-
-        glEnableVertexAttribArray(1);
-        glBindBuffer(GL_ARRAY_BUFFER, quad_uv_buffer);
-        glVertexAttribPointer(
-                1,                  // attribute 1.
-                2,                  // size
-                GL_FLOAT,           // type
-                GL_FALSE,           // normalized?
-                0,                  // stride
-                (void *) 0          // array buffer offset
-        );
-        glDrawArrays(GL_TRIANGLES, 0, 6); // 2*3 indices starting at 0 -> 2 triangles
-
-        glDisableVertexAttribArray(0);
-        glDisableVertexAttribArray(1);
-
+            glDisableVertexAttribArray(0);
+            glDisableVertexAttribArray(1);
+        }
 
         // Swap buffers
-        glfwSwapBuffers(window);
+        if( show_in_window ) {
+            glfwSwapBuffers(window);
+        }
         glfwPollEvents();
 
         return fluxes;

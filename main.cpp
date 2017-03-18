@@ -23,7 +23,7 @@ int main() {
     const MVP base_mvp_disk(3, 0, 0, disk_position_x);
 
     try{
-        Renderer r(512, 512, oms, tis, light, limb_darking);
+        Renderer r(512, 512, oms, tis, light, limb_darking, true);
         MvpFromInput mvp_input_star( r.window, base_mvp_star );
         MvpFromInput mvp_input_disk( r.window, base_mvp_disk );
         while( true ){
