@@ -471,7 +471,7 @@ public:
                 #endif // ENABLE_OPENMP
                 for ( i = 0; i < pixels_size; i += fluxes.size() ) {
                     const double df = static_cast<double>(pixels[i + j]) / max_;
-                    flux += df * df;
+                    flux += pow(df, 4);
                 }
                 fluxes[j] = flux;
             }

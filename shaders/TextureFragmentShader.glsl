@@ -8,5 +8,5 @@ uniform sampler2D renderedTexture;
 
 void main(){
 	color = texture(renderedTexture, UV);
-	color = color * color;
+//	color = color * color;
 }
