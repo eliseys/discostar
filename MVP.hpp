@@ -10,6 +10,7 @@
 
 #include <glm/glm.hpp>
 #include <glm/gtx/polar_coordinates.hpp>
+#include <glm/gtx/quaternion.hpp>
 #include <glm/gtx/transform.hpp>
 
 
@@ -45,6 +46,12 @@ public:
     }
     MVP( float distance, float lat, float lon, float translate_x ):
             MVP(distance, glm::vec2(lat, lon), glm::vec3(translate_x, 0, 0)){}
+
+    void change_rotation(float theta, float phi){
+        const auto q_rotate_around_y = glm::angleAxis(phi,   glm::vec3(0,1,0));
+        const auto q_rotate_around_x = glm::angleAxis(theta, glm::vec3(1,0,0));
+        rotation = glm::toMat4(q_rotate_around_y * q_rotate_around_x);
+    }
 
     void change_translation(const glm::vec3 &translate_vector){
         translation = glm::translate(translate_vector);
