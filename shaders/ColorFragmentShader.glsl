@@ -45,7 +45,7 @@ void main(){
 
     color = (
     	    MaterialAmbientColor +
-    	    MaterialDiffuseColor * visibility * LightColor * cosTheta / (distance*distance)
+    	    MaterialDiffuseColor * visibility * LightColor * cosTheta / (12.566370614359172 * distance*distance)
     	) * limbDarking;
     color = sqrt(sqrt(color));
 }

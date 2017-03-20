@@ -42,11 +42,15 @@ public:
         glfwGetCursorPos(window, &xpos, &ypos);
         float lon = mouseSpeed * ( static_cast<float>(window_width/2)  - static_cast<float>(xpos) );
         float lat = mouseSpeed * ( static_cast<float>(window_height/2) - static_cast<float>(ypos) );
-        float distance = (float) exp(ScrollYOffset) * base_distance;
+        float distance = get_distance();
 
         auto mvp = base_mvp;
         mvp.change_view(distance, lat, lon);
         return mvp;
+    }
+
+    float get_distance() const{
+        return static_cast<float>(exp(ScrollYOffset)) * base_distance;
     }
 
 };

@@ -288,9 +288,6 @@ protected:
 
     std::array<double, 3> calculate_rgb_fluxes(){
         std::array<double, 3> fluxes{0,0,0};
-        // TODO: initialize once
-        const auto pixels_size = static_cast<size_t>(color_frame_width * color_frame_height * fluxes.size());
-        std::vector<unsigned short> pixels(pixels_size);
         glReadPixels(0, 0, color_frame_width, color_frame_height, GL_RGB, GL_UNSIGNED_SHORT, pixels.data());
         const double max_ = static_cast<double>(std::numeric_limits<unsigned short>::max());
         size_t i;
@@ -299,11 +296,11 @@ protected:
 #ifdef ENABLE_OPENMP
 #pragma omp parallel for private(i) shared(pixels, j) reduction(+:flux)
 #endif // ENABLE_OPENMP
-            for ( i = 0; i < pixels_size; i += fluxes.size() ) {
+            for ( i = 0; i < pixels.size(); i += fluxes.size() ) {
                 const double df = static_cast<double>(pixels[i + j]) / max_;
                 flux += pow(df, 4);
             }
-            fluxes[j] = flux;
+            fluxes[j] = flux / static_cast<double>( pixels.size() );
         }
         return fluxes;
     }
@@ -319,7 +316,7 @@ public:
     const int shadow_to_color_size = 1;
 
     GLFWwindow *window;
-    const bool show_in_window = true;
+    const bool show_in_window;
 
     Renderer(
             unsigned short width,
