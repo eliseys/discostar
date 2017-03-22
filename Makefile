@@ -1,17 +1,18 @@
 # Source, Executable, Includes, Library Defines
 INCL   = def.h
-SRC    = main.c func.c
+SRC    = main.c func.c intensity.c
 OBJ    = $(SRC:.c=.o)
 LIBS   = -lm -fopenmp
-EXE    = disko
+EXE    = disco
 
 # Compiler, Linker Defines
 CC      = gcc
 #CFLAGS  = -ansi -pedantic -Wall -O2
 CFLAGS  =
-LIBPATH = -L.
+LIBPATH =
 LDFLAGS = -o $(EXE) $(LIBPATH) $(LIBS)
-CFDEBUG = -ansi -pedantic -Wall -g -DDEBUG $(LDFLAGS)
+#CFDEBUG = -ansi -pedantic -Wall -g -DDEBUG $(LDFLAGS)
+CFDEBUG =
 RM      = /bin/rm -f
 
 # Compile and Assemble C Source Files into Object Files
@@ -29,6 +30,6 @@ $(OBJ): $(INCL)
 # debug:
 # 	$(CC) $(CFDEBUG) $(SRC)
 
-# Clean Up Objects, Exectuables, Dumps out of source directory
-#clean:
-#	$(RM) $(OBJ) $(EXE) core a.out
+# Clean Up Objects, Dumps out of source directory
+clean:
+	$(RM) $(OBJ) core a.out

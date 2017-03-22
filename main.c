@@ -7,9 +7,9 @@
 main()
 {
   /* disk parameters */
-  double h = 0.05;
-  double R = 0.25;
-  double y_tilt = 30.0 * (M_PI/180.0);
+  double h = 0.023;
+  double R = 0.266;
+  double y_tilt = 15.0 * (M_PI/180.0);
   double z_tilt = 0.0 * (M_PI/180.0);
 
   disk d;
@@ -19,9 +19,9 @@ main()
   d.R = R;
   
   /* observer */
-  /* double phi = 20.0 * (M_PI/180.0); */
+  /* double phi = 0.0 * (M_PI/180.0); */
   double phi;
-  double inclination = 80.0 * (M_PI/180.0);
+  double inclination = 75.0 * (M_PI/180.0);
 
   vec3 o;
   o.x = sin(inclination) * cos(phi);
@@ -35,17 +35,17 @@ main()
   double flx[lc_num];
 
   /* mass ratio q = m_x/m_opt */
-  double q = 0.5;
+  double q = 0.58;
 
   /* Roche lobe filling */
-  double mu = 1.0;
+  /* double mu = 1.0; */
 
   /* Dimentionless potential */
-  double omega = omg(q, mu);
+  /* double omega = omg(q, mu); */
   
-  /* double omega = 3.027; */
+  double omega = 3.027;
 
-  double beta = 0.25;
+  double beta = 0.08;
   double u = 0.4;
 
   double f;
@@ -59,7 +59,7 @@ main()
 #pragma omp parallel for private(i, phi, o)
   for(i = 0; i < lc_num; i++)
     {
-      phi = (double) i * 2.0 * M_PI/(lc_num - 1);
+      phi = (double) i * 2.0 * M_PI/(lc_num - 1) + M_PI;
       o.x = sin(inclination) * cos(phi);
       o.y = sin(inclination) * sin(phi);
       o.z = cos(inclination);

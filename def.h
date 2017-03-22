@@ -1,5 +1,13 @@
 #include <math.h>
+
 #define eps 0.000001
+
+/* Planck constant, erg * s */
+#define H_PLANCK 0.000000000000000000000000006626070040
+/* Speed on light, cm/s */
+#define C 29979245800.0
+/* Boltzmann constant */
+#define K 0.000000000000000138064852
 
 struct vec3p {
   double x;
@@ -19,6 +27,8 @@ typedef struct disk disk;
 double len(vec3 p);
 double dot(vec3 a, vec3 b);
 double * coordinate_transformation(double x, double y, double z);
+
+double B_lambda(double T, double lambda);
 
 double fr(double r, double phi, double theta, double q, double omega);
 double dfr(double r, double phi, double theta, double q, double omega);
