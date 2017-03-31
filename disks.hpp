@@ -79,7 +79,7 @@ public:
 
                 om.vertices[i1] = glm::vec3(x, y, z);
                 om.normals [i1] = upper_normal(cyl);
-                om.uvs     [i1] = glm::vec2(cyl.r, static_cast<value_type>(cyl.g / (2 * M_PI)));
+                om.uvs     [i1] = glm::vec2(cyl.r, (cyl.g / static_cast<value_type>(2 * M_PI)));
 
                 om.vertices[i2] = glm::vec3(x, -y, z);
                 om.normals [i2] = glm::vec3(om.normals[i1].x, -om.normals[i1].y, om.normals[i1].z);
