@@ -6,6 +6,7 @@
 #define HERX1_RENDERER_HPP
 
 
+#include <algorithm>
 #include <array>
 #include <exception>
 #include <iostream>
@@ -116,8 +117,7 @@ protected:
         }
         glfwGetFramebufferSize(window, &color_frame_height, &color_frame_width);
         glfwMakeContextCurrent(window);
-        shadow_frame_size = (color_frame_height > color_frame_width ? color_frame_height : color_frame_width) *
-                            shadow_to_color_size;
+        shadow_frame_size = std::min(color_frame_height, color_frame_width) * shadow_to_color_size;
         const auto pixels_size = static_cast<size_t>(color_frame_width * color_frame_height * 3);
         pixels.resize(pixels_size);
 
@@ -513,8 +513,8 @@ public:
         // Swap buffers
         if( show_in_window ) {
             glfwSwapBuffers(window);
+            glfwPollEvents();
         }
-        glfwPollEvents();
 
         return fluxes;
     }

@@ -42,7 +42,7 @@ void save_pixels_to_jpeg( const char * filename, const T *pixels, size_t width, 
 //        const auto ratio = exp2_int( (static_cast<T>(sizeof(T)) - 1) * 8);
 //        std::vector<boost::gil::bgr8c_pixel_t> buffer;
 //        buffer.reserve(size);
-//        for (size_t i = 0; i < size; ++i) {
+//        for (size_t i = 0; lon < size; ++lon) {
 //            buffer.emplace_back(
 //                    (pixels[i+0] - min) / ratio,
 //                    (pixels[i+1] - min) / ratio,

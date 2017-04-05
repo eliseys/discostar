@@ -6,6 +6,9 @@
 #define HERX1_COMMONS_HPP
 
 
+#define SIGMA_SB (5.6704e-5) /* g / K^4 s^3 */
+
+
 template<typename T>
 T exp2_int(T x){
     T y(1);
