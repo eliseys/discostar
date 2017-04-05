@@ -18,6 +18,7 @@
 #include "LimbDarking.hpp"
 #include "MvpFromInput.hpp"
 #include "Renderer.hpp"
+#include "stars.hpp"
 
 
 class LightCurve {
@@ -35,7 +36,7 @@ public:
     const float light_flux;
 
     const LightSource light;
-    const Sphere star;
+    const SphericalStar star;
     const StandardDisk disk;
     const DiskBelt belt;
 
@@ -66,7 +67,7 @@ public:
             Qdisk ( static_cast<float>(SIGMA_SB) * bp.Tdisk*bp.Tdisk*bp.Tdisk*bp.Tdisk / flux_factor ),
             light_flux ( bp.Lx / flux_factor ),
             light ( xdisk, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, light_flux ),
-            star ( binary_splits ),
+            star ( binary_splits, rstar, Qstar ),
             disk ( binary_splits, rdisk, bp.z0Rdisk, n_disk, Qdisk ),
             belt ( disk ),
             oms({star.get_object_model(), disk.get_object_model(), belt.get_object_model()}),

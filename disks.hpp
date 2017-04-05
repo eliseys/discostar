@@ -59,7 +59,7 @@ public:
         return glm::euclidean(pol);
     }
 
-    virtual const ObjectModel get_object_model() const{
+    virtual ObjectModel get_object_model() const{
         ObjectModel om;
 
         om.vertices.resize(full_size);
@@ -97,7 +97,7 @@ public:
         return om;
     }
 
-    virtual const TextureImage get_texture_image() const{
+    virtual TextureImage get_texture_image() const{
         size_t texture_size = exp2_int(splits + 1) > GL_MAX_TEXTURE_SIZE ? GL_MAX_TEXTURE_SIZE : exp2_int(splits + 1);
         TextureImage ti(texture_size);
         for (size_t i_phi = 0; i_phi < texture_size; ++i_phi ){
@@ -138,7 +138,7 @@ public:
         return static_cast<unsigned short>(index(psi) + 1);
     }
 
-    const ObjectModel get_object_model() const{
+    virtual ObjectModel get_object_model() const{
         ObjectModel om;
         const auto disk_om = disk.get_object_model();
 
@@ -165,7 +165,7 @@ public:
         return om;
     }
 
-    const TextureImage get_texture_image() const{
+    virtual TextureImage get_texture_image() const{
         const auto ti_disk = disk.get_texture_image();
 
         TextureImage ti(1);
