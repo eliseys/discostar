@@ -50,11 +50,11 @@ int main() {
                 1e12f, // a
                 2 * 2e33f, // Mx
                 1 * 2e33f, // Mstar
-                85.0f / 180.0f * static_cast<float>(M_PI), // i
+                static_cast<float>(85.0 / 180.0 * M_PI), // i
                 6000, // Tstar
-                7e10f, // Rstar
+                3e11f, // Rstar
                 5000, // Tdisk
-                7e10f, // Rdisk
+                3e11f, // Rdisk
                 0.05f, // z0Rdisk
                 1e37f // Lx
         );
