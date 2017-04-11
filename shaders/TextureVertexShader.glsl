@@ -1,12 +1,17 @@
 #version 330 core
 
-in vec2 VertexUV;
+precision highp float;
+precision highp vec2;
+precision highp vec3;
+precision highp vec4;
+
+in highp vec2 VertexUV;
 
 // Input vertex data, different for all executions of this shader.
-layout(location = 0) in vec3 vertexPosition_modelspace;
+layout(location = 0) in highp vec3 vertexPosition_modelspace;
 
 // Output data ; will be interpolated for each fragment.
-out vec2 UV;
+out highp vec2 UV;
 
 void main(){
 	gl_Position =  vec4(vertexPosition_modelspace,1);

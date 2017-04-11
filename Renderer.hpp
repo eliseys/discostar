@@ -67,7 +67,7 @@ protected:
     std::vector<GLuint> element_buffers;
     std::vector<GLuint> textures;
 
-    std::vector<unsigned short> pixels;
+    std::vector<float> pixels;
 
     const glm::mat4 biasMatrix = glm::mat4(
         0.5f, 0.0f, 0.0f, 0.0f,
@@ -222,7 +222,7 @@ protected:
             glTexImage2D(
                     GL_TEXTURE_2D,
                     0,
-                    GL_RGB,
+                    GL_RGB32F,
                     static_cast<GLsizei>(texture_images[i].n),
                     static_cast<GLsizei>(texture_images[i].n),
                     0,
@@ -258,7 +258,17 @@ protected:
         glBindFramebuffer(GL_FRAMEBUFFER, color_framebuffer_name);
         glGenTextures(1, &rendered_color_texture);
         glBindTexture(GL_TEXTURE_2D, rendered_color_texture);
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, color_frame_width, color_frame_height, 0, GL_RGB, GL_UNSIGNED_BYTE, 0);
+        glTexImage2D(
+				GL_TEXTURE_2D,
+				0,
+				GL_RGB32F,
+				color_frame_width,
+				color_frame_height,
+				0,
+				GL_RGB,
+				GL_FLOAT,
+				0
+		);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
         glGenRenderbuffers(1, &depth_render_buffer);
@@ -291,8 +301,7 @@ protected:
 
     std::array<double, 3> calculate_rgb_fluxes(){
         std::array<double, 3> fluxes{0,0,0};
-        glReadPixels(0, 0, color_frame_width, color_frame_height, GL_RGB, GL_UNSIGNED_SHORT, pixels.data());
-        const double max_ = static_cast<double>(std::numeric_limits<unsigned short>::max());
+        glReadPixels(0, 0, color_frame_width, color_frame_height, GL_RGB, GL_FLOAT, pixels.data());
         size_t i;
         for( size_t j = 0; j < fluxes.size(); ++j ) {
             double flux = fluxes[j];
@@ -300,7 +309,7 @@ protected:
 #pragma omp parallel for private(i) shared(pixels, j) reduction(+:flux)
 #endif // ENABLE_OPENMP
             for ( i = 0; i < pixels.size(); i += fluxes.size() ) {
-                const double df = static_cast<double>(pixels[i + j]) / max_;
+                const double df = static_cast<double>(pixels[i + j]);
                 flux += pow(df, 4);
             }
             fluxes[j] = flux / static_cast<double>( pixels.size() / fluxes.size() );
