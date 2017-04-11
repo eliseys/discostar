@@ -1,3 +1,4 @@
+#include <algorithm>
 #include <chrono>
 #include <iostream>
 #include <fstream>
@@ -12,6 +13,8 @@
 
 int main() {
     int return_code = 0;
+
+
 
 //    const float star_position_x =  1.5f;
 //    const float disk_position_x = -1.5f;
@@ -45,29 +48,45 @@ int main() {
 //        return_code = -1;
 //    }
 
+
+
+    const size_t phases = 100;
     try{
         const BinaryParameters bp(
-                1e12f, // a
-                2 * 2e33f, // Mx
+                static_cast<float>(3 * SOLAR_RADIUS), // a
+                0 * 2e33f, // Mx
                 1 * 2e33f, // Mstar
-                static_cast<float>(85.0 / 180.0 * M_PI), // i
+                static_cast<float>(90.0 / 180.0 * M_PI), // i
                 6000, // Tstar
-                3e11f, // Rstar
-                5000, // Tdisk
-                3e11f, // Rdisk
-                0.05f, // z0Rdisk
-                1e37f // Lx
+                static_cast<float>(SOLAR_RADIUS), // Rstar
+                0 * 5000, // Tdisk
+                0 * 3e11f, // Rdisk
+                0 * 0.05f, // z0Rdisk
+                0 * 1e37f // Lx
         );
         const LightCurve lc(bp);
-        const auto dots = lc.calc(100);
+
+        const auto start = std::chrono::high_resolution_clock::now();
+        const auto dots = lc.calc(phases);
+        const auto end = std::chrono::high_resolution_clock::now();
 
         std::ofstream output("dots.dat");
         for ( auto &x : dots ) {
             output << x << "\n";
         }
+
+        std::cout << std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count()/1000.
+                  << "\t"
+                  << *std::max_element(dots.begin(), dots.end()) / *std::min_element(dots.begin(), dots.end()) - 1
+                  << "\t"
+                  << fabs(M_PI * bp.Rstar*bp.Rstar * SIGMA_SB * powf(bp.Tstar,4) / dots.front() - 1 ) * 100
+                  << "%"
+                  << std::endl;
     } catch ( GlfwException ){
         return_code = -1;
     }
+
+
 
     return return_code;
 }

@@ -8,6 +8,8 @@
 
 #define SIGMA_SB (5.6704e-5) /* g / K^4 s^3 */
 
+#define SOLAR_RADIUS (6.957e10) /* g */
+
 
 template<typename T>
 T exp2_int(T x){

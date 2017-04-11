@@ -129,6 +129,8 @@ protected:
 
         // Enable depth test
         glEnable(GL_DEPTH_TEST);
+        // Enable Multisampling
+        glEnable(GL_MULTISAMPLE);
         // Accept fragment if it closer to the camera than the former one
         glDepthFunc(GL_LESS);
         // Cull triangles which normal is not towards the camera
@@ -261,7 +263,8 @@ protected:
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
         glGenRenderbuffers(1, &depth_render_buffer);
         glBindRenderbuffer(GL_RENDERBUFFER, depth_render_buffer);
-        glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, color_frame_width, color_frame_height);
+//        glRenderbufferStorageMultisample(GL_RENDERBUFFER, 4, GL_DEPTH_COMPONENT, color_frame_width, color_frame_height);
+        glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, color_frame_width, color_frame_height);
         glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, depth_render_buffer);
         glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, rendered_color_texture, 0);
         draw_buffers[0] = GL_COLOR_ATTACHMENT0;
@@ -300,7 +303,7 @@ protected:
                 const double df = static_cast<double>(pixels[i + j]) / max_;
                 flux += pow(df, 4);
             }
-            fluxes[j] = flux / static_cast<double>( pixels.size() );
+            fluxes[j] = flux / static_cast<double>( pixels.size() / fluxes.size() );
         }
         return fluxes;
     }
