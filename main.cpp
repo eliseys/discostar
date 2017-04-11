@@ -54,15 +54,15 @@ int main() {
     try{
         const BinaryParameters bp(
                 static_cast<float>(3 * SOLAR_RADIUS), // a
-                0 * 2e33f, // Mx
+                1 * 2e33f, // Mx
                 1 * 2e33f, // Mstar
                 static_cast<float>(90.0 / 180.0 * M_PI), // i
                 6000, // Tstar
                 static_cast<float>(SOLAR_RADIUS), // Rstar
-                0 * 5000, // Tdisk
-                0 * 3e11f, // Rdisk
-                0 * 0.05f, // z0Rdisk
-                0 * 1e37f // Lx
+                1 * 5000, // Tdisk
+                1 * static_cast<float>(SOLAR_RADIUS), // Rdisk
+                1 * 0.05f, // z0Rdisk
+                1 * 1e37f // Lx
         );
         const LightCurve lc(bp);
 
@@ -82,7 +82,8 @@ int main() {
                   << fabs(M_PI * bp.Rstar*bp.Rstar * SIGMA_SB * powf(bp.Tstar,4) / dots.front() - 1 ) * 100
                   << "%"
                   << std::endl;
-    } catch ( GlfwException ){
+    } catch ( GlfwException e ){
+		std::cerr << e.what() << std::endl;
         return_code = -1;
     }
 

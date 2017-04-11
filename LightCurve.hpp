@@ -53,7 +53,7 @@ public:
     const glm::vec4 limb_darking;
 
     static constexpr float n_disk = 1.125f;
-    static constexpr unsigned short window_size = 512;
+    static constexpr unsigned short window_size = 256;
 
     LightCurve(const BinaryParameters &bp):
             size_factor ( bp.a ),
