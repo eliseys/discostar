@@ -252,6 +252,7 @@ double distance_to_star(vec3 p, double omega, double q)
   free(coord);
     
   double d = r - radius_star(phi, theta, q, omega);
+  /* double d = r - 0.5; */
 
   return d;
 }
@@ -275,8 +276,8 @@ double eclipse_by_star(double omega, double q, vec3 o, vec3 p)
   vec3 position_p;
   position_p.x = position.x + d.x * 0.5;
   position_p.y = position.y + d.y * 0.5;
-  position_p.z = position.z + d.z * 0.5;  
-  vec3 position_m;	           
+  position_p.z = position.z + d.z * 0.5;
+  vec3 position_m;
   position_m.x = position.x - d.x * 0.5;
   position_m.y = position.y - d.y * 0.5;
   position_m.z = position.z - d.z * 0.5;
@@ -285,6 +286,8 @@ double eclipse_by_star(double omega, double q, vec3 o, vec3 p)
   double derivative = (plus_delta - mins_delta)/len(d);
       
   double shift1 = shift0 - distance_to_star(position, omega, q)/derivative;
+
+  /* double shift1 = shift0 + distance_to_star(position, omega, q); */
   
   int i = 0;
   while (fabs(shift1 - shift0) > eps)
@@ -297,7 +300,7 @@ double eclipse_by_star(double omega, double q, vec3 o, vec3 p)
    
       position_p.x = position.x + d.x * 0.5;
       position_p.y = position.y + d.y * 0.5;
-      position_p.z = position.z + d.z * 0.5;  
+      position_p.z = position.z + d.z * 0.5;
       position_m.x = position.x - d.x * 0.5;
       position_m.y = position.y - d.y * 0.5;
       position_m.z = position.z - d.z * 0.5;
@@ -306,7 +309,8 @@ double eclipse_by_star(double omega, double q, vec3 o, vec3 p)
       derivative = (plus_delta - mins_delta)/len(d);
       
       shift1 = shift0 - distance_to_star(position, omega, q)/derivative;
-
+      
+      /* shift1 = shift0 + distance_to_star(position, omega, q); */
       i++;
       
       if (i > 10)
@@ -516,7 +520,7 @@ double flux_star(vec3 o, double q, double omega, double beta, double u, disk dis
   double S;
   double Fx;
   double Lx = 100.0; /* in units of L of the optical star */
-  double albedo = 0.0; /* 1 - (X-ray photons reprocessing efficiency) */
+  double albedo = 0.65; /* 1 - (X-ray photons reprocessing efficiency) */
 
   double color;
   
@@ -624,8 +628,8 @@ double flux_star(vec3 o, double q, double omega, double beta, double u, disk dis
 	    {
 	      result = result + (Fx * (1.0 - albedo) + (1 - u + u * cos_on) * pow(g,beta)) * cos_on * S;
 	    
-	      color = (Fx * (1.0 - albedo) + (1 - u + u * cos_on) * pow(g,beta)) * cos_on * S;
-	      printf("%f\t %f\t %f\t %f\n", p.x, p.y, p.z, color);
+	      /* color = (Fx * (1.0 - albedo) + (1 - u + u * cos_on) * pow(g,beta)) * cos_on * S; */
+	      /* printf("%f\t %f\t %f\t %f\n", p.x, p.y, p.z, color); */
 
 	    }
 
@@ -647,7 +651,7 @@ double flux_disk(vec3 o, disk disk, double y_tilt, double z_tilt, double omega, 
   /* */
   double theta, phi;
 
-  int steps = 50;
+  int steps = 40;
   
   int steps_phi = 2 * steps;
 
@@ -674,7 +678,6 @@ double flux_disk(vec3 o, disk disk, double y_tilt, double z_tilt, double omega, 
   vec3 pn;
   vec3 ps;
 
-
   /* unity normal vectors to top and bottom surface of the disk */
   vec3 n1;
   n1.x = disk.h.x/h;
@@ -687,6 +690,8 @@ double flux_disk(vec3 o, disk disk, double y_tilt, double z_tilt, double omega, 
   n2.z = - disk.h.z/h; 
 
   vec3 n3;
+
+  /* printf("%f %f %f\n", n1.x, n1.y, n1.z); */
 
   vec3 nu, nd, ns;
   
@@ -703,8 +708,11 @@ double flux_disk(vec3 o, disk disk, double y_tilt, double z_tilt, double omega, 
   /* */
   double S;
   
-  /* additional brightness of the disk */
-  double b = 10.0;
+  /* brightness coefficient of the disk */
+  double b = 25.0; /* brightness at the center of the disk */
+  double B;
+  double rho;
+    
   double color;
    
   /* from top side of the disk */
@@ -728,7 +736,7 @@ double flux_disk(vec3 o, disk disk, double y_tilt, double z_tilt, double omega, 
 	{	  
 
 	  /* theta = (double) j * M_PI / steps_theta + 0.5 * M_PI/steps_theta; */
-
+	  
 	  if (j <= N - 1)
 	    {
 	      theta = atan( (j + 0.5) * (delta_N/h) );
@@ -758,19 +766,21 @@ double flux_disk(vec3 o, disk disk, double y_tilt, double z_tilt, double omega, 
 	    }
 	  
 	  r = radius_disk(disk, phi, theta);
-
+	  
 	  /* cartesian coordinates of the point */
 	  p.x = r * sin(theta) * cos(phi);
 	  p.y = r * sin(theta) * sin(phi);
 	  p.z = r * cos(theta);
 
+
+	  /* brightness profile of the disk */
+	  rho = r * sin(theta);
+	  B = b * exp(-(rho*rho)/(1.0 * R * 1.0 * R));
+	  
 	  /* shifted coordinates of the disk */
 	  ps.x = p.x + 1.0;
 	  ps.y = p.y;
 	  ps.z = p.z;
-
-	  ray = eclipse_by_star(omega, q, o, ps);
-	  /* ray = 1.0; */
 	  
 	  /* normalized radius vector */
 	  lp = len(p);
@@ -803,71 +813,84 @@ double flux_disk(vec3 o, disk disk, double y_tilt, double z_tilt, double omega, 
 	  n3.y = sin(phi) * cos(z_tilt) - cos(phi) * cos(y_tilt) * sin(z_tilt);
 	  n3.z = cos(phi) * sin(y_tilt);
 
+	  /* printf("%f %f %f\n", len(n1), len(n2), len(n3)); */
+	  
 	  cos_on_u = dot(o,n1);
 	  cos_on_d = dot(o,n2); 
 	  cos_on_s = dot(o,n3);
 
-	  /*printf("%f %f %f\n", cos_on_u, cos_on_d, cos_on_s);*/
+	  /* printf("%f %f %f\n", o.x, o.y, o.z); */
 
 	  /* sphere surface element */
 	  S = r * r * sin(theta) * delta_phi * delta_theta;
-	  
+	  	  
 	  /* tilt and shift disc */
 	  pt.x =   p.x * cos(y_tilt) * cos(z_tilt) + p.y * sin(z_tilt) - p.z * sin(y_tilt) * cos(z_tilt) + 1.0;
 	  pt.y = - p.x * cos(y_tilt) * sin(z_tilt) + p.y * cos(z_tilt) + p.z * sin(y_tilt) * sin(z_tilt);
 	  pt.z =   p.x * sin(y_tilt) + p.z * cos(y_tilt);
 	  
-	  if ( j <= N - 1 && ray == 1.0 && cos_on_u > 0.0 + eps )
+	  ray = eclipse_by_star(omega, q, o, pt);
+	  /* printf("%d\n", j); */
+	  
+	  if ( j <= N - 1 && ray == 1.0 && cos_on_u > eps )
 	    {
 	      /* top surface */
 	      /* printf("%f\t %f\t %f\n", pt.x, pt.y, pt.z); */
 
-	      result_1 = result_1 + b * cos_on_u * S / cos_rn_u ;
+	      result_1 = result_1 + (B * cos_on_u * S)/cos_rn_u;
+	      /* result_1 = result_1 + cos_rn_u; */
 
-	      color = b * cos_on_u * S / cos_rn_u;
-	      printf("%f\t %f\t %f\t %f\n", pt.x, pt.y, pt.z, color);
+	      /* color = B * cos_on_u * S / cos_rn_u ; */
+	      /* printf("%f\t %f\t %f\t %f\n", pt.x, pt.y, pt.z, cos_on_u); */
 	      /* printf("%f\n", color); */
 
 	    }
-	  else if ( j >= M && j <= steps_theta && ray == 1.0 && cos_on_d > 0.0 + eps )
+	  else if ( j >= M && j <= steps_theta && ray == 1.0 && cos_on_d > eps )
 	    {
 	      /* bottom surface */
 	      /* printf("%f\t %f\t %f\n", pt.x, pt.y, pt.z); */
 	      
-	      result_2 = result_2 + b * cos_on_d * S / cos_rn_d;
+	      result_2 = result_2 + (B * cos_on_d * S)/cos_rn_d;
+	      
+	      /* result_2 = result_2 + cos_rn_d; */
 
-	      color = b * cos_on_d * S / cos_rn_d;
-	      printf("%f\t %f\t %f\t %f\n", pt.x, pt.y, pt.z, color);
+	      /* color = B * cos_on_d * S / cos_rn_d; */
+	      /* printf("%f\t %f\t %f\t %f\n", pt.x, pt.y, pt.z, cos_on_d); */
 	      /* printf("%f\n", color); */
 
 	    }
-	  else if ( j >= N && j <= M - 1 && ray == 1.0 && cos_on_s > 0.0 + eps )
+	  else if ( j >= N && j <= M - 1 && ray == 1.0 && cos_on_s > eps )
 	    {
 	      /* side surface */
 	      /* printf("%f\t %f\t %f\n", pt.x, pt.y, pt.z); */
 	    	  
-	      result_3 = result_3 + 1.0 * cos_on_s * S / cos_rn_s;
+	      result_3 = result_3 + (B * cos_on_s * S)/cos_rn_s;
+	      /* result_3 = result_3 + cos_rn_s; */
 
-	      color = cos_on_s * S / cos_rn_s;
-	      printf("%f\t %f\t %f\t %f\n", pt.x, pt.y, pt.z, color);
+	      /* color = 1.0 * cos_on_s * S / cos_rn_s; */
+	      /* printf("%f\t %f\t %f\t %f\n", pt.x, pt.y, pt.z, cos_on_s); */
 	      /* printf("%f\n", color); */
 	    }
 
+
+
+	  /* printf("%d\n", j); */
 	}
       
     }
 
-  /* double *coord; */
-  /* coord = coordinate_transformation(o.x, o.y, o.z); */
+  
+  double *coord;
+  coord = coordinate_transformation(o.x, o.y, o.z);
 
-  /* double r_o = coord[0]; */
-  /* double phi_o = coord[1]; */
-  /* double theta_o = coord[2]; */
+  double r_o = coord[0];
+  double phi_o = coord[1];
+  double theta_o = coord[2];
 
-  /* free(coord); */
+  free(coord);
 
-  /* printf("%f %f %f %f %f\n", phi_o/(2.0*M_PI), result_1, result_2, result_3, result_1 + result_2 + result_3); */
-  /* printf("%f %f %f %f %f\n", phi_o/(2.0*M_PI), result_1, result_2, result_3, ); */
+  printf("%f %f %f %f %f\n", phi_o/(2.0*M_PI), result_1, result_2, result_3, result_1 + result_2 + result_3);
+  /* /\* printf("%f %f %f %f %f\n", phi_o/(2.0*M_PI), result_1, result_2, result_3, ); *\/ */
 
   return result_1 + result_2 + result_3;
 }
