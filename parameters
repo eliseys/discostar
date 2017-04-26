@@ -1,0 +1,28 @@
+# donor star parameters 
+q	0.58
+mu	1.0
+beta	0.08
+u	0.4
+albedo	0.5
+
+# neutron star parameter
+Lx	100.0
+
+# disk parameters
+h 	0.023
+R 	0.266
+y_tilt	10.0
+z_tilt 	0.0
+b       10.0 
+
+inclination  90.0
+
+# number of light curve points 
+lc_num	     100
+
+# star and disk tiles number
+star_tiles   8000
+disk_tiles   2000
+
+# openMP threads
+threads	     4

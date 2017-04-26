@@ -50,8 +50,8 @@ double radius_disk(disk disk, double phi, double theta);
 double distance_to_disk(vec3 p, disk disk);
 double eclipse_by_disk(disk disk, vec3 o, vec3 p);
 
-double flux_star(vec3 o, double q, double omega, double beta, double u, disk disk);
-double flux_disk(vec3 o, disk disk, double y_tilt, double z_tilt, double omega, double q);
+double flux_star(vec3 o, double q, double omega, double beta, double u, disk disk, double Lx, double albedo, int star_tiles);
+double flux_disk(vec3 o, disk disk, double y_tilt, double z_tilt, double omega, double q, double b, int disk_tiles);
 
 
 

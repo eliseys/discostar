@@ -472,10 +472,10 @@ double eclipse_by_disk(disk disk, vec3 o, vec3 p)
 
 
 
-double flux_star(vec3 o, double q, double omega, double beta, double u, disk disk)
+double flux_star(vec3 o, double q, double omega, double beta, double u, disk disk, double Lx, double albedo, int tiles)
 {
   /* */
-  int steps = 80;
+  int steps = sqrt(tiles/2.0);
   int steps_phi = 2 * steps;
   int steps_theta = steps;
 
@@ -519,8 +519,6 @@ double flux_star(vec3 o, double q, double omega, double beta, double u, disk dis
   double cos_disk_shadow_semi_angle = cos(0.5 * M_PI - disk_shadow_semi_angle);
   double S;
   double Fx;
-  double Lx = 100.0; /* in units of L of the optical star */
-  double albedo = 0.65; /* 1 - (X-ray photons reprocessing efficiency) */
 
   double color;
   
@@ -642,7 +640,7 @@ double flux_star(vec3 o, double q, double omega, double beta, double u, disk dis
 }
 
 
-double flux_disk(vec3 o, disk disk, double y_tilt, double z_tilt, double omega, double q)
+double flux_disk(vec3 o, disk disk, double y_tilt, double z_tilt, double omega, double q, double b, int disk_tiles)
 {
 
   double R = disk.R;
@@ -651,7 +649,7 @@ double flux_disk(vec3 o, disk disk, double y_tilt, double z_tilt, double omega, 
   /* */
   double theta, phi;
 
-  int steps = 40;
+  int steps = sqrt(disk_tiles/2.0);
   
   int steps_phi = 2 * steps;
 
@@ -709,7 +707,6 @@ double flux_disk(vec3 o, disk disk, double y_tilt, double z_tilt, double omega, 
   double S;
   
   /* brightness coefficient of the disk */
-  double b = 25.0; /* brightness at the center of the disk */
   double B;
   double rho;
     
@@ -774,8 +771,11 @@ double flux_disk(vec3 o, disk disk, double y_tilt, double z_tilt, double omega, 
 
 
 	  /* brightness profile of the disk */
-	  rho = r * sin(theta);
-	  B = b * exp(-(rho*rho)/(1.0 * R * 1.0 * R));
+	  /* rho = r * sin(theta); */
+	  /* B = b * exp(-(rho*rho)/(1.0 * R * 1.0 * R)); */
+	  B = b;
+
+
 	  
 	  /* shifted coordinates of the disk */
 	  ps.x = p.x + 1.0;
@@ -880,17 +880,16 @@ double flux_disk(vec3 o, disk disk, double y_tilt, double z_tilt, double omega, 
     }
 
   
-  double *coord;
-  coord = coordinate_transformation(o.x, o.y, o.z);
+  /* double *coord; */
+  /* coord = coordinate_transformation(o.x, o.y, o.z); */
 
-  double r_o = coord[0];
-  double phi_o = coord[1];
-  double theta_o = coord[2];
+  /* double r_o = coord[0]; */
+  /* double phi_o = coord[1]; */
+  /* double theta_o = coord[2]; */
 
-  free(coord);
+  /* free(coord); */
 
-  printf("%f %f %f %f %f\n", phi_o/(2.0*M_PI), result_1, result_2, result_3, result_1 + result_2 + result_3);
-  /* /\* printf("%f %f %f %f %f\n", phi_o/(2.0*M_PI), result_1, result_2, result_3, ); *\/ */
+  /* printf("%f %f %f %f %f\n", phi_o/(2.0*M_PI), result_1, result_2, result_3, result_1 + result_2 + result_3); */
 
   return result_1 + result_2 + result_3;
 }
