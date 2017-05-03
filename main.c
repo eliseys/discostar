@@ -34,6 +34,12 @@ int main(int argc, char **argv)
 
   int threads; /* OpenMP threads */
 
+  /* temperature of star and disk and spectral band */
+  double T_disk;
+  double T_star;
+  double lambda_A;
+  double a_cm;
+  
   /**/
   
   sscanf(argv[1], "%lf", &q);
@@ -52,10 +58,18 @@ int main(int argc, char **argv)
   sscanf(argv[14], "%d", &star_tiles);
   sscanf(argv[15], "%d", &disk_tiles);
   sscanf(argv[16], "%d", &threads);
+  sscanf(argv[17], "%lf", &T_disk);
+  sscanf(argv[18], "%lf", &T_star);
+  sscanf(argv[19], "%lf", &lambda_A);
+  sscanf(argv[20], "%lf", &a_cm);
+
+
 
   /**/
 
-
+  double A_cm = 1E-8;
+  double lambda_cm = lambda_A * A_cm;
+  
   /* convert angles to radians */
   y_tilt = y_tilt * (M_PI/180.0);
   z_tilt = z_tilt * (M_PI/180.0);
@@ -64,18 +78,18 @@ int main(int argc, char **argv)
   double omega = omg(q, mu);  /* Dimentionless potential */
 
   disk d;
-  d.h.x = - h * sin(y_tilt) * cos(z_tilt);
-  d.h.y = h * sin(y_tilt) * sin(z_tilt);
-  d.h.z = h * cos(y_tilt);
-  d.R = R;
+  /* d.h.x = - h * sin(y_tilt) * cos(z_tilt); */
+  /* d.h.y = h * sin(y_tilt) * sin(z_tilt); */
+  /* d.h.z = h * cos(y_tilt); */
+  /* d.R = R; */
   
   /* observer */
   double phi;
 
   vec3 o;
-  o.x = sin(inclination) * cos(phi);
-  o.y = sin(inclination) * sin(phi);
-  o.z = cos(inclination);
+  /* o.x = sin(inclination) * cos(phi); */
+  /* o.y = sin(inclination) * sin(phi); */
+  /* o.z = cos(inclination); */
   
   double phase[lc_num];
   double flx[lc_num];
@@ -91,14 +105,21 @@ int main(int argc, char **argv)
 #pragma omp parallel for private(i, phi, o)
   for(i = 0; i < lc_num; i++)
     {
-      phi = (double) i * 2.0 * M_PI/(lc_num - 1) + M_PI;
+      phi = (double) i * 2.0 * M_PI/(lc_num - 1) - M_PI;
       o.x = sin(inclination) * cos(phi);
       o.y = sin(inclination) * sin(phi);
       o.z = cos(inclination);
 
+      /* "z_tilt - phi" because disk doesn`t rotatate with respect to observer */
+      d.h.x = - h * sin(y_tilt) * cos(z_tilt - phi + M_PI);
+      d.h.y = h * sin(y_tilt) * sin(z_tilt - phi + M_PI);
+      d.h.z = h * cos(y_tilt);
+      d.R = R;
+      
       phase[i] = phi;
 
-      flx[i] = flux_disk(o, d, y_tilt, z_tilt, omega, q, b, disk_tiles) + flux_star(o, q, omega, beta, u, d, Lx, albedo, star_tiles);
+      flx[i] = flux_disk(o, d, y_tilt, z_tilt, omega, q, b, disk_tiles, phi, T_disk, lambda_cm, a_cm) + flux_star(o, q, omega, beta, u, d, Lx, albedo, star_tiles, T_star, lambda_cm, a_cm);
+
     }
 
   double min = flx[0]; /* searching minimum of the light curve */
@@ -115,6 +136,15 @@ int main(int argc, char **argv)
     {
       printf("%.20f\t %.20f\n", phase[i]/(2.0 * M_PI), flx[i]/min);
     }
+
+  for(i = 0; i < lc_num; i++)
+    {
+      /* 2nd phase just copy of the first one */
+      printf("%.20f\t %.20f\n", phase[i]/(2.0 * M_PI) + 1.0, flx[i]/min);
+    }
+
+  /* printf("%.20f %.20f\n", lambda_cm, A_cm); */
+  
 
   /* FILE *file; */
   /* file = fopen( "LC", "w" ); */

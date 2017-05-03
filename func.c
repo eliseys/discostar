@@ -93,7 +93,8 @@ double * polar(double q, double omega)
   /* Computes polar_g_abs and polar_r of the star */
 
   double polar_r = radius_star(0.0, 0.0, q, omega);
-
+  double max_r = radius_star(0.0, 0.5*M_PI, q, omega);
+  
   double z = polar_r;
   
   double d_omega_polar_x = q/(sqrt(z*z + 1.0)*(z*z + 1.0)) - q;
@@ -108,11 +109,12 @@ double * polar(double q, double omega)
 	 + d_omega_polar_z * d_omega_polar_z
 	 );
 
-  double *result = malloc(sizeof(double) * 2);
+  double *result = malloc(sizeof(double) * 3);
 
   result[0] = polar_g_abs;
   result[1] = polar_r;
-
+  result[2] = max_r;
+    
   return result;
 
 }
@@ -472,7 +474,7 @@ double eclipse_by_disk(disk disk, vec3 o, vec3 p)
 
 
 
-double flux_star(vec3 o, double q, double omega, double beta, double u, disk disk, double Lx, double albedo, int tiles)
+double flux_star(vec3 o, double q, double omega, double beta, double u, disk disk, double Lx, double albedo, int tiles, double T, double lambda, double a)
 {
   /* */
   int steps = sqrt(tiles/2.0);
@@ -486,7 +488,8 @@ double flux_star(vec3 o, double q, double omega, double beta, double u, disk dis
   double *plr;
   plr = polar(q, omega);
   double polar_g_abs = plr[0];
-  double polar_r = plr[1]; 
+  double polar_r = plr[1];
+  double max_r = plr[2]; 
   free(plr);
   
   /* */
@@ -519,7 +522,12 @@ double flux_star(vec3 o, double q, double omega, double beta, double u, disk dis
   double cos_disk_shadow_semi_angle = cos(0.5 * M_PI - disk_shadow_semi_angle);
   double S;
   double Fx;
+  double T_star_4 = pow(T,4);
+  double T_irr_4;
+  double T_sum;
+  double F_0;
 
+  
   double color;
   
   /* unity vectior along disk.h */
@@ -528,8 +536,11 @@ double flux_star(vec3 o, double q, double omega, double beta, double u, disk dis
   hn.y = disk.h.y/h;
   hn.z = disk.h.z/h;
   
-  /* from star */
+  /* flux from star */
   double result = 0.0;
+
+  /* */
+  /* double F_0 = F_lambda(T,lambda); */
   
   int i, j;
   
@@ -542,12 +553,6 @@ double flux_star(vec3 o, double q, double omega, double beta, double u, disk dis
 	{
 
 	  theta = (double) j * M_PI/steps_theta + 0.5 * M_PI/steps_theta;
-
-	  /* star */
-	  r = radius_star(phi, theta, q, omega);
-	  p.x = r * sin(theta) * cos(phi);
-	  p.y = r * sin(theta) * sin(phi);
-	  p.z = r * cos(theta);
 	    
 	  /* gradient omega */
 	  double *grd;
@@ -563,22 +568,32 @@ double flux_star(vec3 o, double q, double omega, double beta, double u, disk dis
 	  /* star`s dot products */
 	  cos_on = dot(o,n);
 
-	  /* if (cos_on < 0.0) */
-	  /*   { */
-	  /*     continue; */
-	  /*   } */
+	  if (cos_on < - eps)
+	    {
+	      continue;
+	    }
+
+	  /* star */
+	  r = radius_star(phi, theta, q, omega);
+	  p.x = r * sin(theta) * cos(phi);
+	  p.y = r * sin(theta) * sin(phi);
+	  p.z = r * cos(theta);
 
 	  /* shifted points */
 	  ps.x = p.x - 1.0;
 	  ps.y = p.y;
 	  ps.z = p.z;
 
-	  ray = eclipse_by_disk(disk, o, ps);
-	  /* if (ray == 0.0) */
-	  /*   { */
-	  /*     continue; */
-	  /*   } */
-
+	  /* ray = eclipse_by_disk(disk, o, ps); */
+	  if (o.x < cos(R + max_r))
+	    {
+	      ray = 1.0;
+	    }
+	  else if (o.x > cos(R + max_r))
+	    {
+	      ray = eclipse_by_disk(disk, o, ps);
+	    }
+	  
 	  /* normalized vector */
 	  pl = len(p);
 	  pn.x = p.x/pl;
@@ -605,7 +620,7 @@ double flux_star(vec3 o, double q, double omega, double beta, double u, disk dis
 	  cos_in  = dot(psn, n);
 	  
 	  /* Surface element */
-	  S = r * r * sin(theta) * delta_phi * delta_theta / cos_rn;
+	  S = a * a * r * r * sin(theta) * delta_phi * delta_theta / cos_rn;
 
 	  /* printf("%f\n", cos_rn); */
 
@@ -613,7 +628,8 @@ double flux_star(vec3 o, double q, double omega, double beta, double u, disk dis
 	  if ( cos_in < - eps && fabs(cos_irr) > cos_disk_shadow_semi_angle)
 	    {
 	      /* Fx = Lx * S * fabs(cos_in) / (4.0 * M_PI * lps * lps); */
-	      Fx = Lx * fabs(cos_in) / (4.0 * M_PI * lps * lps);
+	      
+	      Fx = (1.0 - albedo) * Lx * fabs(cos_in) / (4.0 * M_PI * lps * lps * a * a);
 
 	      /* printf("%f\n", Fx); */
 	    }
@@ -624,7 +640,16 @@ double flux_star(vec3 o, double q, double omega, double beta, double u, disk dis
 	  
 	  if (ray == 1.0 && cos_on > 0.0 + eps)
 	    {
-	      result = result + (Fx * (1.0 - albedo) + (1 - u + u * cos_on) * pow(g,beta)) * cos_on * S;
+
+	      T_irr_4 = Fx / SIGMA;
+	      
+	      T_sum = pow((T_star_4 + T_irr_4),0.25); 
+
+	      F_0 = F_lambda(T_sum, lambda);
+	      
+	      result = result + F_0 * (1 - u + u * cos_on) * pow(g,beta) * cos_on * S;
+
+	      /* result = result + F_0 * (Fx + (1 - u + u * cos_on) * pow(g,beta)) * cos_on * S; */
 	    
 	      /* color = (Fx * (1.0 - albedo) + (1 - u + u * cos_on) * pow(g,beta)) * cos_on * S; */
 	      /* printf("%f\t %f\t %f\t %f\n", p.x, p.y, p.z, color); */
@@ -640,7 +665,7 @@ double flux_star(vec3 o, double q, double omega, double beta, double u, disk dis
 }
 
 
-double flux_disk(vec3 o, disk disk, double y_tilt, double z_tilt, double omega, double q, double b, int disk_tiles)
+double flux_disk(vec3 o, disk disk, double y_tilt, double z_tilt, double omega, double q, double b, int disk_tiles, double phi_orb, double T, double lambda, double a)
 {
 
   double R = disk.R;
@@ -711,7 +736,10 @@ double flux_disk(vec3 o, disk disk, double y_tilt, double z_tilt, double omega, 
   double rho;
     
   double color;
-   
+
+  /* */
+  double F_0 = F_lambda(T, lambda);
+  
   /* from top side of the disk */
   double result_1 = 0.0;
   /* from ridge of the disk */
@@ -719,10 +747,13 @@ double flux_disk(vec3 o, disk disk, double y_tilt, double z_tilt, double omega, 
   /* from bottom side of the disk */
   double result_3 = 0.0;
 
-  double cos_on_u;
-  double cos_on_d;
-  double cos_on_s;
-  
+  double cos_on;
+
+  double *plr;
+  plr = polar(q, omega);
+  double max_r = plr[2]; 
+  free(plr);
+
   int i, j;
 
   for (i = 0; i < steps_phi; i++)
@@ -740,6 +771,9 @@ double flux_disk(vec3 o, disk disk, double y_tilt, double z_tilt, double omega, 
 	      theta_0 = atan(j*(delta_N/h));
 	      theta_1 = atan((j + 1)*(delta_N/h));
 	      delta_theta = theta_1 - theta_0;
+	      /**/
+	      cos_on = dot(o,n1);
+		  
 	    }
 	  else if (j >= N && j <= M - 1)
 	    {
@@ -750,6 +784,14 @@ double flux_disk(vec3 o, disk disk, double y_tilt, double z_tilt, double omega, 
 	      theta_0 = atan(R/h) + acos((h * h + R * R - h * delta_0)/sqrt((h * h + R * R)*(R * R + (h - delta_0)*(h - delta_0))));
 	      theta_1 = atan(R/h) + acos((h * h + R * R - h * delta_1)/sqrt((h * h + R * R)*(R * R + (h - delta_1)*(h - delta_1))));
 	      delta_theta = theta_1 - theta_0;
+	      
+	      /* disc`s normal vector for side */
+	      n3.x = sin(phi) * sin(z_tilt - phi_orb + M_PI) + cos(phi) * cos(y_tilt) * cos(z_tilt - phi_orb + M_PI);
+	      n3.y = sin(phi) * cos(z_tilt - phi_orb + M_PI) - cos(phi) * cos(y_tilt) * sin(z_tilt - phi_orb + M_PI);
+	      n3.z = cos(phi) * sin(y_tilt);
+	      /**/
+	      cos_on = dot(o,n3);
+
 	    }
 	  else if (j >= M && j <= steps_theta)
 	    {
@@ -760,10 +802,19 @@ double flux_disk(vec3 o, disk disk, double y_tilt, double z_tilt, double omega, 
 	      theta_0 = 0.5 * M_PI + atan(h/R) + acos((h * h + R * R - R * delta_0)/sqrt((h * h + R * R)*(h * h + (R - delta_0)*(R - delta_0))));
 	      theta_1 = 0.5 * M_PI + atan(h/R) + acos((h * h + R * R - R * delta_1)/sqrt((h * h + R * R)*(h * h + (R - delta_1)*(R - delta_1))));
 	      delta_theta = theta_1 - theta_0;
+	      /**/
+	      cos_on = dot(o,n2);
+	      
 	    }
+
+	  if (cos_on < -eps)
+	    {
+	      continue;
+	    }
+
 	  
 	  r = radius_disk(disk, phi, theta);
-	  
+
 	  /* cartesian coordinates of the point */
 	  p.x = r * sin(theta) * cos(phi);
 	  p.y = r * sin(theta) * sin(phi);
@@ -774,8 +825,6 @@ double flux_disk(vec3 o, disk disk, double y_tilt, double z_tilt, double omega, 
 	  /* rho = r * sin(theta); */
 	  /* B = b * exp(-(rho*rho)/(1.0 * R * 1.0 * R)); */
 	  B = b;
-
-
 	  
 	  /* shifted coordinates of the disk */
 	  ps.x = p.x + 1.0;
@@ -808,36 +857,41 @@ double flux_disk(vec3 o, disk disk, double y_tilt, double z_tilt, double omega, 
 	  cos_rn_d = dot(pn,nd);
 	  cos_rn_s = dot(pn,ns);
 
-	  /* disc`s normal vector for side */
-	  n3.x = sin(phi) * sin(z_tilt) + cos(phi) * cos(y_tilt) * cos(z_tilt);
-	  n3.y = sin(phi) * cos(z_tilt) - cos(phi) * cos(y_tilt) * sin(z_tilt);
-	  n3.z = cos(phi) * sin(y_tilt);
-
 	  /* printf("%f %f %f\n", len(n1), len(n2), len(n3)); */
 	  
-	  cos_on_u = dot(o,n1);
-	  cos_on_d = dot(o,n2); 
-	  cos_on_s = dot(o,n3);
+	  /* cos_on_u = dot(o,n1); */
+	  /* cos_on_d = dot(o,n2);  */
+	  /* cos_on_s = dot(o,n3); */
 
 	  /* printf("%f %f %f\n", o.x, o.y, o.z); */
 
 	  /* sphere surface element */
-	  S = r * r * sin(theta) * delta_phi * delta_theta;
+	  S = a * a * r * r * sin(theta) * delta_phi * delta_theta;
 	  	  
 	  /* tilt and shift disc */
-	  pt.x =   p.x * cos(y_tilt) * cos(z_tilt) + p.y * sin(z_tilt) - p.z * sin(y_tilt) * cos(z_tilt) + 1.0;
-	  pt.y = - p.x * cos(y_tilt) * sin(z_tilt) + p.y * cos(z_tilt) + p.z * sin(y_tilt) * sin(z_tilt);
+	  pt.x =   p.x * cos(y_tilt) * cos(z_tilt - phi_orb + M_PI) + p.y * sin(z_tilt - phi_orb + M_PI) - p.z * sin(y_tilt) * cos(z_tilt - phi_orb + M_PI) + 1.0;
+	  pt.y = - p.x * cos(y_tilt) * sin(z_tilt - phi_orb + M_PI) + p.y * cos(z_tilt - phi_orb + M_PI) + p.z * sin(y_tilt) * sin(z_tilt - phi_orb + M_PI);
 	  pt.z =   p.x * sin(y_tilt) + p.z * cos(y_tilt);
 	  
-	  ray = eclipse_by_star(omega, q, o, pt);
+	  /* ray = eclipse_by_star(omega, q, o, pt); */
+	  if (o.x < - cos(R + max_r))
+	    {
+	      ray = eclipse_by_star(omega, q, o, pt);
+	    }
+	  else if (o.x > - cos(R + max_r))
+	    {
+	      ray = 1.0;
+	    }
+	  
+	  /* ray = 1.0; */
 	  /* printf("%d\n", j); */
 	  
-	  if ( j <= N - 1 && ray == 1.0 && cos_on_u > eps )
+	  if ( j <= N - 1 && ray == 1.0 )
 	    {
 	      /* top surface */
 	      /* printf("%f\t %f\t %f\n", pt.x, pt.y, pt.z); */
 
-	      result_1 = result_1 + (B * cos_on_u * S)/cos_rn_u;
+	      result_1 = result_1 + (F_0 * cos_on * S)/cos_rn_u;
 	      /* result_1 = result_1 + cos_rn_u; */
 
 	      /* color = B * cos_on_u * S / cos_rn_u ; */
@@ -845,12 +899,12 @@ double flux_disk(vec3 o, disk disk, double y_tilt, double z_tilt, double omega, 
 	      /* printf("%f\n", color); */
 
 	    }
-	  else if ( j >= M && j <= steps_theta && ray == 1.0 && cos_on_d > eps )
+	  else if ( j >= M && j <= steps_theta && ray == 1.0 )
 	    {
 	      /* bottom surface */
 	      /* printf("%f\t %f\t %f\n", pt.x, pt.y, pt.z); */
 	      
-	      result_2 = result_2 + (B * cos_on_d * S)/cos_rn_d;
+	      result_2 = result_2 + (F_0 * cos_on * S)/cos_rn_d;
 	      
 	      /* result_2 = result_2 + cos_rn_d; */
 
@@ -859,12 +913,12 @@ double flux_disk(vec3 o, disk disk, double y_tilt, double z_tilt, double omega, 
 	      /* printf("%f\n", color); */
 
 	    }
-	  else if ( j >= N && j <= M - 1 && ray == 1.0 && cos_on_s > eps )
+	  else if ( j >= N && j <= M - 1 && ray == 1.0 )
 	    {
 	      /* side surface */
 	      /* printf("%f\t %f\t %f\n", pt.x, pt.y, pt.z); */
 	    	  
-	      result_3 = result_3 + (B * cos_on_s * S)/cos_rn_s;
+	      result_3 = result_3 + (F_0 * cos_on * S)/cos_rn_s;
 	      /* result_3 = result_3 + cos_rn_s; */
 
 	      /* color = 1.0 * cos_on_s * S / cos_rn_s; */
@@ -893,3 +947,6 @@ double flux_disk(vec3 o, disk disk, double y_tilt, double z_tilt, double omega, 
 
   return result_1 + result_2 + result_3;
 }
+
+
+
