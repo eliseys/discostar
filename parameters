@@ -1,24 +1,24 @@
 # donor star parameters 
 q	0.58
 mu	1.0
-beta	0.08
-u	0.4
+beta	0.0
+u	0.0
 albedo	0.5
 
 # neutron star parameter
 # x-ray luminosity, erg/s
-Lx	4.0e37
+Lx	5.0e37
 #Lx	0.0
 
 
 # disk parameters
-h 	0.0399
-R 	0.266
-y_tilt	15.0
+h 	0.0025
+R 	0.25
+y_tilt	20.0
 z_tilt 	0.0
 b       1.0 
 
-inclination  85.0
+inclination  86.0
 
 # number of light curve points 
 lc_num	     100
@@ -31,7 +31,7 @@ disk_tiles   2000
 threads	     4
 
 # Kelvins 
-T_disk	  8400.0
+T_disk	  15000.0
 T_star	  8400.0
 
 # angstrem
@@ -39,3 +39,8 @@ lambda_A	4400.0
 
 # semimajor axis, cm
 a 	    6.35e11
+
+# y-z_tilt2
+y_tilt2		20.0
+z_tilt2 	70.0
+

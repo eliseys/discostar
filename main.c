@@ -21,6 +21,10 @@ int main(int argc, char **argv)
   double R;      /* radius */
   double y_tilt; 
   double z_tilt;  
+
+  double y_tilt2; 
+  double z_tilt2;  
+
   double b;      /* brightness at the center of the disk */ 
 
   /* observer */
@@ -62,7 +66,8 @@ int main(int argc, char **argv)
   sscanf(argv[18], "%lf", &T_star);
   sscanf(argv[19], "%lf", &lambda_A);
   sscanf(argv[20], "%lf", &a_cm);
-
+  sscanf(argv[21], "%lf", &y_tilt2);
+  sscanf(argv[22], "%lf", &z_tilt2);
 
 
   /**/
@@ -74,35 +79,51 @@ int main(int argc, char **argv)
   y_tilt = y_tilt * (M_PI/180.0);
   z_tilt = z_tilt * (M_PI/180.0);
   inclination = inclination * (M_PI/180.0);
+  
+  y_tilt2 = y_tilt2 * (M_PI/180.0);
+  z_tilt2 = z_tilt2 * (M_PI/180.0);
 
   double omega = omg(q, mu);  /* Dimentionless potential */
 
   disk d;
-  /* d.h.x = - h * sin(y_tilt) * cos(z_tilt); */
-  /* d.h.y = h * sin(y_tilt) * sin(z_tilt); */
-  /* d.h.z = h * cos(y_tilt); */
-  /* d.R = R; */
+
+  vec3 d2;
   
   /* observer */
+  /* double phi = 90.0 * (M_PI/180.0); */
   double phi;
 
   vec3 o;
   /* o.x = sin(inclination) * cos(phi); */
   /* o.y = sin(inclination) * sin(phi); */
   /* o.z = cos(inclination); */
+
+
+  /* "z_tilt - phi" because disk doesn`t rotatate with respect to observer */
+  /* d.h.x = - h * sin(y_tilt) * cos(z_tilt - phi + M_PI); */
+  /* d.h.y = h * sin(y_tilt) * sin(z_tilt - phi + M_PI); */
+  /* d.h.z = h * cos(y_tilt); */
+  /* d.R = R; */
+
+  /* d2.x = - h * sin(y_tilt2) * cos(z_tilt + z_tilt2 - phi + M_PI); */
+  /* d2.y = h * sin(y_tilt2) * sin(z_tilt + z_tilt2 - phi + M_PI); */
+  /* d2.z = h * cos(y_tilt2); */
   
   double phase[lc_num];
   double flx[lc_num];
   
-  /* double result_1 = flux_disk(o, d, y_tilt, z_tilt, omega, q); */
-  /* double result_2 = flux_star(o, q, omega, beta, u, d); */
+  /* double disk_flx = flux_disk(o, d, y_tilt, z_tilt, omega, q, b, disk_tiles, phi, T_disk, lambda_cm, a_cm); */
+  /* double star_flx = flux_star(o, q, omega, beta, u, d, d2, Lx, albedo, star_tiles, T_star, lambda_cm, a_cm); */
+
 
   int i; /* light curve step */
-  
+
   omp_set_dynamic(0);
   omp_set_num_threads(threads);
 
-#pragma omp parallel for private(i, phi, o)
+  /* omp_set_num_threads(threads); */
+
+#pragma omp parallel for private(i, phi, o, d)
   for(i = 0; i < lc_num; i++)
     {
       phi = (double) i * 2.0 * M_PI/(lc_num - 1) - M_PI;
@@ -115,10 +136,14 @@ int main(int argc, char **argv)
       d.h.y = h * sin(y_tilt) * sin(z_tilt - phi + M_PI);
       d.h.z = h * cos(y_tilt);
       d.R = R;
+
+      d2.x = - h * sin(y_tilt2) * cos(z_tilt + z_tilt2 - phi + M_PI);
+      d2.y = h * sin(y_tilt2) * sin(z_tilt + z_tilt2 - phi + M_PI);
+      d2.z = h * cos(y_tilt2);
       
       phase[i] = phi;
 
-      flx[i] = flux_disk(o, d, y_tilt, z_tilt, omega, q, b, disk_tiles, phi, T_disk, lambda_cm, a_cm) + flux_star(o, q, omega, beta, u, d, Lx, albedo, star_tiles, T_star, lambda_cm, a_cm);
+      flx[i] = flux_disk(o, d, y_tilt, z_tilt, omega, q, b, disk_tiles, phi, T_disk, lambda_cm, a_cm) + flux_star(o, q, omega, beta, u, d, d2, Lx, albedo, star_tiles, T_star, lambda_cm, a_cm);
 
     }
 
@@ -127,9 +152,9 @@ int main(int argc, char **argv)
   for(i = 1; i < lc_num; i++)
     {
       if (flx[i] < min)
-	{
-	  min = flx[i];
-	}
+  	{
+  	  min = flx[i];
+  	}
     }
 
   for(i = 0; i < lc_num; i++)
