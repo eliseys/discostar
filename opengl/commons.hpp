@@ -11,14 +11,17 @@
 #define SOLAR_RADIUS (6.957e10) /* g */
 
 
+namespace discostar {
+
 template<typename T>
-T exp2_int(T x){
+T exp2_int(T x) {
     T y(1);
-    for ( T i = 0; i < x; ++i ){
+    for (T i = 0; i < x; ++i) {
         y *= 2;
     }
     return y;
 }
 
+} // namespace discostar
 
 #endif //HERX1_COMMONS_HPP

@@ -26,6 +26,9 @@
 #include "omp.h"
 #endif // ENABLE_OPENMP
 
+
+namespace discostar {
+
 struct GlfwException: public std::runtime_error{
     GlfwException(const char *what_arg):        std::runtime_error(what_arg){}
     GlfwException(const std::string &what_arg): std::runtime_error(what_arg){}
@@ -325,9 +328,9 @@ protected:
 public:
     const unsigned short window_width;
     const unsigned short window_height;
-    const std::vector<ObjectModel> object_models;
-    const std::vector<TextureImage> texture_images;
-    const LightSource light_source;
+    const std::vector<geometry::ObjectModel> object_models;
+    const std::vector<geometry::TextureImage> texture_images;
+    const light::LightSource light_source;
     const glm::vec4 limb_darking;
 
     const int shadow_to_color_size = 1;
@@ -338,9 +341,9 @@ public:
     Renderer(
             unsigned short width,
             unsigned short height,
-            const std::vector<ObjectModel> &object_models,
-            const std::vector<TextureImage> &texture_images,
-            const LightSource &light_source,
+            const std::vector<geometry::ObjectModel> &object_models,
+            const std::vector<geometry::TextureImage> &texture_images,
+            const light::LightSource &light_source,
             const glm::vec4 &limb_darking,
             bool show_in_windpw = true
     ) throw(GlfwException):
@@ -375,7 +378,7 @@ public:
     }
 
 
-    std::array<double, 3> get_rgb_fluxes(const std::vector<MVP> &mvps){
+    std::array<double, 3> get_rgb_fluxes(const std::vector<mvp::MVP> &mvps){
         // TODO: move somewhere
         const glm::mat4 shadow_projection = glm::perspective( 90.0f, 1.0f, 0.1f, 10.0f );
 //        const glm::mat4 shadow_projection = glm::ortho( -10.0f, 10.0f, -10.0f, 10.0f, -10.0f, 20.0f );
@@ -568,5 +571,6 @@ public:
 constexpr GLfloat Renderer::g_quad_vertex_buffer_data[];
 constexpr GLfloat Renderer::g_quad_uv_buffer_data[];
 
+} // namespace discostar::renderer_opengl
 
 #endif //HERX1_RENDERER_HPP

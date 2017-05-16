@@ -10,6 +10,9 @@
 #include "DescriteToGeometric.hpp"
 
 
+namespace discostar {
+namespace geometry {
+
 class SphericalStar: public Sphere{
 public:
     const float r;
@@ -34,5 +37,7 @@ public:
     virtual TextureImage get_texture_image() const { return TextureImage(1, Q, 0.0f, 0.0f); }
 };
 
+
+}} // namespace discostar::geometry
 
 #endif //HERX1_STARS_HPP

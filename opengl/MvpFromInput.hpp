@@ -11,16 +11,19 @@
 
 #include "MVP.hpp"
 
+namespace discostar {
+namespace mvp {
 
 double ScrollXOffset = 0.;
 double ScrollYOffset = 0.;
-void ScrollCallback(GLFWwindow* window, double xoffset, double yoffset){
+
+void ScrollCallback(GLFWwindow *window, double xoffset, double yoffset) {
     ScrollXOffset += xoffset;
     ScrollYOffset += yoffset;
 }
 
 
-class MvpFromInput{
+class MvpFromInput {
 protected:
     const float mouseSpeed = 0.005f;
     GLFWwindow *window;
@@ -29,19 +32,19 @@ protected:
     const MVP base_mvp;
 
 public:
-    MvpFromInput(GLFWwindow *window, const MVP &base_mvp):
+    MvpFromInput(GLFWwindow *window, const MVP &base_mvp) :
             window(window),
-            base_distance( 1 / base_mvp.projection[0][0] ),
-            base_mvp( base_mvp ){
+            base_distance(1 / base_mvp.projection[0][0]),
+            base_mvp(base_mvp) {
         glfwGetWindowSize(window, &window_width, &window_height);
         glfwSetScrollCallback(window, ScrollCallback);
     }
 
-    MVP get() const{
+    MVP get() const {
         double xpos, ypos;
         glfwGetCursorPos(window, &xpos, &ypos);
-        float lon = mouseSpeed * ( static_cast<float>(window_width/2)  - static_cast<float>(xpos) );
-        float lat = mouseSpeed * ( static_cast<float>(window_height/2) - static_cast<float>(ypos) );
+        float lon = mouseSpeed * (static_cast<float>(window_width / 2) - static_cast<float>(xpos));
+        float lat = mouseSpeed * (static_cast<float>(window_height / 2) - static_cast<float>(ypos));
         float distance = get_distance();
 
         auto mvp = base_mvp;
@@ -49,11 +52,13 @@ public:
         return mvp;
     }
 
-    float get_distance() const{
+    float get_distance() const {
         return static_cast<float>(exp(ScrollYOffset)) * base_distance;
     }
 
 };
+
+}}  // namespace discostar::mvp
 
 
 #endif //HERX1_MVPFROMINPUT_HPP
