@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.6)
-project(HerX1)
+project(discostar_opengl)
 
 find_package(OpenMP)
 if (OPENMP_FOUND)
