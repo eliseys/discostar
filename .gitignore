@@ -1,2 +1,8 @@
 *.[oa]
 *~
+*.so
+*.dylib
+cmake-build-debug
+*.DS_Store
+.idea
+*.jpeg
