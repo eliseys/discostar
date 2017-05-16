@@ -3,7 +3,9 @@
 #include <math.h>
 #include "def.h"
 
-double B_lambda(double T, double lambda)
+double F_lambda(double T, double lambda)
 {
-  return 2.0 * H_PLANCK * C * C * pow(lambda,-5.0) / (exp(H_PLANCK * C/(lambda * K * T)) - 1.0);
+  /* C1 and C2 constants defined in def.h */
+  
+  return C1 * pow(lambda,-5.0) / (exp(C2/(lambda * T)) - 1.0);
 }
