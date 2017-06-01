@@ -1,3 +1,6 @@
+#ifndef DEF_H
+#define DEF_H
+
 #include <math.h>
 
 #define eps 0.000001
@@ -61,4 +64,8 @@ double distance_to_disk(vec3 p, disk disk);
 double eclipse_by_disk(disk disk, vec3 o, vec3 p);
 
 double flux_star(vec3 o, double q, double omega, double beta, double u, disk disk, vec3 d2, double Lx, double albedo, int star_tiles, double T_star, double lambda, double a);
-double flux_disk(vec3 o, disk disk, double y_tilt, double z_tilt, double omega, double q, double b, int disk_tiles, double phi_orb, double T_disk, double lambda, double a);
+double flux_disk(vec3 o, disk disk, double y_tilt, double z_tilt, double omega, double q, int disk_tiles, double phi_orb, double T_disk, double lambda, double a);
+
+
+
+#endif //DEF_H

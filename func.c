@@ -49,7 +49,7 @@ double *coordinate_transformation(double x, double y, double z)
   else if (x < 0.0 && y == 0.0)
     phi = M_PI;
 
-  double *result = malloc(sizeof(double) * 3);
+  double *result = (double*) malloc(sizeof(double) * 3);
 
   result[0] = r;
   result[1] = phi;
@@ -109,7 +109,7 @@ double * polar(double q, double omega)
 	 + d_omega_polar_z * d_omega_polar_z
 	 );
 
-  double *result = malloc(sizeof(double) * 3);
+  double *result = (double*) malloc(sizeof(double) * 3);
 
   result[0] = polar_g_abs;
   result[1] = polar_r;
@@ -159,7 +159,7 @@ double * gradient(double phi, double theta, double q, double omega)
   n_y = - d_omega_y/g_abs;
   n_z = - d_omega_z/g_abs;
   
-  double *result = malloc(sizeof(double) * 4);
+  double *result = (double*) malloc(sizeof(double) * 4);
 
   result[0] = g_abs;
   result[1] = n_x;
@@ -700,7 +700,7 @@ double flux_star(vec3 o, double q, double omega, double beta, double u, disk dis
 }
 
 
-double flux_disk(vec3 o, disk disk, double y_tilt, double z_tilt, double omega, double q, double b, int disk_tiles, double phi_orb, double T, double lambda, double a)
+double flux_disk(vec3 o, disk disk, double y_tilt, double z_tilt, double omega, double q, int disk_tiles, double phi_orb, double T, double lambda, double a)
 {
 
   double *coord;
@@ -771,14 +771,14 @@ double flux_disk(vec3 o, disk disk, double y_tilt, double z_tilt, double omega, 
   /* */
   double S;
   
-  /* brightness coefficient of the disk */
-  double B;
+  /* Temperature profile of the disk */
   double rho;
     
   double color;
 
   /* */
-  double F_0 = F_lambda(T, lambda);
+  double F_0 = F_lambda(T, lambda); /* temperature may depend on rho, in that case  set it in the cycle below */
+  
   double T_side = 8000;
   double F_side = F_lambda(T_side, lambda);
   
@@ -863,9 +863,9 @@ double flux_disk(vec3 o, disk disk, double y_tilt, double z_tilt, double omega, 
 	  p.z = r * cos(theta);
 
 
-	  /* brightness profile of the disk */
+	  /* Temperature profile of the disk */
 	  /* rho = r * sin(theta); */
-	  /* B = b * exp(-(rho*rho)/(1.0 * R * 1.0 * R)); */
+	  /* T = b * exp(-(rho*rho)/(1.0 * R * 1.0 * R)); */
 	  
 	  /* shifted coordinates of the disk */
 	  ps.x = p.x + 1.0;
@@ -959,7 +959,7 @@ double flux_disk(vec3 o, disk disk, double y_tilt, double z_tilt, double omega, 
 	      /* side surface */
 	      /* printf("%f\t %f\t %f\n", pt.x, pt.y, pt.z); */
 	      
-	      result_3 = result_3 + (F_side * cos_on * S)/cos_rn_s;
+	      result_3 = result_3 + (F_0 * cos_on * S)/cos_rn_s;
 	      /* color = (F_side * cos_on * S)/cos_rn_u; */
 	      /* printf("%f\t %f\t %f\t %f\t %f\t %f\n", phase_orb/(2*M_PI), pt.x, pt.y, pt.z, color, T_side); */
 

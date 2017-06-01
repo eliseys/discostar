@@ -25,7 +25,7 @@ int main(int argc, char **argv)
   double y_tilt2; 
   double z_tilt2;  
 
-  double b;      /* brightness at the center of the disk */ 
+  double b;      /* reserve parameter */ 
 
   /* observer */
   double inclination;
@@ -121,9 +121,8 @@ int main(int argc, char **argv)
   omp_set_dynamic(0);
   omp_set_num_threads(threads);
 
-  /* omp_set_num_threads(threads); */
 
-#pragma omp parallel for private(i, phi, o, d)
+#pragma omp parallel for private(i, phi, o, d, d2)
   for(i = 0; i < lc_num; i++)
     {
       phi = (double) i * 2.0 * M_PI/(lc_num - 1) - M_PI;
@@ -143,7 +142,7 @@ int main(int argc, char **argv)
       
       phase[i] = phi;
 
-      flx[i] = flux_disk(o, d, y_tilt, z_tilt, omega, q, b, disk_tiles, phi, T_disk, lambda_cm, a_cm) + flux_star(o, q, omega, beta, u, d, d2, Lx, albedo, star_tiles, T_star, lambda_cm, a_cm);
+      flx[i] = flux_disk(o, d, y_tilt, z_tilt, omega, q, disk_tiles, phi, T_disk, lambda_cm, a_cm) + flux_star(o, q, omega, beta, u, d, d2, Lx, albedo, star_tiles, T_star, lambda_cm, a_cm);
 
     }
 
@@ -161,22 +160,12 @@ int main(int argc, char **argv)
     {
       printf("%.20f\t %.20f\n", phase[i]/(2.0 * M_PI), flx[i]/min);
     }
-
-  for(i = 0; i < lc_num; i++)
-    {
-      /* 2nd phase just copy of the first one */
-      printf("%.20f\t %.20f\n", phase[i]/(2.0 * M_PI) + 1.0, flx[i]/min);
-    }
-
-  /* printf("%.20f %.20f\n", lambda_cm, A_cm); */
   
-
-  /* FILE *file; */
-  /* file = fopen( "LC", "w" ); */
-
   /* for(i = 0; i < lc_num; i++) */
-  /*   fprintf(file, "%.20f\t %.20f\n", phase[i]/(2.0 * M_PI), flx[i]); */
-  
-  /* fclose(file); */
+  /*   { */
+  /*     /\* 2nd phase just copy of the first one *\/ */
+  /*     printf("%.20f\t %.20f\n", phase[i]/(2.0 * M_PI) + 1.0, flx[i]/min); */
+  /*   } */
 
+  return 0;
 }
