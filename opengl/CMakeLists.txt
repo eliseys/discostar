@@ -59,5 +59,11 @@ set(SOURCE_FILES
         Renderer.hpp
         LightSource.hpp
         ObjectModel.hpp
-        MVP.hpp MvpFromInput.hpp TextureImage.hpp LimbDarking.hpp LightCurve.hpp BinaryParameters.hpp stars.hpp)
+        MVP.hpp MvpFromInput.hpp
+        TextureImage.hpp
+        LimbDarking.hpp
+        LightCurve.hpp
+        BinaryParameters.hpp
+        stars.hpp
+        software_render.hpp software_render.cpp)
 add_executable(main ${SOURCE_FILES})

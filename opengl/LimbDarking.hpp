@@ -9,9 +9,12 @@
 #include <glm/glm.hpp>
 
 
-glm::vec4 limbDarking(float a1=0.0f, float a2=0.0f, float a3=0.0f, float a4=0.0f){
-    return glm::vec4(a1, a2, a3, a4);
+namespace discostar {
+
+glm::vec4 limbDarking(float a1 = 0.0f, float a2 = 0.0f, float a3 = 0.0f, float a4 = 0.0f) {
+	return glm::vec4(a1, a2, a3, a4);
 }
 
+} // namespace discostar
 
 #endif //HERX1_LIMBDARKING_HPP

@@ -330,7 +330,7 @@ public:
     const unsigned short window_height;
     const std::vector<geometry::ObjectModel> object_models;
     const std::vector<geometry::TextureImage> texture_images;
-    const light::LightSource light_source;
+    const LightSource light_source;
     const glm::vec4 limb_darking;
 
     const int shadow_to_color_size = 1;
@@ -343,7 +343,7 @@ public:
             unsigned short height,
             const std::vector<geometry::ObjectModel> &object_models,
             const std::vector<geometry::TextureImage> &texture_images,
-            const light::LightSource &light_source,
+            const LightSource &light_source,
             const glm::vec4 &limb_darking,
             bool show_in_windpw = true
     ) throw(GlfwException):

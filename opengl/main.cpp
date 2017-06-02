@@ -20,7 +20,7 @@ int main() {
 
     const float star_position_x =  1.5f;
     const float disk_position_x = -1.5f;
-    const light::LightSource light(disk_position_x, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 10.0f);
+    const LightSource light(disk_position_x, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 10.0f);
     const auto limb_darking = limbDarking(-0.3f, 0.0f, 0.0f, 0.0f);
     const geometry::Sphere star(4);
     const geometry::StandardDisk disk(5, 1.0f, 0.1f, 1.125f, 1e-3);

@@ -38,7 +38,7 @@ public:
     const float Qstar, Qdisk;
     const float light_flux;
 
-    const light::LightSource light;
+    const LightSource light;
 
     const size_t binary_splits;
 
