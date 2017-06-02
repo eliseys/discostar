@@ -9,19 +9,16 @@ with open("parameters", 'r') as f:
     
 p = {parameter_name[i]: float(value[i]) for i in range(len(parameter_name))}
 
-
-
-K = 20
-
+K = 1
 
 z_tilt_initial = p['z_tilt']
 
 
 for i in range(K):
     
-    z_tilt = z_tilt_initial + i * 360.0/K
+    #z_tilt = z_tilt_initial + i * 360.0/K
     
-    #z_tilt = z_tilt_initial
+    z_tilt = z_tilt_initial
 
     p['z_tilt'] = z_tilt
     
@@ -98,11 +95,10 @@ for i in range(K):
     print '-----------------------------------------------------------------------------------------'
     
 
-    
+
     f = open('./'+direct+'/'+output_filename, "w")    
     
     subprocess.call(arg, stdout=f, shell=True)
-    #subprocess.call(arg, shell=True)
     
     f.close
     

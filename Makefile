@@ -8,7 +8,7 @@ EXE    = disco
 # Compiler, Linker Defines
 CC      = gcc
 #CFLAGS  = -ansi -pedantic -Wall -O2
-CFLAGS  =
+CFLAGS  = -fopenmp
 LIBPATH =
 LDFLAGS = -o $(EXE) $(LIBPATH) $(LIBS)
 #CFDEBUG = -ansi -pedantic -Wall -g -DDEBUG $(LDFLAGS)
