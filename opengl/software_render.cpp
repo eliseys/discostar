@@ -6,6 +6,6 @@
 
 namespace discostar {
 namespace softrend {
-//#include "intensity.c"
-//#include "func.c"
+#include "intensity.c"
+#include "func.c"
 }} // namespace discostar::softrend

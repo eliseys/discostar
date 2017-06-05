@@ -20,16 +20,17 @@ int main() {
 
     const float star_position_x =  1.5f;
     const float disk_position_x = -1.5f;
-    const LightSource light(disk_position_x, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 10.0f);
+    const LightSource light(disk_position_x, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 20.0f);
     const auto limb_darking = limbDarking(-0.3f, 0.0f, 0.0f, 0.0f);
-    const geometry::Sphere star(4);
+//     const geometry::SphericalStar star(4, 1, 0.2f);
+    const geometry::RocheLobeStar star(4, 0.5, 1, 0.05f, 0.32f);
     const geometry::StandardDisk disk(5, 1.0f, 0.1f, 1.125f, 1e-3);
     const geometry::DiskBelt belt(disk);
     const std::vector<geometry::ObjectModel>  oms { star.get_object_model(),  disk.get_object_model(),  belt.get_object_model() };
     const std::vector<geometry::TextureImage> tis { star.get_texture_image(), disk.get_texture_image(), belt.get_texture_image() };
     const mvp::MVP base_mvp_star(3, 0, 0, star_position_x);
     mvp::MVP base_mvp_disk(3, 0, 0, disk_position_x);
-    base_mvp_disk.change_rotation(static_cast<float>(M_PI / 36), static_cast<float>(M_PI_4));
+//    base_mvp_disk.change_rotation(static_cast<float>(M_PI / 36), static_cast<float>(M_PI_4));
 
     try{
         Renderer r(512, 512, oms, tis, light, limb_darking, true);
