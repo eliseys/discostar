@@ -8,7 +8,8 @@ if (OPENMP_FOUND)
     add_definitions(-DENABLE_OPENMP)
 endif()
 
-find_package(Boost REQUIRED)
+find_package(Boost COMPONENTS
+        unit_test_framework)
 find_package(jpeg REQUIRED)
 if (BOOST_FOUND)
     include_directories(${BOOST_INCLUDE_DIRS})
@@ -50,9 +51,8 @@ link_libraries(${ALL_LIBS})
 
 
 set(SOURCE_FILES
-        main.cpp
         shader.cpp shader.hpp
-        DescriteToGeometric.hpp disks.hpp
+        DescriteToGeometric.hpp disks.hpp stars.hpp
         TriangleDiscreteCoordinates.hpp
         images.hpp
         commons.hpp
@@ -64,6 +64,16 @@ set(SOURCE_FILES
         LimbDarking.hpp
         LightCurve.hpp
         BinaryParameters.hpp
-        stars.hpp
         software_render.hpp software_render.cpp)
-add_executable(main ${SOURCE_FILES})
+
+add_executable(main main.cpp ${SOURCE_FILES})
+
+enable_testing()
+file(GLOB_RECURSE TESTS test_*.cpp)
+foreach(test_source IN ITEMS ${TESTS})
+    string(REPLACE ${CMAKE_SOURCE_DIR}/ "" test_name ${test_source})
+    string(REPLACE / _ test_name ${test_name})
+    string(REPLACE .cpp "" test_name ${test_name})
+    add_executable(${test_name} ${test_source} ${SOURCE_FILES})
+    add_test(${test_name} ${test_name})
+endforeach(test_source)

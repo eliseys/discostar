@@ -345,7 +345,7 @@ public:
             const std::vector<geometry::TextureImage> &texture_images,
             const LightSource &light_source,
             const glm::vec4 &limb_darking,
-            bool show_in_windpw = true
+            bool show_in_window = true
     ) throw(GlfwException):
             window_width(width),
             window_height(height),
@@ -353,7 +353,7 @@ public:
             texture_images(texture_images),
             light_source(light_source),
             limb_darking(limb_darking),
-            show_in_window(show_in_windpw),
+            show_in_window(show_in_window),
             vertex_buffers (object_models.size()),
             uv_buffers     (object_models.size()),
             normal_buffers (object_models.size()),

@@ -60,7 +60,7 @@ int main() {
 //                1 * 2e33f, // Mx
 //                1 * 2e33f, // Mstar
 //                static_cast<float>(90.0 / 180.0 * M_PI), // i
-//                6000, // Tstar
+//                6000, // Tstar_pole
 //                static_cast<float>(SOLAR_RADIUS), // Rstar
 //                1 * 5000, // Tdisk
 //                1 * static_cast<float>(SOLAR_RADIUS), // Rdisk
@@ -82,7 +82,7 @@ int main() {
 //                  << "\t"
 //                  << *std::max_element(dots.begin(), dots.end()) / *std::min_element(dots.begin(), dots.end()) - 1
 //                  << "\t"
-//                  << fabs(M_PI * bp.Rstar*bp.Rstar * SIGMA_SB * powf(bp.Tstar,4) / dots.front() - 1 ) * 100
+//                  << fabs(M_PI * bp.Rstar*bp.Rstar * SIGMA_SB * powf(bp.Tstar_pole,4) / dots.front() - 1 ) * 100
 //                  << "%"
 //                  << std::endl;
 //    } catch ( GlfwException e ){

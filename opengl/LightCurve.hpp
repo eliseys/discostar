@@ -28,6 +28,8 @@ class LightCurve {
 protected:
 
 public:
+	const bool show_in_window;
+
     const float size_factor;
     const float flux_factor;
 
@@ -42,7 +44,7 @@ public:
 
     const size_t binary_splits;
 
-    const geometry::SphericalStar star;
+    const geometry::RocheLobeStar star;
     const geometry::StandardDisk disk;
     const geometry::DiskBelt belt;
 
@@ -58,21 +60,22 @@ public:
     static constexpr float n_disk = 1.125f;
     static constexpr unsigned short window_size = 256;
 
-    LightCurve(const BinaryParameters &bp) :
+    LightCurve(const BinaryParameters &bp, bool show_in_window=false) :
+			show_in_window(show_in_window),
             size_factor(bp.a),
             flux_factor(static_cast<float>(std::max({
-                                                            1e2 * SIGMA_SB * bp.Tdisk * bp.Tdisk * bp.Tdisk *
-                                                            bp.Tdisk,
-                                                            10 * SIGMA_SB * bp.Tstar * bp.Tstar * bp.Tstar *
-                                                            bp.Tstar,
-                                                            1e6 * bp.Lx / (4 * M_PI * bp.a * bp.a * bp.a)}))
+            	1e2 * SIGMA_SB * bp.Tdisk * bp.Tdisk * bp.Tdisk *
+            	bp.Tdisk,
+            	1e1 * SIGMA_SB * bp.Tstar_pole * bp.Tstar_pole * bp.Tstar_pole *
+            	bp.Tstar_pole,
+            	1e6 * bp.Lx / (4 * M_PI * bp.a * bp.a * bp.a)}))
             ),
             lat(static_cast<float>(M_PI_2) - bp.i),
-            xstar(-bp.Mx / bp.Mtot * bp.a / size_factor),
-            xdisk(bp.Mstar / bp.Mtot * bp.a / size_factor),
+            xstar(bp.Mx / bp.Mtot * bp.a / size_factor),
+            xdisk(-bp.Mstar / bp.Mtot * bp.a / size_factor),
             rstar(bp.Rstar / size_factor),
             rdisk(bp.Rdisk / size_factor),
-            Qstar(static_cast<float>(SIGMA_SB) * bp.Tstar * bp.Tstar * bp.Tstar * bp.Tstar / flux_factor),
+            Qstar(static_cast<float>(SIGMA_SB) * bp.Tstar_pole * bp.Tstar_pole * bp.Tstar_pole * bp.Tstar_pole / flux_factor),
             Qdisk(static_cast<float>(SIGMA_SB) * bp.Tdisk * bp.Tdisk * bp.Tdisk * bp.Tdisk / flux_factor),
             light_flux(bp.Lx / (flux_factor * size_factor * size_factor)),
             light(xdisk, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, light_flux),
@@ -80,7 +83,7 @@ public:
                     static_cast<size_t>(ceil(log2(static_cast<double>(window_size)))) - 2,
                     static_cast<size_t>(7))  // 7 is corresponding to maximum number of elements that glDraw can draw at once
             ),
-            star(binary_splits, rstar, Qstar),
+            star(binary_splits, bp.mass_ratio, 1, Qstar, bp.grav_darkness),
             disk(binary_splits, rdisk, bp.z0Rdisk, n_disk, Qdisk),
             belt(disk),
             oms({star.get_object_model(), disk.get_object_model(), belt.get_object_model()}),
@@ -92,11 +95,11 @@ public:
             mvp_scale(field_size / 2),
             base_mvp_star(mvp_scale, 0, 0, xstar),
             base_mvp_disk(mvp_scale, 0, 0, xdisk),
-            limb_darking(limbDarking(-0.0f, 0.0f, 0.0f, 0.0f)) {}
+            limb_darking(limbDarking(-0.4f, 0.0f, 0.0f, 0.0f)) {}
 
     std::vector<double> calc(size_t phases) const {
         std::vector<double> dots(phases);
-        Renderer r(window_size, window_size, oms, tis, light, limb_darking, true);
+        Renderer r(window_size, window_size, oms, tis, light, limb_darking, show_in_window);
 
         for (size_t i_phase = 0; i_phase < phases; ++i_phase) {
             const float lon = 2 * static_cast<float>(M_PI) * i_phase / phases;
