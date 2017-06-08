@@ -58,7 +58,7 @@ public:
     const glm::vec4 limb_darking;
 
     static constexpr float n_disk = 1.125f;
-    static constexpr unsigned short window_size = 256;
+    static constexpr unsigned short window_size = 512;
 
     LightCurve(const BinaryParameters &bp, bool show_in_window=false) :
 			show_in_window(show_in_window),
@@ -95,7 +95,7 @@ public:
             mvp_scale(field_size / 2),
             base_mvp_star(mvp_scale, 0, 0, xstar),
             base_mvp_disk(mvp_scale, 0, 0, xdisk),
-            limb_darking(limbDarking(-0.4f, 0.0f, 0.0f, 0.0f)) {}
+            limb_darking(limbDarking(-bp.limb_darkness, 0.0f, 0.0f, 0.0f)) {}
 
     std::vector<double> calc(size_t phases) const {
         std::vector<double> dots(phases);

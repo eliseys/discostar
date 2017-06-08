@@ -272,16 +272,17 @@ protected:
 				GL_FLOAT,
 				0
 		);
+//		glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, rendered_color_texture);
 //        glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, 4, GL_RGB32F, color_frame_width, color_frame_height, GL_TRUE);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, rendered_color_texture, 0);
+//        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D_MULTISAMPLE, rendered_color_texture, 0);
         glGenRenderbuffers(1, &depth_render_buffer);
         glBindRenderbuffer(GL_RENDERBUFFER, depth_render_buffer);
 //        glRenderbufferStorageMultisample(GL_RENDERBUFFER, 4, GL_DEPTH_COMPONENT, color_frame_width, color_frame_height);
         glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, color_frame_width, color_frame_height);
         glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, depth_render_buffer);
-//        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D_MULTISAMPLE, rendered_color_texture, 0);
-        glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, rendered_color_texture, 0);
         if ( glGetError() != GL_NO_ERROR ){
             throw GlfwException("Framebuffer error");
         }

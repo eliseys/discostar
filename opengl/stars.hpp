@@ -100,9 +100,9 @@ public:
 		free(gradient_pole);  // gradient_pole is allocated by malloc
 
 		for ( size_t i_theta = 0; i_theta < texture_size; ++i_theta ){
-			const float theta = static_cast<float>(M_PI) * (static_cast<float>(i_theta) / static_cast<float>(texture_size) - 0.5f);
+			const float theta = static_cast<float>(M_PI) * (static_cast<float>(i_theta) / static_cast<float>(texture_size-1) - 0.5f);
 			for ( size_t i_phi = 0; i_phi < texture_size; ++i_phi ){
-				const auto phi = 2 * static_cast<float>(M_PI) * (static_cast<float>(i_phi) / static_cast<float>(texture_size) + 1);
+				const auto phi = 2 * static_cast<float>(M_PI) * static_cast<float>(i_phi) / static_cast<float>(texture_size-1);
 
 				double *gradient = discostar::softrend::gradient(
 						phi + M_PI_2,
@@ -113,9 +113,9 @@ public:
 				const float darkness = static_cast<float>( pow(gradient[0] / g_pole, gravitation_darkness) );
 				free(gradient); // gradient is allocated by malloc
 
-				ti[i_phi * texture_size * 3 + i_theta * 3 + 0] = Q_pole * darkness;
-				ti[i_phi * texture_size * 3 + i_theta * 3 + 1] = 0.f;
-				ti[i_phi * texture_size * 3 + i_theta * 3 + 2] = 0.f;
+				ti[i_theta * texture_size * 3 + i_phi * 3 + 0] = Q_pole * darkness;
+				ti[i_theta * texture_size * 3 + i_phi * 3 + 1] = 0.f;
+				ti[i_theta * texture_size * 3 + i_phi * 3 + 2] = 0.f;
 			}
 		}
 

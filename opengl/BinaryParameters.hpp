@@ -11,6 +11,7 @@ struct BinaryParameters {
     const float Mx;
     const float Mstar;
     const float i;  // radian
+    const float limb_darkness;
     const float Tstar_pole;
     const float Rstar;
 	const float grav_darkness;
@@ -26,6 +27,7 @@ struct BinaryParameters {
                      float Mx,
                      float Mstar,
                      float i, // radian
+                     float limb_darkness,
                      float Tstar_pole,
                      float Rstar,
 					 float grav_darkness,
@@ -37,6 +39,7 @@ struct BinaryParameters {
             Mx(Mx),
             Mstar(Mstar),
             i(i),
+            limb_darkness(limb_darkness),
             Tstar_pole(Tstar_pole),
             Rstar(Rstar),
             Tdisk(Tdisk),
@@ -45,7 +48,7 @@ struct BinaryParameters {
             z0Rdisk(z0Rdisk),
             Lx(Lx),
             Mtot( Mstar + Mx ),
-            mass_ratio( Mstar / Mx )
+            mass_ratio( Mx / Mstar )
     {}
 };
 

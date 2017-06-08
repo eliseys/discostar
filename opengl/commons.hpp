@@ -22,6 +22,13 @@ T exp2_int(T x) {
     return y;
 }
 
+
+template<typename T>
+T delta_mag(T x, T y){
+	return static_cast<T>(2.5) * log10( y / x );
+}
+
+
 } // namespace discostar
 
 #endif //HERX1_COMMONS_HPP
