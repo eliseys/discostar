@@ -25,6 +25,7 @@ namespace discostar {
 
 
 class LightCurve {
+	typedef unsigned short T_INDEX;
 protected:
 
 public:
@@ -42,13 +43,13 @@ public:
 
     const LightSource light;
 
-    const size_t binary_splits;
+    const T_INDEX binary_splits;
 
-    const geometry::RocheLobeStar star;
-    const geometry::StandardDisk disk;
-    const geometry::DiskBelt belt;
+    const geometry::RocheLobeStar<T_INDEX> star;
+    const geometry::StandardDisk<T_INDEX> disk;
+    const geometry::DiskBelt<T_INDEX> belt;
 
-    const std::vector<geometry::ObjectModel> oms;
+    const std::vector< geometry::ObjectModel<T_INDEX> > oms;
     const std::vector<geometry::TextureImage> tis;
 
     const float field_size;
@@ -80,8 +81,8 @@ public:
             light_flux(bp.Lx / (flux_factor * size_factor * size_factor)),
             light(xdisk, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, light_flux),
             binary_splits(std::min(
-                    static_cast<size_t>(ceil(log2(static_cast<double>(window_size)))) - 2,
-                    static_cast<size_t>(7))  // 7 is corresponding to maximum number of elements that glDraw can draw at once
+                    static_cast<T_INDEX>(ceil(log2(static_cast<double>(window_size))) - 2),
+                    static_cast<T_INDEX>(6))  // 7 is corresponding to maximum number of elements that glDraw can draw at once
             ),
             star(binary_splits, bp.mass_ratio, 1, Qstar, bp.grav_darkness),
             disk(binary_splits, rdisk, bp.z0Rdisk, n_disk, Qdisk),

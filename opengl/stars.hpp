@@ -14,19 +14,21 @@
 namespace discostar {
 namespace geometry {
 
-class SphericalStar: public Sphere{
+
+template <typename T_INDEX>
+class SphericalStar: public Sphere<T_INDEX>{
 public:
     const float r;
     const float Q;
 
-    SphericalStar(size_t bin_splits, float r, float Q):
-            Sphere(bin_splits),
+    SphericalStar<T_INDEX>(T_INDEX bin_splits, float r, float Q):
+            Sphere<T_INDEX>(bin_splits),
             r(r),
             Q(Q)
     {};
 
-    virtual ObjectModel get_object_model() const{
-        auto om = Sphere::get_object_model();
+    virtual ObjectModel<T_INDEX> get_object_model() const{
+        auto om = Sphere<T_INDEX>::get_object_model();
 
         for( auto &vert : om.vertices ){
             vert *= r;
@@ -39,7 +41,8 @@ public:
 };
 
 
-class RocheLobeStar: public Sphere{
+template <typename T_INDEX>
+class RocheLobeStar: public Sphere<T_INDEX>{
 public:
 	const float mass_ratio;
 	const float degree_of_feeling;
@@ -47,8 +50,8 @@ public:
 	const float gravitation_darkness;
 	const float omega;
 
-	RocheLobeStar(size_t bin_splits, float mass_ratio, float degree_of_feeling, float Q_pole, float gravitation_darkness):
-			Sphere(bin_splits),
+	RocheLobeStar<T_INDEX>(T_INDEX bin_splits, float mass_ratio, float degree_of_feeling, float Q_pole, float gravitation_darkness):
+			Sphere<T_INDEX>(bin_splits),
 			mass_ratio(mass_ratio),
 			Q_pole(Q_pole),
 			gravitation_darkness(gravitation_darkness),
@@ -56,8 +59,8 @@ public:
 			omega( static_cast<float>( discostar::softrend::omg(mass_ratio, degree_of_feeling) ) )
 	{};
 
-	virtual ObjectModel get_object_model() const{
-		auto om = Sphere::get_object_model();
+	virtual ObjectModel<T_INDEX> get_object_model() const{
+		auto om = Sphere<T_INDEX>::get_object_model();
 
 		for ( auto &vert : om.vertices ){
 			const auto vert_polar = glm::polar(vert);
@@ -91,17 +94,19 @@ public:
 	}
 
 	virtual TextureImage get_texture_image() const{
-		size_t texture_size =
-				exp2_int(splits + 1) > GL_MAX_TEXTURE_SIZE ? GL_MAX_TEXTURE_SIZE : exp2_int(splits + 1);
+		unsigned int texture_size =
+				exp2_int(static_cast<unsigned int>(this->splits) + 1) > GL_MAX_TEXTURE_SIZE
+				? GL_MAX_TEXTURE_SIZE
+				: exp2_int(static_cast<unsigned int>(this->splits) + 1);
 		TextureImage ti(texture_size);
 
 		double *gradient_pole = discostar::softrend::gradient(0, 0, mass_ratio, omega);
 		const double g_pole = gradient_pole[0];
 		free(gradient_pole);  // gradient_pole is allocated by malloc
 
-		for ( size_t i_theta = 0; i_theta < texture_size; ++i_theta ){
+		for ( unsigned int i_theta = 0; i_theta < texture_size; ++i_theta ){
 			const float theta = static_cast<float>(M_PI) * (static_cast<float>(i_theta) / static_cast<float>(texture_size-1) - 0.5f);
-			for ( size_t i_phi = 0; i_phi < texture_size; ++i_phi ){
+			for ( unsigned int i_phi = 0; i_phi < texture_size; ++i_phi ){
 				const auto phi = 2 * static_cast<float>(M_PI) * static_cast<float>(i_phi) / static_cast<float>(texture_size-1);
 
 				double *gradient = discostar::softrend::gradient(

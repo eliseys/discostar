@@ -329,7 +329,7 @@ protected:
 public:
     const unsigned short window_width;
     const unsigned short window_height;
-    const std::vector<geometry::ObjectModel> object_models;
+    const std::vector< geometry::ObjectModel<unsigned short> > object_models;
     const std::vector<geometry::TextureImage> texture_images;
     const LightSource light_source;
     const glm::vec4 limb_darking;
@@ -342,7 +342,7 @@ public:
     Renderer(
             unsigned short width,
             unsigned short height,
-            const std::vector<geometry::ObjectModel> &object_models,
+            const std::vector< geometry::ObjectModel<unsigned short> > &object_models,
             const std::vector<geometry::TextureImage> &texture_images,
             const LightSource &light_source,
             const glm::vec4 &limb_darking,

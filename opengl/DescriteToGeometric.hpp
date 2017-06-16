@@ -19,13 +19,14 @@ namespace geometry {
 typedef typename glm::vec3::value_type value_type;
 
 
-class Sphere : public TriangleDiscreteCoordinates {
+template <typename T_INDEX>
+class Sphere : public TriangleDiscreteCoordinates<T_INDEX> {
 protected:
 	std::vector<glm::vec3> northern_hemisphere() const {
 		std::vector<glm::vec3> vertices(this->size);
 
 		const glm::vec3 A = glm::euclidean(glm::vec2(M_PI_2, 0));
-		for (size_t t = 0; t < this->tr; ++t) {
+		for (T_INDEX t = 0; t < this->tr; ++t) {
 			const glm::vec3 B = glm::euclidean(glm::vec2(0, M_PI_2 * t));
 			const glm::vec3 C = glm::euclidean(glm::vec2(0, M_PI_2 * (t + 1)));
 			for (auto it = this->triangle_begin(t); it != this->triangle_end(t); ++it) {
@@ -54,15 +55,15 @@ protected:
 	}
 
 public:
-	Sphere(size_t bin_splits) : TriangleDiscreteCoordinates(4, bin_splits) {}
+	Sphere(T_INDEX bin_splits) : TriangleDiscreteCoordinates<T_INDEX>(4, bin_splits) {}
 
-	virtual ObjectModel get_object_model() const {
-		ObjectModel om;
+	virtual ObjectModel<T_INDEX> get_object_model() const {
+		ObjectModel<T_INDEX> om;
 
 		om.vertices = northern_hemisphere();
 		// Add southern hemisphere vertices
-		const size_t last_line = this->tr * (this->rho_size - 2) * (this->rho_size - 1) / 2 + 1;
-		for (size_t i = 0; i < last_line; ++i) {
+		const T_INDEX last_line = this->tr * (this->rho_size - 2) * (this->rho_size - 1) / 2 + 1;
+		for (T_INDEX i = 0; i < last_line; ++i) {
 			auto southern_vert = om.vertices[i];
 			southern_vert.y *= -1;
 			om.vertices.push_back(southern_vert);
@@ -94,11 +95,12 @@ public:
 };
 
 
-class Circle : public TriangleDiscreteCoordinates {
+template <typename T_INDEX>
+class Circle : public TriangleDiscreteCoordinates<T_INDEX> {
 public:
-	Circle(size_t bin_splits) : TriangleDiscreteCoordinates(6, bin_splits) {}
+	Circle<T_INDEX>(T_INDEX bin_splits) : TriangleDiscreteCoordinates<T_INDEX>(6, bin_splits) {}
 
-	glm::vec2 cylindrical(const DiscreteCoordinate &dc) const {
+	glm::vec2 cylindrical(const DiscreteCoordinate<T_INDEX> &dc) const {
 		const auto rho = static_cast<value_type>( dc.rho );
 		const auto rho_length = static_cast<value_type>( this->rho_size ) - 1;
 		const auto psi_length = static_cast<value_type>( this->psi_size(dc.rho));
@@ -108,13 +110,13 @@ public:
 		return glm::vec2(r, phi);
 	}
 
-	virtual ObjectModel get_object_model() const {
-		ObjectModel om;
+	virtual ObjectModel<T_INDEX> get_object_model() const {
+		ObjectModel<T_INDEX> om;
 
 		om.vertices.resize(this->size);
 		om.uvs.resize(this->size);
 		om.normals.resize(this->size);
-		for (size_t t = 0; t < this->tr; ++t) {
+		for (T_INDEX t = 0; t < this->tr; ++t) {
 			for (auto it = this->triangle_begin(t); it != this->triangle_end(t); ++it) {
 				const auto cyl = cylindrical(*it);
 				const auto x = static_cast<value_type>( cyl.r * sinf(cyl.g));

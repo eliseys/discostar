@@ -23,10 +23,10 @@ int main() {
     const LightSource light(disk_position_x, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 20.0f);
     const auto limb_darking = limbDarking(-0.3f, 0.0f, 0.0f, 0.0f);
 //     const geometry::SphericalStar star(4, 1, 0.2f);
-    const geometry::RocheLobeStar star(4, 0.5, 1, 0.05f, 1);
-    const geometry::StandardDisk disk(5, 1.0f, 0.1f, 1.125f, 1e-3);
-    const geometry::DiskBelt belt(disk);
-    const std::vector<geometry::ObjectModel>  oms { star.get_object_model(),  disk.get_object_model(),  belt.get_object_model() };
+    const geometry::RocheLobeStar<unsigned short> star(4, 0.5, 1, 0.05f, 1);
+    const geometry::StandardDisk<unsigned short> disk(5, 1.0f, 0.1f, 1.125f, 1e-3);
+    const geometry::DiskBelt<unsigned short> belt(disk);
+    const std::vector< geometry::ObjectModel<unsigned short> >  oms { star.get_object_model(),  disk.get_object_model(),  belt.get_object_model() };
     const std::vector<geometry::TextureImage> tis { star.get_texture_image(), disk.get_texture_image(), belt.get_texture_image() };
     const mvp::MVP base_mvp_star(3, 0, 0, star_position_x);
     mvp::MVP base_mvp_disk(3, 0, 0, disk_position_x);

@@ -14,11 +14,13 @@
 namespace discostar {
 namespace geometry {
 
+
+template <typename T_INDEX>
 struct ObjectModel {
 	std::vector<glm::vec3> vertices;
 	std::vector<glm::vec2> uvs;
 	std::vector<glm::vec3> normals;
-	std::vector<unsigned short> elements;
+	std::vector<T_INDEX> elements;
 };
 
 }} // 	namespace discostar::geometry

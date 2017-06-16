@@ -18,33 +18,36 @@
 namespace discostar {
 namespace geometry {
 
-class Disk : public Circle {
-public:
-    Disk(size_t bin_splits) : Circle(bin_splits) {};
 
-    unsigned short lower_index(size_t rho, size_t psi) const {
-        return static_cast<unsigned short>(size) + index(rho, psi);
+template <typename T_INDEX>
+class Disk : public Circle<T_INDEX> {
+public:
+    Disk<T_INDEX>(T_INDEX bin_splits) : Circle<T_INDEX>(bin_splits) {};
+
+    T_INDEX lower_index(T_INDEX rho, T_INDEX psi) const {
+        return this->size + this->index(rho, psi);
     }
 
-    unsigned short lower_index(const DiscreteCoordinate &dc) const {
+    T_INDEX lower_index(const DiscreteCoordinate<T_INDEX> &dc) const {
         return lower_index(dc.rho, dc.psi);
     }
 };
 
 
-class StandardDisk : public Disk {
+template <typename T_INDEX>
+class StandardDisk : public Disk<T_INDEX> {
 public:
     const float r_out, H_r_out, H_out, n, Q_out;
-    const size_t full_size;
+    const T_INDEX full_size;
 
-    StandardDisk(size_t bin_splits, float r_out, float H_r_out, float dlogH_dlogr, float Q_out) :
-            Disk(bin_splits),
+    StandardDisk<T_INDEX>(T_INDEX bin_splits, float r_out, float H_r_out, float dlogH_dlogr, float Q_out) :
+            Disk<T_INDEX>(bin_splits),
             r_out(r_out),
             H_r_out(H_r_out),
             n(dlogH_dlogr),
             Q_out(Q_out),
             H_out(r_out * H_r_out),
-            full_size(2 * size) {}
+            full_size(2 * this->size) {}
 
     float semiheight(const glm::vec2 &cyl) const {
         return H_out * powf(cyl.r, n);
@@ -62,23 +65,23 @@ public:
         return glm::euclidean(pol);
     }
 
-    virtual ObjectModel get_object_model() const {
-        ObjectModel om;
+    virtual ObjectModel<T_INDEX> get_object_model() const {
+        ObjectModel<T_INDEX> om;
 
         om.vertices.resize(full_size);
         om.uvs.resize(full_size);
         om.normals.resize(full_size);
 
-        for (size_t t = 0; t < this->tr; ++t) {
+        for (T_INDEX t = 0; t < this->tr; ++t) {
             for (auto it = this->triangle_begin(t); it != this->triangle_end(t); ++it) {
-                const auto cyl = cylindrical(*it);
+                const auto cyl = this->cylindrical(*it);
                 const auto r = static_cast<value_type>( cyl.r * r_out );
                 const auto x = static_cast<value_type>( r * sinf(cyl.g));
                 const auto y = static_cast<value_type>( semiheight(cyl));
                 const auto z = static_cast<value_type>( r * cosf(cyl.g));
 
-                const auto i1 = index(*it);
-                const auto i2 = lower_index(*it);
+                const auto i1 = this->index(*it);
+                const auto i2 = this->lower_index(*it);
 
                 om.vertices[i1] = glm::vec3(x, y, z);
                 om.normals[i1] = upper_normal(cyl);
@@ -93,7 +96,7 @@ public:
         om.elements = this->get_elements();
         auto lower_half = om.elements;
         for (auto &i : lower_half) {
-            i = lower_index(coordinate(i));
+            i = this->lower_index(this->coordinate(i));
         }
         om.elements.insert(om.elements.end(), lower_half.begin(), lower_half.end());
 
@@ -101,12 +104,14 @@ public:
     }
 
     virtual TextureImage get_texture_image() const {
-        size_t texture_size =
-                exp2_int(splits + 1) > GL_MAX_TEXTURE_SIZE ? GL_MAX_TEXTURE_SIZE : exp2_int(splits + 1);
+        unsigned int texture_size =
+                exp2_int(static_cast<unsigned int>(this->splits)  + 1) > GL_MAX_TEXTURE_SIZE
+                ? GL_MAX_TEXTURE_SIZE
+                : exp2_int(static_cast<unsigned int>(this->splits) + 1);
         TextureImage ti(texture_size);
-        for (size_t i_phi = 0; i_phi < texture_size; ++i_phi) {
+        for (unsigned int i_phi = 0; i_phi < texture_size; ++i_phi) {
 //                const float phi = 2 * static_cast<float>(M_PI) * static_cast<float>(i_phi) / static_cast<float>(texture_size);
-            for (size_t i_r = 1; i_r < texture_size; ++i_r) {
+            for (unsigned int i_r = 1; i_r < texture_size; ++i_r) {
                 const float r = static_cast<float>(i_r) / static_cast<float>(texture_size - 1);
                 ti[i_phi * texture_size * 3 + i_r * 3 + 0] = Q_out * powf(r, -3.0f);
                 ti[i_phi * texture_size * 3 + i_r * 3 + 1] = 0.0;
@@ -122,30 +127,31 @@ public:
 };
 
 
-class DiskBelt : public Basic3DObject {
+template <typename T_INDEX>
+class DiskBelt : public Basic3DObject<T_INDEX> {
 public:
-    const StandardDisk disk;
-    const size_t rho;
-    const size_t psi_size;
+    const StandardDisk<T_INDEX> disk;
+    const T_INDEX rho;
+    const T_INDEX psi_size;
 
-    DiskBelt(const StandardDisk &disk) :
+    DiskBelt<T_INDEX>(const StandardDisk<T_INDEX> &disk) :
             disk(disk),
             rho(disk.rho_size - 1),
             psi_size(disk.psi_size(rho)) {};
 
-    unsigned short index(size_t psi) const {
-        return static_cast<unsigned short>((psi % psi_size) * 2);
+    T_INDEX index(T_INDEX psi) const {
+        return (psi % psi_size) * 2;
     }
 
-    unsigned short lower_index(size_t psi) const {
-        return static_cast<unsigned short>(index(psi) + 1);
+    T_INDEX lower_index(T_INDEX psi) const {
+        return index(psi) + 1;
     }
 
-    virtual ObjectModel get_object_model() const {
-        ObjectModel om;
+    virtual ObjectModel<T_INDEX> get_object_model() const {
+        ObjectModel<T_INDEX> om;
         const auto disk_om = disk.get_object_model();
 
-        for (size_t psi = 0; psi < disk.psi_size(rho); ++psi) {
+        for (T_INDEX psi = 0; psi < disk.psi_size(rho); ++psi) {
             const auto disk_i1 = disk.index(rho, psi);
             const auto disk_i2 = disk.lower_index(rho, psi);
 

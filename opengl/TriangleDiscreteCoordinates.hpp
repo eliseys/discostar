@@ -21,42 +21,47 @@
 namespace discostar {
 namespace geometry {
 
+
+template <typename T_INDEX>
 class Basic3DObject {
 public:
-    virtual ObjectModel get_object_model() const { return ObjectModel(); }
+    virtual ObjectModel<T_INDEX> get_object_model() const { return ObjectModel<T_INDEX>(); }
 
     virtual TextureImage get_texture_image() const { return TextureImage(1, 0.1f); }
 };
 
 
-class TriangleDiscreteCoordinates : public Basic3DObject {
+template <typename T_INDEX>
+struct DiscreteCoordinate {
+	const T_INDEX rho;
+	const T_INDEX psi;
+
+	DiscreteCoordinate<T_INDEX>(T_INDEX rho, T_INDEX psi) : rho(rho), psi(psi) {};
+};
+
+
+template <typename T_INDEX>
+class TriangleDiscreteCoordinates : public Basic3DObject<T_INDEX> {
 public:
-    struct DiscreteCoordinate {
-        const size_t rho;
-        const size_t psi;
-
-        DiscreteCoordinate(size_t rho, size_t psi) : rho(rho), psi(psi) {};
-    };
-
-    typedef typename std::vector<DiscreteCoordinate> dcvec;
+    typedef typename std::vector< DiscreteCoordinate<T_INDEX> > dcvec;
     typedef typename dcvec::const_iterator dcvec_const_it;
 
 protected:
     dcvec idx;
 
 public:
-    const size_t tr;
-    const size_t splits;
-    const size_t rho_size;
-    const size_t size;
+    const T_INDEX tr;
+    const T_INDEX splits;
+    const T_INDEX rho_size;
+    const T_INDEX size;
 
-    TriangleDiscreteCoordinates(size_t triangles, size_t bin_splits) :
+    TriangleDiscreteCoordinates<T_INDEX>(T_INDEX triangles, T_INDEX bin_splits) :
             tr(triangles),
             splits(bin_splits),
             rho_size(discostar::exp2_int(splits) + 1),
             size(tr * rho_size * (rho_size - 1) / 2 + 1) {
-        for (size_t rho = 0; rho < rho_size; ++rho) {
-            for (size_t psi = 0; psi < psi_size(rho); ++psi) {
+        for (T_INDEX rho = 0; rho < rho_size; ++rho) {
+            for (T_INDEX psi = 0; psi < psi_size(rho); ++psi) {
                 idx.emplace_back(rho, psi);
             }
         }
@@ -70,9 +75,9 @@ public:
         return idx.cend();
     }
 
-    boost::filter_iterator<std::function<bool(DiscreteCoordinate)>, dcvec_const_it>
-    triangle_begin(size_t triangle) const {
-        std::function<bool(DiscreteCoordinate)> predicator = [this, triangle](DiscreteCoordinate x) {
+    boost::filter_iterator<std::function<bool(DiscreteCoordinate<T_INDEX>)>, dcvec_const_it>
+    triangle_begin(T_INDEX triangle) const {
+        std::function<bool(DiscreteCoordinate<T_INDEX>)> predicator = [this, triangle](DiscreteCoordinate<T_INDEX> x) {
             return this->what_triangle(x) == triangle;
         };
         return boost::make_filter_iterator(
@@ -81,9 +86,9 @@ public:
         );
     }
 
-    boost::filter_iterator<std::function<bool(DiscreteCoordinate)>, dcvec_const_it>
-    triangle_end(size_t triangle) const {
-        std::function<bool(DiscreteCoordinate)> predicator = [this, triangle](DiscreteCoordinate x) {
+    boost::filter_iterator<std::function<bool(DiscreteCoordinate<T_INDEX>)>, dcvec_const_it>
+    triangle_end(T_INDEX triangle) const {
+        std::function<bool(DiscreteCoordinate<T_INDEX>)> predicator = [this, triangle](DiscreteCoordinate<T_INDEX> x) {
             return this->what_triangle(x) == triangle;
         };
         return boost::make_filter_iterator(
@@ -92,49 +97,49 @@ public:
         );
     }
 
-    DiscreteCoordinate coordinate(size_t index) const {
+    DiscreteCoordinate<T_INDEX> coordinate(T_INDEX index) const {
         return idx[index];
     }
 
-    size_t what_triangle(size_t rho, size_t psi) const {
+    T_INDEX what_triangle(T_INDEX rho, T_INDEX psi) const {
         psi %= psi_size(rho);
         return psi / psi_triangle_size(rho);
     }
 
-    size_t what_triangle(const DiscreteCoordinate &dc) const {
+    T_INDEX what_triangle(const DiscreteCoordinate<T_INDEX> &dc) const {
         return what_triangle(dc.rho, dc.psi);
     }
 
-    size_t psi_size(size_t rho) const {
+    T_INDEX psi_size(T_INDEX rho) const {
         if (rho == 0) {
             return 1;
         }
         return tr * rho;
     }
 
-    size_t psi_triangle_size(size_t rho) const {
+    T_INDEX psi_triangle_size(T_INDEX rho) const {
         if (rho == 0) {
             return 1;
         }
         return rho;
     }
 
-    unsigned short index(size_t rho, size_t psi) const {
+    T_INDEX index(T_INDEX rho, T_INDEX psi) const {
         if (rho == 0) {
             return 0;
         }
         psi %= psi_size(rho);
-        return static_cast<unsigned short>( tr * rho * (rho - 1) / 2 + psi + 1 );
+        return tr * rho * (rho - 1) / 2 + psi + 1;
     }
 
-    unsigned short index(const DiscreteCoordinate &dc) const {
+    T_INDEX index(const DiscreteCoordinate<T_INDEX> &dc) const {
         return index(dc.rho, dc.psi);
     }
 
-    std::vector<unsigned short> get_elements() const {
-        std::vector<unsigned short> triangles;
-        for (size_t rho = 1; rho < rho_size; ++rho) {
-            for (size_t psi = 0; psi < psi_size(rho); ++psi) {
+    std::vector<T_INDEX> get_elements() const {
+        std::vector<T_INDEX> triangles;
+        for (T_INDEX rho = 1; rho < rho_size; ++rho) {
+            for (T_INDEX psi = 0; psi < psi_size(rho); ++psi) {
                 triangles.push_back(index(rho, psi));
                 triangles.push_back(index(rho, psi + 1));
                 triangles.push_back(index(rho - 1, psi - what_triangle(rho, psi)));
