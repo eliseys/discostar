@@ -605,7 +605,7 @@ double flux_star(vec3 o, double q, double omega, double beta, double u, disk dis
 	  p.x = r * sin(theta) * cos(phi);
 	  p.y = r * sin(theta) * sin(phi);
 	  p.z = r * cos(theta);
-
+	  
 	  /* shifted points */
 	  ps.x = p.x - 1.0;
 	  ps.y = p.y;
@@ -773,15 +773,18 @@ double flux_disk(vec3 o, disk disk, double y_tilt, double z_tilt, double omega, 
   
   /* Temperature profile of the disk */
   double rho;
-    
+  double rho_in = 0.01; /* inner radius where T becomes 0 for rho < rho_in */
+  double rho_scale = 0.5 * R; /* rho scale for T */
+
+  double T_scale = T; /* temperature on radius rho_scale */
+  double T_rho;
+
+  
   double color;
 
   /* */
-  double F_0 = F_lambda(T, lambda); /* temperature may depend on rho, in that case  set it in the cycle below */
-  
-  double T_side = 8000;
-  double F_side = F_lambda(T_side, lambda);
-  
+  double F_0 = F_lambda(T, lambda); /* temperature may depend on rho, in that case set it in the cycle below */
+    
   /* from top side of the disk */
   double result_1 = 0.0;
   /* from ridge of the disk */
@@ -864,9 +867,20 @@ double flux_disk(vec3 o, disk disk, double y_tilt, double z_tilt, double omega, 
 
 
 	  /* Temperature profile of the disk */
-	  /* rho = r * sin(theta); */
-	  /* T = b * exp(-(rho*rho)/(1.0 * R * 1.0 * R)); */
+	  rho = r * sin(theta);
 	  
+	  if (rho > rho_in)
+	    {
+	      T_rho = T_scale * pow(rho/rho_scale, -3./4.);
+	    }
+	  else
+	    {
+	      T_rho = 0.0;
+	    }
+	  
+	  /* flux on on wavelenght lambda */
+	  /* F_0 = F_lambda(T_rho, lambda); */
+
 	  /* shifted coordinates of the disk */
 	  ps.x = p.x + 1.0;
 	  ps.y = p.y;
@@ -931,7 +945,7 @@ double flux_disk(vec3 o, disk disk, double y_tilt, double z_tilt, double omega, 
 	    {
 	      /* top surface */
 	      /* printf("%f\t %f\t %f\n", pt.x, pt.y, pt.z); */
-
+	      
 	      result_1 = result_1 + (F_0 * cos_on * S)/cos_rn_u;
 	      /* result_1 = result_1 + cos_rn_u; */
 
@@ -944,7 +958,7 @@ double flux_disk(vec3 o, disk disk, double y_tilt, double z_tilt, double omega, 
 	    {
 	      /* bottom surface */
 	      /* printf("%f\t %f\t %f\n", pt.x, pt.y, pt.z); */
-	      
+
 	      result_2 = result_2 + (F_0 * cos_on * S)/cos_rn_d;
 	      
 	      /* result_2 = result_2 + cos_rn_d; */
@@ -958,7 +972,7 @@ double flux_disk(vec3 o, disk disk, double y_tilt, double z_tilt, double omega, 
 	    {
 	      /* side surface */
 	      /* printf("%f\t %f\t %f\n", pt.x, pt.y, pt.z); */
-	      
+
 	      result_3 = result_3 + (F_0 * cos_on * S)/cos_rn_s;
 	      /* color = (F_side * cos_on * S)/cos_rn_u; */
 	      /* printf("%f\t %f\t %f\t %f\t %f\t %f\n", phase_orb/(2*M_PI), pt.x, pt.y, pt.z, color, T_side); */

@@ -1,13 +1,16 @@
 import numpy as np
 from scipy.interpolate import interp1d
-import matplotlib.pyplot as plt
+#import matplotlib.pyplot as plt
 import math
 import subprocess
 
 with open("parameters", 'r') as f:
-    parameter_name, value = np.loadtxt(f, dtype=('str'), usecols=(0,1), unpack=True)
+    parameter_name, value = np.loadtxt(f, dtype=(str), usecols=(0,1), unpack=True)
     
 p = {parameter_name[i]: float(value[i]) for i in range(len(parameter_name))}
+
+#print(parameter_name)
+
 
 # default parameters
 z_tilt_initial = p['z_tilt']
@@ -71,9 +74,7 @@ def flx(Lx,
         y_tilt2,
         z_tilt2,
         z_tilt):
-    
-# the only difference with flx_xy is the argument order
-    
+        
     arg = ['./disco', 
            str(q),
            str(mu),
@@ -105,15 +106,17 @@ def flx(Lx,
     
     x = s[:,0] + 0.5
     y = s[:,1]
-    
+   
     return interp1d(x, y, kind='cubic')
 
 
-y_obs = []
-x_obs = []
+#y_obs = []
+#x_obs = []
 
+inguess_T_disk  = T_disk
 inguess_LT = np.array([Lx, T_disk])
 inguess_yz = np.array([y_tilt, y_tilt2, z_tilt2])
+
 
 def fit_LT(normalized_parameters, y_tilt, y_tilt2, z_tilt2, z_tilt):
     
@@ -126,8 +129,21 @@ def fit_LT(normalized_parameters, y_tilt, y_tilt2, z_tilt2, z_tilt):
 
     Lx = parameters[0]
     T_disk = parameters[1]
-    
+
     f = flx(Lx, T_disk, y_tilt, y_tilt2, z_tilt2, z_tilt)
+    
+    r_2 = (y_obs - f(x_obs))**2
+    return r_2.sum()
+
+
+def fit_T_disk(normalized_T, Lx, y_tilt, y_tilt2, z_tilt2, z_tilt):
+        
+    parameter = inguess_T_disk * normalized_T
+
+    T_disk = parameter
+
+    f = flx(Lx, T_disk, y_tilt, y_tilt2, z_tilt2, z_tilt)
+
     r_2 = (y_obs - f(x_obs))**2
     return r_2.sum()
 
@@ -146,5 +162,6 @@ def fit_yz(normalized_parameters, Lx, T_disk, z_tilt):
     z_tilt2 = parameters[2]
     
     f = flx(Lx, T_disk, y_tilt, y_tilt2, z_tilt2, z_tilt)
+                  
     r_2 = (y_obs - f(x_obs))**2
     return r_2.sum()
