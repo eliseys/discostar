@@ -22,13 +22,23 @@
 #define C2 1.43883
 
 
-struct vec3p {
+struct decart {
   double x;
   double y;
   double z;
 };
 
-typedef struct vec3p vec3;
+typedef struct decart vec3;
+
+
+struct spherical {
+  double phi;
+  double theta;
+  double r;
+};
+
+typedef struct spherical sp;
+
 
 struct disk {
   vec3 h;
@@ -37,11 +47,20 @@ struct disk {
 
 typedef struct disk disk;
 
+
 double len(vec3 p);
 double dot(vec3 a, vec3 b);
-double * coordinate_transformation(double x, double y, double z);
+
+vec3 sp2dec(sp a);
+sp dec2sp(vec3 a);
+
+vec3 rotate(vec3 a, double Y, double Z);
+vec3 axrot(vec3 a, vec3 u, double theta);
 
 double F_lambda(double T, double lambda);
+
+sp arcgen(double theta, double delta_theta, double N_theta, double N_phi, int i);
+double * x_ray_direction_diagram(double PSI_pr);
 
 double fr(double r, double phi, double theta, double q, double omega);
 double dfr(double r, double phi, double theta, double q, double omega);
@@ -63,7 +82,7 @@ double radius_disk(disk disk, double phi, double theta);
 double distance_to_disk(vec3 p, disk disk);
 double eclipse_by_disk(disk disk, vec3 o, vec3 p);
 
-double flux_star(vec3 o, double q, double omega, double beta, double u, disk disk, vec3 d2, double Lx, double albedo, int star_tiles, double T_star, double lambda, double a);
+double flux_star(vec3 o, double q, double omega, double beta, double u, disk disk, vec3 d2, double Lx, double albedo, int star_tiles, double T_star, double lambda, double a, vec3 neutron_star, double PSI_pr);
 double flux_disk(vec3 o, disk disk, double y_tilt, double z_tilt, double omega, double q, int disk_tiles, double phi_orb, double T_disk, double lambda, double a);
 
 

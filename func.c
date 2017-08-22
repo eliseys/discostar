@@ -13,16 +13,31 @@ double dot(vec3 a, vec3 b)
   return a.x * b.x + a.y * b.y + a.z * b.z;
 }
 
-double *coordinate_transformation(double x, double y, double z)
+vec3 sp2dec(sp a)
+{
+  vec3 result;
+
+  result.x = a.r * sin(a.theta) * cos(a.phi);
+  result.y = a.r * sin(a.theta) * sin(a.phi);
+  result.z = a.r * cos(a.theta);
+
+  return result;  
+}
+
+sp dec2sp(vec3 a)
 {
   /* transforms cartesian coordinates to spherical */
+  
+  sp result;
+  
+  double x = a.x;
+  double y = a.y;
+  double z = a.z;
 
-  double phi;
-  double theta;
-  double r;
+  double phi, theta;
 
   /* r [0,inf) */
-  r = sqrt(x * x + y * y + z * z);
+  result.r = sqrt(x * x + y * y + z * z);
 
   /* theta [0, M_PI] */
   if (x != 0.0 || y != 0.0 || z != 0.0)
@@ -49,14 +64,38 @@ double *coordinate_transformation(double x, double y, double z)
   else if (x < 0.0 && y == 0.0)
     phi = M_PI;
 
-  double *result = (double*) malloc(sizeof(double) * 3);
-
-  result[0] = r;
-  result[1] = phi;
-  result[2] = theta;
+  result.phi = phi;
+  result.theta = theta;
   
   return result;
 }
+
+vec3 rotate(vec3 a, double Y, double Z)
+{
+  /* rotates counterclockwise around Y and Z axes */
+  
+  vec3 result;
+
+  result.x = a.x * cos(Y) * cos(Z) + a.y * sin(Z) - a.z * sin(Y) * cos(Z);
+  result.y = - a.x * cos(Y) * sin(Z) + a.y * cos(Z) + a.z * sin(Y) * sin(Z);
+  result.z = a.x * sin(Y) + a.z * cos(Y); 
+
+  return result;
+}
+
+
+vec3 axrot(vec3 a, vec3 u, double theta)
+{
+  /* rotates by an angle of theta about an axis in the direction of u */
+
+  vec3 result;  
+  result.x = a.x * (cos(theta) + u.x * u.x * (1.0 - cos(theta))) + a.y * (u.x * u.y * (1.0 - cos(theta)) - u.z * sin(theta)) + a.z * (u.x * u.z * (1.0 - cos(theta)) + u.y * sin(theta));
+  result.y = a.x * (u.y * u.x * (1.0 - cos(theta)) + u.z * sin(theta)) + a.y * (cos(theta) + u.y * u.y * (1.0 - cos(theta))) + a.z * (u.y * u.z * (1.0 - cos(theta)) - u.x * sin(theta));
+  result.z = a.x * (u.z * u.x * (1.0 - cos(theta)) - u.y * sin(theta)) + a.y * (u.z * u.y * (1.0 - cos(theta)) + u.x * sin(theta)) + a.z * (cos(theta) + u.z * u.z * (1.0 - cos(theta)));
+
+  return result;
+}
+
 
 double fr(double r, double phi, double theta, double q, double omega)
 {
@@ -243,20 +282,9 @@ double omg(double q, double mu)
 
 double distance_to_star(vec3 p, double omega, double q)
 {
-
-  double *coord;
-  coord = coordinate_transformation(p.x, p.y, p.z);
-
-  double r = coord[0];
-  double phi = coord[1];
-  double theta = coord[2];
-
-  free(coord);
+  sp d = dec2sp(p);
     
-  double d = r - radius_star(phi, theta, q, omega);
-  /* double d = r - 0.5; */
-
-  return d;
+  return d.r - radius_star(d.phi, d.theta, q, omega);
 }
 
 
@@ -474,7 +502,7 @@ double eclipse_by_disk(disk disk, vec3 o, vec3 p)
 
 
 
-double flux_star(vec3 o, double q, double omega, double beta, double u, disk disk, vec3 d2, double Lx, double albedo, int tiles, double T, double lambda, double a)
+double flux_star(vec3 o, double q, double omega, double beta, double u, disk disk, vec3 d2, double Lx, double albedo, int tiles, double T, double lambda, double a, vec3 neutron_star, double PSI_pr)
 {
   /* */
   int steps = sqrt(tiles/2.0);
@@ -484,10 +512,8 @@ double flux_star(vec3 o, double q, double omega, double beta, double u, disk dis
   double delta_phi = 2.0 * M_PI / steps_phi;
   double delta_theta = M_PI / steps_theta;
 
-  double *coord;
-  coord = coordinate_transformation(o.x, o.y, o.z);
-  double phase_orb = coord[1];
-  free(coord);
+  sp observer_sph = dec2sp(o);
+  double phase_orb = observer_sph.phi;
   
   /* polar values */
   double *plr;
@@ -561,6 +587,11 @@ double flux_star(vec3 o, double q, double omega, double beta, double u, disk dis
   hn2_min.x = -hn2.x;
   hn2_min.y = -hn2.y;
   hn2_min.z = -hn2.z;
+
+  double *Fx_dd;
+  Fx_dd = x_ray_direction_diagram(PSI_pr);
+  int diagr_index;
+
   
   /* flux from star */
   double result = 0.0;
@@ -651,7 +682,7 @@ double flux_star(vec3 o, double q, double omega, double beta, double u, disk dis
 	  cos_irr_min = dot(psn, hn_min);
 	  cos_irr2_min = dot(psn, hn2_min);
 
-
+	  diagr_index = (int) floor( acos(dot(neutron_star, psn)) * 180.0/M_PI );
 	  
 	  /* Surface element */
 	  S = a * a * r * r * sin(theta) * delta_phi * delta_theta / cos_rn;
@@ -665,7 +696,8 @@ double flux_star(vec3 o, double q, double omega, double beta, double u, disk dis
 	    {
 	      /* Fx = Lx * S * fabs(cos_in) / (4.0 * M_PI * lps * lps); */
 	      
-	      Fx = (1.0 - albedo) * Lx * fabs(cos_in) / (4.0 * M_PI * lps * lps * a * a);
+	      Fx = 2.0 * Fx_dd[diagr_index] * (1.0 - albedo) * Lx * fabs(cos_in) / (4.0 * M_PI * lps * lps * a * a);
+	      //Fx = (1.0 - albedo) * Lx * fabs(cos_in) / (4.0 * M_PI * lps * lps * a * a);
 
 	      /* printf("%f\n", Fx); */
 	    }
@@ -694,7 +726,9 @@ double flux_star(vec3 o, double q, double omega, double beta, double u, disk dis
 	}
       
     }
-  
+
+
+  free(Fx_dd);
   return result;
   
 }
@@ -703,10 +737,8 @@ double flux_star(vec3 o, double q, double omega, double beta, double u, disk dis
 double flux_disk(vec3 o, disk disk, double y_tilt, double z_tilt, double omega, double q, int disk_tiles, double phi_orb, double T, double lambda, double a)
 {
 
-  double *coord;
-  coord = coordinate_transformation(o.x, o.y, o.z);
-  double phase_orb = coord[1];
-  free(coord);
+  sp coord = dec2sp(o);
+  double phase_orb = coord.phi;
 
   double R = disk.R;
   double h = len(disk.h); /* semithickness of the disk */
@@ -987,17 +1019,6 @@ double flux_disk(vec3 o, disk disk, double y_tilt, double z_tilt, double omega, 
     }
 
   
-  /* double *coord; */
-  /* coord = coordinate_transformation(o.x, o.y, o.z); */
-
-  /* double r_o = coord[0]; */
-  /* double phi_o = coord[1]; */
-  /* double theta_o = coord[2]; */
-
-  /* free(coord); */
-
-  /* printf("%f %f %f %f %f\n", phi_o/(2.0*M_PI), result_1, result_2, result_3, result_1 + result_2 + result_3); */
-
   return result_1 + result_2 + result_3;
 }
 

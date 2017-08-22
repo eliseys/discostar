@@ -115,14 +115,23 @@ int main(int argc, char **argv)
   /* double disk_flx = flux_disk(o, d, y_tilt, z_tilt, omega, q, b, disk_tiles, phi, T_disk, lambda_cm, a_cm); */
   /* double star_flx = flux_star(o, q, omega, beta, u, d, d2, Lx, albedo, star_tiles, T_star, lambda_cm, a_cm); */
 
+  sp neutron_star_sp;
+  neutron_star_sp.phi = 0.0;
+  neutron_star_sp.theta = 0.0 * M_PI/180.0;
+  neutron_star_sp.r = 1.0;
 
+  vec3 neutron_star = sp2dec(neutron_star_sp);
+
+  double PSI_pr = 0.0;
+  double kappa = 0.0; 
+  
   int i; /* light curve step */
 
   omp_set_dynamic(0);
   omp_set_num_threads(threads);
 
 
-#pragma omp parallel for private(i, phi, o, d, d2)
+#pragma omp parallel for private(i, phi, o, d, d2, neutron_star)
   for(i = 0; i < lc_num; i++)
     {
       phi = (double) i * 2.0 * M_PI/(lc_num - 1) - M_PI;
@@ -139,10 +148,14 @@ int main(int argc, char **argv)
       d2.x = - h * sin(y_tilt2) * cos(z_tilt + z_tilt2 - phi + M_PI);
       d2.y = h * sin(y_tilt2) * sin(z_tilt + z_tilt2 - phi + M_PI);
       d2.z = h * cos(y_tilt2);
+
+      neutron_star = rotate(neutron_star, 0.0, -phi);
+
+      neutron_star = axrot(neutron_star, o, kappa);
       
       phase[i] = phi;
 
-      flx[i] = flux_disk(o, d, y_tilt, z_tilt, omega, q, disk_tiles, phi, T_disk, lambda_cm, a_cm) + flux_star(o, q, omega, beta, u, d, d2, Lx, albedo, star_tiles, T_star, lambda_cm, a_cm);
+      flx[i] = flux_disk(o, d, y_tilt, z_tilt, omega, q, disk_tiles, phi, T_disk, lambda_cm, a_cm) + flux_star(o, q, omega, beta, u, d, d2, Lx, albedo, star_tiles, T_star, lambda_cm, a_cm, neutron_star, PSI_pr);
 
     }
 
