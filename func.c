@@ -502,6 +502,11 @@ double eclipse_by_disk(disk disk, vec3 o, vec3 p)
 
 
 
+
+
+
+
+
 double flux_star(vec3 o, double q, double omega, double beta, double u, disk disk, vec3 d2, double Lx, double albedo, int tiles, double T, double lambda, double a, vec3 neutron_star, double PSI_pr)
 {
   /* */
@@ -554,8 +559,7 @@ double flux_star(vec3 o, double q, double omega, double beta, double u, disk dis
   double R = disk.R;
   double disk_shadow_semi_angle = atan(h/R);
   double cos_disk_shadow_semi_angle = cos(0.5 * M_PI - disk_shadow_semi_angle);
-  
-  
+    
   
   double S;
   double Fx;
@@ -588,8 +592,19 @@ double flux_star(vec3 o, double q, double omega, double beta, double u, disk dis
   hn2_min.y = -hn2.y;
   hn2_min.z = -hn2.z;
 
-  double *Fx_dd;
-  Fx_dd = x_ray_direction_diagram(PSI_pr);
+  static double *Fx_dd = NULL;
+
+  if (Fx_dd == NULL)
+    {
+      Fx_dd = x_ray_direction_diagram(PSI_pr);
+    }
+  else
+    {}
+  
+  /* double *Fx_dd; */
+  /* Fx_dd = x_ray_direction_diagram(PSI_pr); */
+
+  
   int diagr_index;
 
   
@@ -683,6 +698,8 @@ double flux_star(vec3 o, double q, double omega, double beta, double u, disk dis
 	  cos_irr2_min = dot(psn, hn2_min);
 
 	  diagr_index = (int) floor( acos(dot(neutron_star, psn)) * 180.0/M_PI );
+
+	  //printf("%f\t %f\t %f\n", neutron_star.x, neutron_star.y, neutron_star.z);
 	  
 	  /* Surface element */
 	  S = a * a * r * r * sin(theta) * delta_phi * delta_theta / cos_rn;
@@ -696,7 +713,7 @@ double flux_star(vec3 o, double q, double omega, double beta, double u, disk dis
 	    {
 	      /* Fx = Lx * S * fabs(cos_in) / (4.0 * M_PI * lps * lps); */
 	      
-	      Fx = 2.0 * Fx_dd[diagr_index] * (1.0 - albedo) * Lx * fabs(cos_in) / (4.0 * M_PI * lps * lps * a * a);
+	      Fx = Fx_dd[diagr_index] * (1.0 - albedo) * Lx * fabs(cos_in) / (4.0 * M_PI * lps * lps * a * a);
 	      //Fx = (1.0 - albedo) * Lx * fabs(cos_in) / (4.0 * M_PI * lps * lps * a * a);
 
 	      /* printf("%f\n", Fx); */
@@ -718,17 +735,18 @@ double flux_star(vec3 o, double q, double omega, double beta, double u, disk dis
 	      
 	      result = result + F_0 * (1 - u + u * cos_on) * pow(g,beta) * cos_on * S;
 	      
-	      /* color = F_0 * (1 - u + u * cos_on) * pow(g,beta) * cos_on * S; */
-	      /* printf("%f\t %f\t %f\t %f\t %f\t %f\n", phase_orb/(2.0*M_PI), p.x, p.y, p.z, color, T_sum); */
+	      color = F_0 * (1 - u + u * cos_on) * pow(g,beta) * cos_on * S;
+	      
+	      printf("%f\t %f\t %f\t %f\t %f\t %f\n", phase_orb*180.0/M_PI , p.x, p.y, p.z, color, T_sum);
 
 	    }
 	  	  
 	}
       
     }
-
-
-  free(Fx_dd);
+  
+  
+  //free(Fx_dd);
   return result;
   
 }
@@ -981,8 +999,8 @@ double flux_disk(vec3 o, disk disk, double y_tilt, double z_tilt, double omega, 
 	      result_1 = result_1 + (F_0 * cos_on * S)/cos_rn_u;
 	      /* result_1 = result_1 + cos_rn_u; */
 
-	      /* color = (F_0 * cos_on * S)/cos_rn_u; */
-	      /* printf("%f\t %f\t %f\t %f\t %f\t %f\n", phase_orb/(2*M_PI), pt.x, pt.y, pt.z, color, T); */
+	      color = (F_0 * cos_on * S)/cos_rn_u;
+	      printf("%f\t %f\t %f\t %f\t %f\t %f\n", phase_orb*180.0/M_PI, pt.x, pt.y, pt.z, color, T);
 	      /* printf("%f\n", color); */
 
 	    }
@@ -994,8 +1012,9 @@ double flux_disk(vec3 o, disk disk, double y_tilt, double z_tilt, double omega, 
 	      result_2 = result_2 + (F_0 * cos_on * S)/cos_rn_d;
 	      
 	      /* result_2 = result_2 + cos_rn_d; */
-	      /* color = (F_0 * cos_on * S)/cos_rn_u; */
-	      /* printf("%f\t %f\t %f\t %f\t %f\t %f\n", phase_orb/(2*M_PI), pt.x, pt.y, pt.z, color, T); */
+	      
+	      color = (F_0 * cos_on * S)/cos_rn_u;
+	      printf("%f\t %f\t %f\t %f\t %f\t %f\n", phase_orb*180.0/M_PI, pt.x, pt.y, pt.z, color, T);
 
 	      /* printf("%f\n", color); */
 
@@ -1006,8 +1025,9 @@ double flux_disk(vec3 o, disk disk, double y_tilt, double z_tilt, double omega, 
 	      /* printf("%f\t %f\t %f\n", pt.x, pt.y, pt.z); */
 
 	      result_3 = result_3 + (F_0 * cos_on * S)/cos_rn_s;
-	      /* color = (F_side * cos_on * S)/cos_rn_u; */
-	      /* printf("%f\t %f\t %f\t %f\t %f\t %f\n", phase_orb/(2*M_PI), pt.x, pt.y, pt.z, color, T_side); */
+	      
+	      color = (F_0 * cos_on * S)/cos_rn_u;
+	      printf("%f\t %f\t %f\t %f\t %f\t %f\n", phase_orb*180.0/M_PI, pt.x, pt.y, pt.z, color, T);
 
 	    }
 

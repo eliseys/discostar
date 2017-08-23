@@ -18,12 +18,12 @@ Lx		4.0e+37
 # DISK PARAMETERS
 #---------------------------------------
 
-h		0.025
-R		0.25
+h		0.0023
+R		0.23
 y_tilt		20.0
 z_tilt		0.0
 y_tilt2		20.0
-z_tilt2		0.0	
+z_tilt2		20.0	
 
 #---------------------------------------
 # TEMPERATURES, KELVINS
@@ -54,7 +54,7 @@ a 	    	6.35e11
 # NUMBER OF LIGHT CURVE POINTS
 #---------------------------------------
 
-lc_num	     	100
+lc_num	     	5
 
 #---------------------------------------
 # STAR AND DISK TILES NUMBER

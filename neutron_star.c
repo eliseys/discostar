@@ -46,8 +46,8 @@ double * x_ray_direction_diagram(double PSI_pr)
   //double PSI_pr = 330.0 * M_PI/180.0 ; /* NS precession angle */
   double angle_JI = 50.0 * M_PI/180.0; /* angle between J and I_3 vectors */
 
-  double N_theta = 100.0; /* arc pixelization */
-  double N_phi = 3000.0; /* arc pixelization */
+  double N_theta = 50.0; /* arc pixelization */
+  double N_phi = 1500.0; /* arc pixelization */
 
   double N = N_theta * N_phi;
 
@@ -58,6 +58,11 @@ double * x_ray_direction_diagram(double PSI_pr)
 
   double F[180]; /* directional diagram */
 
+  for (f = 0; f < 180; f++)
+    {
+      F[f] = 0.0;
+    }
+  
   double b[18], l[18], R[18], BEG[18], END[18], delta_theta[18], intensity[18];
 
   /* !!!!!! I`d changed b[2] from 65.0 to 75.0 */
@@ -83,7 +88,6 @@ double * x_ray_direction_diagram(double PSI_pr)
   b[15] = 60.0,   l[15] = 180.0, R[15] = 0.0, BEG[15] = 0.0,  END[15] = 360.0, delta_theta[15] = 16.0, intensity[15] = 100.0;  
   b[16] = -85.0,  l[16] = 0.0,   R[16] = 0.0, BEG[16] = 0.0,  END[16] = 360.0, delta_theta[16] = 16.0, intensity[16] = 32.6;  
   b[17] = -17.0,  l[17] = 80.0,  R[17] = 0.0, BEG[17] = 0.0,  END[17] = 360.0, delta_theta[17] = 14.0, intensity[17] = 0.94;  
-
   
   double theta_n, delta_theta_n, epsilon_theta_n;
   double N_phi_n, epsilon_phi_n;
@@ -124,7 +128,7 @@ double * x_ray_direction_diagram(double PSI_pr)
 	      
 	      f = (int) floor( sphr.theta * 180.0/M_PI );
 	      
-	      F[f] = F[f] + ds * intensity[arc_n]/100.0;
+	      F[f] = F[f] + ds * intensity[arc_n];
 	    }
 	  else if ( END[arc_n] > 360.0 && sphr.phi >= (BEG[arc_n] * M_PI/180.0) || sphr.phi <= (END[arc_n] * M_PI/180.0 - 2.0 * M_PI) )
 	    {
@@ -139,7 +143,7 @@ double * x_ray_direction_diagram(double PSI_pr)
 	      
 	      f = (int) floor( sphr.theta * 180.0/M_PI );
 	      
-	      F[f] = F[f] + ds * intensity[arc_n]/100.0;
+	      F[f] = F[f] + ds * intensity[arc_n];
 
 	    }
 
@@ -152,13 +156,22 @@ double * x_ray_direction_diagram(double PSI_pr)
     }
 
   double * result = (double *) malloc(sizeof(double) * 180);
+
   
-  int j;
-  for (j = 0; j < 180; j++)
+  double F_sum = 0.0;
+  
+  for (f = 0; f < 180; f++)
     {
-      //printf("%i\t %.20f\t %.20f\n", j, F[j], PSI_pr);
-      result[j] = F[j];
+      F_sum = F_sum + F[f];
+      //printf("%.20f\n", F_sum);
     }
 
+  for (f = 0; f < 180; f++)
+    {
+      //printf("%i\t %.20f\t %.20f\n", j, F[j], F_sum);
+      result[f] = 180.0 * F[f]/F_sum;
+      //printf("%.20f\n", result[f]);
+    }
+  
   return result;
 }
