@@ -501,13 +501,7 @@ double eclipse_by_disk(disk disk, vec3 o, vec3 p)
 }
 
 
-
-
-
-
-
-
-double flux_star(vec3 o, double q, double omega, double beta, double u, disk disk, vec3 d2, double Lx, double albedo, int tiles, double T, double lambda, double a, vec3 neutron_star, double PSI_pr)
+double flux_star(vec3 o, double q, double omega, double beta, double u, disk disk, vec3 d2, double Lx, double albedo, int tiles, double T, double lambda, double a, vec3 neutron_star, double PSI_pr, int picture)
 {
   /* */
   int steps = sqrt(tiles/2.0);
@@ -592,11 +586,11 @@ double flux_star(vec3 o, double q, double omega, double beta, double u, disk dis
   hn2_min.y = -hn2.y;
   hn2_min.z = -hn2.z;
 
-  static double *Fx_dd = NULL;
+  static double *Ix_dd = NULL;
 
-  if (Fx_dd == NULL)
+  if (Ix_dd == NULL)
     {
-      Fx_dd = x_ray_direction_diagram(PSI_pr);
+      Ix_dd = x_ray_direction_diagram(PSI_pr);
     }
   else
     {}
@@ -713,7 +707,8 @@ double flux_star(vec3 o, double q, double omega, double beta, double u, disk dis
 	    {
 	      /* Fx = Lx * S * fabs(cos_in) / (4.0 * M_PI * lps * lps); */
 	      
-	      Fx = Fx_dd[diagr_index] * (1.0 - albedo) * Lx * fabs(cos_in) / (4.0 * M_PI * lps * lps * a * a);
+	      Fx = Ix_dd[diagr_index] * (1.0 - albedo) * Lx * fabs(cos_in) / (lps * lps * a * a); /* */
+	      
 	      //Fx = (1.0 - albedo) * Lx * fabs(cos_in) / (4.0 * M_PI * lps * lps * a * a);
 
 	      /* printf("%f\n", Fx); */
@@ -735,10 +730,13 @@ double flux_star(vec3 o, double q, double omega, double beta, double u, disk dis
 	      
 	      result = result + F_0 * (1 - u + u * cos_on) * pow(g,beta) * cos_on * S;
 	      
-	      color = F_0 * (1 - u + u * cos_on) * pow(g,beta) * cos_on * S;
-	      
-	      printf("%f\t %f\t %f\t %f\t %f\t %f\n", phase_orb*180.0/M_PI , p.x, p.y, p.z, color, T_sum);
-
+	      //color = F_0 * (1 - u + u * cos_on) * pow(g,beta) * cos_on * S;
+	      if (picture == 1)
+		{
+		  printf("%f\t %f\t %f\t %f\t %f\n", phase_orb*180.0/M_PI , p.x, p.y, p.z, T_sum);
+		}
+	      else if (picture == 0)
+		{}
 	    }
 	  	  
 	}
@@ -746,13 +744,13 @@ double flux_star(vec3 o, double q, double omega, double beta, double u, disk dis
     }
   
   
-  //free(Fx_dd);
+  //free(Ix_dd);
   return result;
   
 }
 
 
-double flux_disk(vec3 o, disk disk, double y_tilt, double z_tilt, double omega, double q, int disk_tiles, double phi_orb, double T, double lambda, double a)
+double flux_disk(vec3 o, disk disk, double y_tilt, double z_tilt, double omega, double q, int disk_tiles, double phi_orb, double T, double lambda, double a, int picture)
 {
 
   sp coord = dec2sp(o);
@@ -999,8 +997,13 @@ double flux_disk(vec3 o, disk disk, double y_tilt, double z_tilt, double omega, 
 	      result_1 = result_1 + (F_0 * cos_on * S)/cos_rn_u;
 	      /* result_1 = result_1 + cos_rn_u; */
 
-	      color = (F_0 * cos_on * S)/cos_rn_u;
-	      printf("%f\t %f\t %f\t %f\t %f\t %f\n", phase_orb*180.0/M_PI, pt.x, pt.y, pt.z, color, T);
+	      //color = (F_0 * cos_on * S)/cos_rn_u;
+	      if (picture == 1)
+		{
+		  printf("%f\t %f\t %f\t %f\t %f\n", phase_orb*180.0/M_PI, pt.x, pt.y, pt.z, T);
+		}
+	      else if (picture == 0)
+		{}
 	      /* printf("%f\n", color); */
 
 	    }
@@ -1013,9 +1016,13 @@ double flux_disk(vec3 o, disk disk, double y_tilt, double z_tilt, double omega, 
 	      
 	      /* result_2 = result_2 + cos_rn_d; */
 	      
-	      color = (F_0 * cos_on * S)/cos_rn_u;
-	      printf("%f\t %f\t %f\t %f\t %f\t %f\n", phase_orb*180.0/M_PI, pt.x, pt.y, pt.z, color, T);
-
+	      //color = (F_0 * cos_on * S)/cos_rn_u;
+	      if (picture == 1)
+		{
+		  printf("%f\t %f\t %f\t %f\t %f\n", phase_orb*180.0/M_PI, pt.x, pt.y, pt.z, T);
+		}
+	      else if (picture == 0)
+		{}
 	      /* printf("%f\n", color); */
 
 	    }
@@ -1026,9 +1033,13 @@ double flux_disk(vec3 o, disk disk, double y_tilt, double z_tilt, double omega, 
 
 	      result_3 = result_3 + (F_0 * cos_on * S)/cos_rn_s;
 	      
-	      color = (F_0 * cos_on * S)/cos_rn_u;
-	      printf("%f\t %f\t %f\t %f\t %f\t %f\n", phase_orb*180.0/M_PI, pt.x, pt.y, pt.z, color, T);
-
+	      //color = (F_0 * cos_on * S)/cos_rn_u;
+	      if (picture == 1)
+		{
+		  printf("%f\t %f\t %f\t %f\t %f\n", phase_orb*180.0/M_PI, pt.x, pt.y, pt.z, T);
+		}
+	      else if (picture == 0)
+		{}
 	    }
 
 

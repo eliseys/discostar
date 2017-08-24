@@ -56,7 +56,8 @@ double * x_ray_direction_diagram(double PSI_pr)
   vec3 decrt;
   sp sphr;
 
-  double F[180]; /* directional diagram */
+  double F[180]; /* flux in f-th solid angle */
+  double I[180]; /* mean intensity in f-th solid angle */
 
   for (f = 0; f < 180; f++)
     {
@@ -102,11 +103,12 @@ double * x_ray_direction_diagram(double PSI_pr)
       epsilon_theta_n = delta_theta_n/N_theta;
       epsilon_phi_n = (2.0 * M_PI)/N_phi;
 
+
       for(i = 0; i <= N; i++)
 	{
 	  sphr = arcgen(theta_n, delta_theta_n, N_theta, N_phi, i);
 	  
-	  ds = epsilon_theta_n * epsilon_phi_n * sin(sphr.theta); /* surface element, r = 1.0 */
+	  ds = epsilon_theta_n * epsilon_phi_n * sin(sphr.theta); /* solid angle element */
 	  
 	  decrt = sp2dec(sphr);
 
@@ -116,31 +118,34 @@ double * x_ray_direction_diagram(double PSI_pr)
 
 	  if ( END[arc_n] <= 360.0 && sphr.phi >= (BEG[arc_n] * M_PI/180.0) && sphr.phi <= (END[arc_n] * M_PI/180.0) )
 	    {
+
 	      decrt = sp2dec(sphr);
-	      
 	      decrt = rotate(decrt, 0.0, -PSI_pr);
 	      decrt = rotate(decrt, angle_JI, 0.0);
 
 	      //printf("%.20f\t %.20f\t %.20f\t %.20f\n", decrt.x, decrt.y, decrt.z, intensity[arc_n]);
-
 	      
 	      sphr = dec2sp(decrt);
+	      
 	      
 	      f = (int) floor( sphr.theta * 180.0/M_PI );
 	      
 	      F[f] = F[f] + ds * intensity[arc_n];
+	      
 	    }
 	  else if ( END[arc_n] > 360.0 && sphr.phi >= (BEG[arc_n] * M_PI/180.0) || sphr.phi <= (END[arc_n] * M_PI/180.0 - 2.0 * M_PI) )
 	    {
-	      decrt = sp2dec(sphr);
 	      
+	      decrt = sp2dec(sphr);
 	      decrt = rotate(decrt, 0.0, -PSI_pr);
 	      decrt = rotate(decrt, angle_JI, 0.0);
 
 	      //printf("%.20f\t %.20f\t %.20f\t %.20f\n", decrt.x, decrt.y, decrt.z, intensity[arc_n]);
 	      
 	      sphr = dec2sp(decrt);
-	      
+
+	      //ds = epsilon_theta_n * epsilon_phi_n * sin(sphr.theta); /* surface element, r = 1.0 */
+
 	      f = (int) floor( sphr.theta * 180.0/M_PI );
 	      
 	      F[f] = F[f] + ds * intensity[arc_n];
@@ -156,22 +161,34 @@ double * x_ray_direction_diagram(double PSI_pr)
     }
 
   double * result = (double *) malloc(sizeof(double) * 180);
-
   
-  double F_sum = 0.0;
-  
-  for (f = 0; f < 180; f++)
-    {
-      F_sum = F_sum + F[f];
-      //printf("%.20f\n", F_sum);
-    }
+  double I_sum = 0.0;
+  double f_angle;
 
   for (f = 0; f < 180; f++)
     {
       //printf("%i\t %.20f\t %.20f\n", j, F[j], F_sum);
-      result[f] = 180.0 * F[f]/F_sum;
+
+      f_angle = (double) (f * M_PI/180.0 + 0.5 * M_PI/180.0); 
+	
+      I[f] = F[f]/(2.0 * M_PI * sin(f_angle) * M_PI/180.0); /* mean intensity in f-th zone */
+
       //printf("%.20f\n", result[f]);
     }
+  
+  for (f = 0; f < 180; f++)
+    {
+      I_sum = I_sum + I[f];
+      //printf("%.20f\n", F_sum);
+    }
+  
+  for (f = 0; f < 180; f++)
+    {
+      result[f] = I[f]/I_sum;
+      
+      //printf("%d\t %f\t %f\n", f, result[f], I_sum);
+    }
+
   
   return result;
 }

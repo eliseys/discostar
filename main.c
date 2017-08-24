@@ -25,7 +25,7 @@ int main(int argc, char **argv)
   double y_tilt2; 
   double z_tilt2;  
 
-  double b;      /* reserve parameter */ 
+  double picture;      /* print 3D picture */ 
 
   /* observer */
   double inclination;
@@ -43,6 +43,11 @@ int main(int argc, char **argv)
   double T_star;
   double lambda_A;
   double a_cm;
+
+  double PSI_pr;
+  double kappa; 
+
+  
   
   /**/
   
@@ -56,7 +61,7 @@ int main(int argc, char **argv)
   sscanf(argv[8], "%lf", &R); 
   sscanf(argv[9], "%lf", &y_tilt); 
   sscanf(argv[10], "%lf", &z_tilt);
-  sscanf(argv[11], "%lf", &b);
+  sscanf(argv[11], "%lf", &picture);
   sscanf(argv[12], "%lf", &inclination);
   sscanf(argv[13], "%d", &lc_num);
   sscanf(argv[14], "%d", &star_tiles);
@@ -68,6 +73,8 @@ int main(int argc, char **argv)
   sscanf(argv[20], "%lf", &a_cm);
   sscanf(argv[21], "%lf", &y_tilt2);
   sscanf(argv[22], "%lf", &z_tilt2);
+  sscanf(argv[23], "%lf", &PSI_pr);
+  sscanf(argv[24], "%lf", &kappa);
 
 
   /**/
@@ -83,6 +90,10 @@ int main(int argc, char **argv)
   y_tilt2 = y_tilt2 * (M_PI/180.0);
   z_tilt2 = z_tilt2 * (M_PI/180.0);
 
+  PSI_pr = PSI_pr * (M_PI/180.0);
+  kappa = kappa * (M_PI/180.0);
+
+  
   double omega = omg(q, mu);  /* Dimentionless potential */
 
   disk d;
@@ -116,14 +127,8 @@ int main(int argc, char **argv)
   /* double star_flx = flux_star(o, q, omega, beta, u, d, d2, Lx, albedo, star_tiles, T_star, lambda_cm, a_cm); */
 
   sp neutron_star_sp;
-  //neutron_star_sp.phi = 0.0;
-  //neutron_star_sp.theta = 0.0 * M_PI/180.0;
-  //neutron_star_sp.r = 1.0;
   
   vec3 neutron_star;
-
-  double PSI_pr = 180.0 * M_PI/180.0;
-  double kappa = 90.0 * M_PI/180.0; 
   
   int i; /* light curve step */
 
@@ -166,7 +171,7 @@ int main(int argc, char **argv)
 
       phase[i] = phi;
 
-      flx[i] = flux_disk(o, d, y_tilt, z_tilt, omega, q, disk_tiles, phi, T_disk, lambda_cm, a_cm) + flux_star(o, q, omega, beta, u, d, d2, Lx, albedo, star_tiles, T_star, lambda_cm, a_cm, neutron_star, PSI_pr);
+      flx[i] = flux_disk(o, d, y_tilt, z_tilt, omega, q, disk_tiles, phi, T_disk, lambda_cm, a_cm, picture) + flux_star(o, q, omega, beta, u, d, d2, Lx, albedo, star_tiles, T_star, lambda_cm, a_cm, neutron_star, PSI_pr, picture);
 
     }
 
@@ -182,7 +187,12 @@ int main(int argc, char **argv)
 
   for(i = 0; i < lc_num; i++)
     {
-      //printf("%.20f\t %.20f\n", phase[i]/(2.0 * M_PI), flx[i]/min);
+      if (picture == 0)
+	{
+	  printf("%.20f\t %.20f\n", phase[i]/(2.0 * M_PI), flx[i]/min);
+	}
+      else if (picture == 1)
+	{}
     }
   
   /* for(i = 0; i < lc_num; i++) */
