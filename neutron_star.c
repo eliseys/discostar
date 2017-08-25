@@ -40,7 +40,7 @@ sp arcgen(double theta, double delta_theta, double N_theta, double N_phi, int i)
 }
 
 
-double * x_ray_direction_diagram(double PSI_pr)
+double * x_ray_direction_diagram(double PSI_pr, double Lx)
 {
 
   //double PSI_pr = 330.0 * M_PI/180.0 ; /* NS precession angle */
@@ -181,14 +181,18 @@ double * x_ray_direction_diagram(double PSI_pr)
       I_sum = I_sum + I[f];
       //printf("%.20f\n", F_sum);
     }
+
+  double test = 0.0;
   
   for (f = 0; f < 180; f++)
     {
-      result[f] = I[f]/I_sum;
-      
+      result[f] = Lx * 4.0 * M_PI * I[f]/I_sum;
+
+      test = test + result[f];
       //printf("%d\t %f\t %f\n", f, result[f], I_sum);
     }
 
-  
+  printf("TEST %f\n", test/(4.0*M_PI));
+
   return result;
 }

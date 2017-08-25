@@ -501,7 +501,7 @@ double eclipse_by_disk(disk disk, vec3 o, vec3 p)
 }
 
 
-double flux_star(vec3 o, double q, double omega, double beta, double u, disk disk, vec3 d2, double Lx, double albedo, int tiles, double T, double lambda, double a, vec3 neutron_star, double PSI_pr, int picture)
+double flux_star(vec3 o, double q, double omega, double beta, double u, disk disk, vec3 d2, double Lx, double albedo, int tiles, double T, double lambda, double a, vec3 neutron_star, double PSI_pr, int picture, int isotrope)
 {
   /* */
   int steps = sqrt(tiles/2.0);
@@ -590,13 +590,16 @@ double flux_star(vec3 o, double q, double omega, double beta, double u, disk dis
 
   if (Ix_dd == NULL)
     {
-      Ix_dd = x_ray_direction_diagram(PSI_pr);
+      Ix_dd = x_ray_direction_diagram(PSI_pr, Lx);
     }
   else
     {}
   
   /* double *Fx_dd; */
   /* Fx_dd = x_ray_direction_diagram(PSI_pr); */
+
+
+  double Fx_sum = 0.0;
 
   
   int diagr_index;
@@ -696,6 +699,7 @@ double flux_star(vec3 o, double q, double omega, double beta, double u, disk dis
 	  //printf("%f\t %f\t %f\n", neutron_star.x, neutron_star.y, neutron_star.z);
 	  
 	  /* Surface element */
+	  
 	  S = a * a * r * r * sin(theta) * delta_phi * delta_theta / cos_rn;
 
 	  /* printf("%f\n", cos_rn); */
@@ -705,20 +709,23 @@ double flux_star(vec3 o, double q, double omega, double beta, double u, disk dis
 
 	  if ( cos_in < - eps && cos_irr > cos_disk_shadow_semi_angle && cos_irr2 > cos_disk_shadow_semi_angle || cos_in < - eps && cos_irr_min > cos_disk_shadow_semi_angle && cos_irr2_min > cos_disk_shadow_semi_angle)
 	    {
-	      /* Fx = Lx * S * fabs(cos_in) / (4.0 * M_PI * lps * lps); */
-	      
-	      Fx = Ix_dd[diagr_index] * (1.0 - albedo) * Lx * fabs(cos_in) / (lps * lps * a * a); /* */
-	      
-	      //Fx = (1.0 - albedo) * Lx * fabs(cos_in) / (4.0 * M_PI * lps * lps * a * a);
 
-	      /* printf("%f\n", Fx); */
+	      if (isotrope == 0)
+		{
+		  Fx = Ix_dd[diagr_index] * (1.0 - albedo) * fabs(cos_in) / (lps * lps * a * a);
+		}
+	      else if (isotrope == 1)
+		{
+		  Fx = (1.0 - albedo) * Lx * fabs(cos_in) / (4.0 * M_PI * lps * lps * a * a);
+		}
+
 	    }
 	  else
 	    {
 	      Fx = 0.0;
 	    }
+	  	  
 	  
-
 	  if (ray == 1.0 && cos_on > 0.0 + eps)
 	    {
 
@@ -742,7 +749,8 @@ double flux_star(vec3 o, double q, double omega, double beta, double u, disk dis
 	}
       
     }
-  
+
+  printf("FXSUM %f\n", Fx_sum);
   
   //free(Ix_dd);
   return result;
@@ -896,8 +904,7 @@ double flux_disk(vec3 o, disk disk, double y_tilt, double z_tilt, double omega, 
 	      theta_1 = 0.5 * M_PI + atan(h/R) + acos((h * h + R * R - R * delta_1)/sqrt((h * h + R * R)*(h * h + (R - delta_1)*(R - delta_1))));
 	      delta_theta = theta_1 - theta_0;
 	      /**/
-	      cos_on = dot(o,n2);
-	      
+	      cos_on = dot(o,n2);  
 	    }
 
 	  if (cos_on < -eps)

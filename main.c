@@ -25,7 +25,7 @@ int main(int argc, char **argv)
   double y_tilt2; 
   double z_tilt2;  
 
-  double picture;      /* print 3D picture */ 
+  int picture;      /* print 3D picture */ 
 
   /* observer */
   double inclination;
@@ -45,7 +45,9 @@ int main(int argc, char **argv)
   double a_cm;
 
   double PSI_pr;
-  double kappa; 
+  double kappa;
+
+  int isotrope;
 
   
   
@@ -61,7 +63,7 @@ int main(int argc, char **argv)
   sscanf(argv[8], "%lf", &R); 
   sscanf(argv[9], "%lf", &y_tilt); 
   sscanf(argv[10], "%lf", &z_tilt);
-  sscanf(argv[11], "%lf", &picture);
+  sscanf(argv[11], "%d", &picture);
   sscanf(argv[12], "%lf", &inclination);
   sscanf(argv[13], "%d", &lc_num);
   sscanf(argv[14], "%d", &star_tiles);
@@ -75,7 +77,7 @@ int main(int argc, char **argv)
   sscanf(argv[22], "%lf", &z_tilt2);
   sscanf(argv[23], "%lf", &PSI_pr);
   sscanf(argv[24], "%lf", &kappa);
-
+  sscanf(argv[25], "%d", &isotrope);
 
   /**/
 
@@ -92,7 +94,6 @@ int main(int argc, char **argv)
 
   PSI_pr = PSI_pr * (M_PI/180.0);
   kappa = kappa * (M_PI/180.0);
-
   
   double omega = omg(q, mu);  /* Dimentionless potential */
 
@@ -171,7 +172,7 @@ int main(int argc, char **argv)
 
       phase[i] = phi;
 
-      flx[i] = flux_disk(o, d, y_tilt, z_tilt, omega, q, disk_tiles, phi, T_disk, lambda_cm, a_cm, picture) + flux_star(o, q, omega, beta, u, d, d2, Lx, albedo, star_tiles, T_star, lambda_cm, a_cm, neutron_star, PSI_pr, picture);
+      flx[i] = flux_disk(o, d, y_tilt, z_tilt, omega, q, disk_tiles, phi, T_disk, lambda_cm, a_cm, picture) + flux_star(o, q, omega, beta, u, d, d2, Lx, albedo, star_tiles, T_star, lambda_cm, a_cm, neutron_star, PSI_pr, picture, isotrope);
 
     }
 
