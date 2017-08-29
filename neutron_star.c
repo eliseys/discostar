@@ -192,7 +192,6 @@ double * x_ray_direction_diagram(double PSI_pr, double Lx)
       //printf("%d\t %f\t %f\n", f, result[f], I_sum);
     }
 
-  printf("TEST %f\n", test/(4.0*M_PI));
 
   return result;
 }

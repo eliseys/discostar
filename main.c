@@ -164,11 +164,7 @@ int main(int argc, char **argv)
       neutron_star = sp2dec(neutron_star_sp);      
       neutron_star = rotate(neutron_star, 0.0, -phi);
       
-      //printf("%f\t %f\t %f\n",neutron_star.x, neutron_star.y, neutron_star.z);
-
       neutron_star = axrot(neutron_star, o, kappa);
-
-      //printf("%f\t %f\t %f\n",neutron_star.x,  neutron_star.y, neutron_star.z);
 
       phase[i] = phi;
 

@@ -750,7 +750,6 @@ double flux_star(vec3 o, double q, double omega, double beta, double u, disk dis
       
     }
 
-  printf("FXSUM %f\n", Fx_sum);
   
   //free(Ix_dd);
   return result;

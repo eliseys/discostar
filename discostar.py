@@ -49,6 +49,7 @@ elif picture == 1:
 
 output_filename = output.format(z_tilt = z_tilt)
 
+
 arg = ('./disco' + ' ' + 
        str(p['q']) + ' ' +
        str(p['mu']) + ' ' +
