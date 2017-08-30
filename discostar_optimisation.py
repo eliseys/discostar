@@ -70,7 +70,12 @@ isotrope = p['isotrope']
 
 #output_filename = 'discostar_optimisation_logs'
 
-def flx(kappa):    
+def flx(z_tilt, PSI_pr, kappa):
+    
+    p['z_tilt'] = z_tilt
+    p['PSI_pr'] = PSI_pr    
+    p['kappa'] = kappa
+    
     arg = ['./disco',
            str(p['q']),
            str(p['mu']),
@@ -112,3 +117,13 @@ def flx(kappa):
 
 
 result = flx(30.0)
+
+
+def r2sum():
+    
+    f = flx(Lx, T_disk, y_tilt, y_tilt2, z_tilt2, z_tilt)
+    
+    r_2 = (y_obs - f(x_obs))**(2.0)/len(x_obs)
+    
+    return r_2.sum()
+
