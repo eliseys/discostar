@@ -59,7 +59,7 @@ vec3 axrot(vec3 a, vec3 u, double theta);
 
 double F_lambda(double T, double lambda);
 
-sp arcgen(double theta, double delta_theta, double N_theta, double N_phi, int i);
+sp arcgen(double theta, double N_phi, int i);
 double * x_ray_direction_diagram(double PSI_pr, double Lx);
 
 double fr(double r, double phi, double theta, double q, double omega);

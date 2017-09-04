@@ -12,21 +12,21 @@ albedo	     0.5
 # NS X-RAY LUMINOSITY, ERG/S; ORIENTATON
 #---------------------------------------
 
-Lx		5.0e+37
-PSI_pr		90.0
-kappa		90.0
+Lx		1.0e+38
+PSI_pr		0.0
+kappa		140.0
 isotrope	0
 
 #---------------------------------------
 # DISK PARAMETERS
 #---------------------------------------
 
-h		0.046
+h		0.023
 R		0.23
 y_tilt		20.0
-z_tilt		0.0
+z_tilt		36.0
 y_tilt2		20.0
-z_tilt2		0.0	
+z_tilt2		-50.0	
 
 #---------------------------------------
 # TEMPERATURES, KELVINS
@@ -57,7 +57,7 @@ a 	    	6.35e11
 # NUMBER OF LIGHT CURVE POINTS
 #---------------------------------------
 
-lc_num	     	5
+lc_num	     	100
 
 #---------------------------------------
 # STAR AND DISK TILES NUMBER
@@ -76,4 +76,4 @@ threads		4
 # PRINT 3D-PICTURE
 #---------------------------------------
 
-picture		1
+picture		0
