@@ -12,9 +12,9 @@ albedo	     0.5
 # NS X-RAY LUMINOSITY, ERG/S; ORIENTATON
 #---------------------------------------
 
-Lx		1.0e+38
+Lx		5.0e+37
 PSI_pr		0.0
-kappa		140.0
+kappa		-45.0
 isotrope	0
 
 #---------------------------------------
@@ -24,7 +24,7 @@ isotrope	0
 h		0.023
 R		0.23
 y_tilt		20.0
-z_tilt		36.0
+z_tilt		90.0
 y_tilt2		20.0
 z_tilt2		-50.0	
 

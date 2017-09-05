@@ -186,7 +186,7 @@ int main(int argc, char **argv)
     {
       if (picture == 0)
 	{
-	  //printf("%.20f\t %.20f\n", phase[i]/(2.0 * M_PI), flx[i]/min);
+	  printf("%.20f\t %.20f\n", phase[i]/(2.0 * M_PI), flx[i]/min);
 	}
       else if (picture == 1)
 	{}
