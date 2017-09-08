@@ -600,7 +600,7 @@ double flux_star(vec3 o, double q, double omega, double beta, double u, disk dis
 
 
   double Fx_sum = 0.0;
-
+  sp star_surface_spherical_coordinates;
   
   int diagr_index;
 
@@ -740,7 +740,8 @@ double flux_star(vec3 o, double q, double omega, double beta, double u, disk dis
 	      //color = F_0 * (1 - u + u * cos_on) * pow(g,beta) * cos_on * S;
 	      if (picture == 1)
 		{
-		  printf("%f\t %f\t %f\t %f\t %f\n", phase_orb*180.0/M_PI , p.x, p.y, p.z, T_sum);
+		  star_surface_spherical_coordinates = dec2sp(p);
+		  printf("%f\t %f\t %f\t %f\t %f\t %f\t %f\n", phase_orb*180.0/M_PI , p.x, p.y, p.z, T_sum, star_surface_spherical_coordinates.phi, star_surface_spherical_coordinates.theta);
 		}
 	      else if (picture == 0)
 		{}

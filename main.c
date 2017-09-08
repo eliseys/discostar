@@ -143,6 +143,9 @@ int main(int argc, char **argv)
   for(i = 0; i < lc_num; i++)
     {
       phi = (double) i * 2.0 * M_PI/(lc_num - 1) - M_PI;
+
+      phi = - phi;
+
       o.x = sin(inclination) * cos(phi);
       o.y = sin(inclination) * sin(phi);
       o.z = cos(inclination);
@@ -157,13 +160,16 @@ int main(int argc, char **argv)
       d2.y = h * sin(y_tilt2) * sin(z_tilt + z_tilt2 - phi + M_PI);
       d2.z = h * cos(y_tilt2);
 
-      neutron_star_sp.phi = 0.0;
-      neutron_star_sp.theta = 0.0 * M_PI/180.0;
+      neutron_star_sp.phi = 0.0 * M_PI/180.0;
+      //neutron_star_sp.theta = 3.0 * M_PI/180.0;
+      neutron_star_sp.theta = 3.0 * M_PI/180.0;
       neutron_star_sp.r = 1.0;
 
       neutron_star = sp2dec(neutron_star_sp);      
       neutron_star = rotate(neutron_star, 0.0, -phi);
-      
+
+
+
       neutron_star = axrot(neutron_star, o, kappa);
 
       phase[i] = phi;

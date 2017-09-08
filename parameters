@@ -12,21 +12,24 @@ albedo	     0.5
 # NS X-RAY LUMINOSITY, ERG/S; ORIENTATON
 #---------------------------------------
 
-Lx		5.0e+37
+Lx		2.0e+37
 PSI_pr		0.0
-kappa		-45.0
+kappa		10.0
 isotrope	0
 
 #---------------------------------------
 # DISK PARAMETERS
 #---------------------------------------
 
-h		0.023
+#h		0.0345
+#h		0.0161
+h		0.0115
+#h		0.023
 R		0.23
-y_tilt		20.0
+y_tilt		20.0 
 z_tilt		90.0
 y_tilt2		20.0
-z_tilt2		-50.0	
+z_tilt2		-30.0	
 
 #---------------------------------------
 # TEMPERATURES, KELVINS
@@ -39,7 +42,7 @@ T_star	  	8400.0
 # OBSERVER
 #---------------------------------------
 
-inclination	85.0
+inclination	80.0
 
 #---------------------------------------
 # ANGSTREM
