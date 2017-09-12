@@ -39,6 +39,8 @@ kappa = p['kappa'];
 
 isotrope = p['isotrope']
 
+Lx_isotrope = p['Lx_disk']
+
 #output = 'LC_{q}_{mu}_{beta}_{u}_{albedo}_{Lx}_{h}_{R}_{y_tilt}_{z_tilt}_{b}_{inclination}_{lc_num}_{star_tiles}_{disk_tiles}_{threads}_{T_disk}_{T_star}_{lambda_A}_{y_tilt2}_{z_tilt2}.data'
 #output_filename = output.format(q=q, mu=mu, beta=beta, u=u, albedo=albedo, Lx=Lx, h=h, R=R, y_tilt=y_tilt, z_tilt=z_tilt, b=b, inclination=inclination, lc_num=lc_num, star_tiles=star_tiles, disk_tiles=disk_tiles, threads=threads, T_disk = T_disk, T_star = T_star, lambda_A = lambda_A, y_tilt2 = y_tilt2, z_tilt2 = z_tilt2)
 
@@ -75,7 +77,8 @@ arg = ('./disco' + ' ' +
        str(p['z_tilt2']) + ' ' +
        str(p['PSI_pr']) + ' ' +
        str(p['kappa']) + ' ' +
-       str(p['isotrope'])
+       str(p['isotrope']) + ' ' +
+       str(p['Lx_disk'])
 )
 
 
@@ -99,11 +102,13 @@ print '|', 'z_tilt', '\t', p['z_tilt'],'\t', '|', 'z_tilt2', '\t', p['z_tilt2'],
 print '-----------------------------------------------------------------------------------------'
 print '|', 'inclination', '\t', p['inclination'],'\t'
 print '-----------------------------------------------------------------------------------------'
+print '|', 'Lx_disk', '\t', p['Lx_disk'],'\t'
+print '-----------------------------------------------------------------------------------------'
 
 
 f = open('./'+direct+'/'+output_filename, "w")    
-subprocess.call(arg, stdout=f, shell=True)
-#subprocess.call(arg, shell=True)
+#subprocess.call(arg, stdout=f, shell=True)
+subprocess.call(arg, shell=True)
 
 f.close
 

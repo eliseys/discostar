@@ -501,7 +501,7 @@ double eclipse_by_disk(disk disk, vec3 o, vec3 p)
 }
 
 
-double flux_star(vec3 o, double q, double omega, double beta, double u, disk disk, vec3 d2, double Lx, double albedo, int tiles, double T, double lambda, double a, vec3 neutron_star, double PSI_pr, int picture, int isotrope)
+double flux_star(vec3 o, double q, double omega, double beta, double u, disk disk, vec3 d2, double Lx, double Lx_disk, double albedo, int tiles, double T, double lambda, double a, vec3 neutron_star, double PSI_pr, int picture, int isotrope)
 {
   /* */
   int steps = sqrt(tiles/2.0);
@@ -690,7 +690,7 @@ double flux_star(vec3 o, double q, double omega, double beta, double u, disk dis
 	  cos_irr2 = dot(psn, hn2);
 
 	  cos_in  = dot(psn, n);
-
+	  
 	  cos_irr_min = dot(psn, hn_min);
 	  cos_irr2_min = dot(psn, hn2_min);
 
@@ -712,7 +712,7 @@ double flux_star(vec3 o, double q, double omega, double beta, double u, disk dis
 
 	      if (isotrope == 0)
 		{
-		  Fx = Ix_dd[diagr_index] * (1.0 - albedo) * fabs(cos_in) / (lps * lps * a * a);
+		  Fx = Ix_dd[diagr_index] * (1.0 - albedo) * fabs(cos_in) / (lps * lps * a * a) + (1.0 - albedo) * Lx_disk * cos_irr * fabs(cos_in) / (4.0 * M_PI * lps * lps * a * a);
 		}
 	      else if (isotrope == 1)
 		{
@@ -834,13 +834,19 @@ double flux_disk(vec3 o, disk disk, double y_tilt, double z_tilt, double omega, 
 
   double T_scale = T; /* temperature on radius rho_scale */
   double T_rho;
-
+  double T_spot = 30000.0;
+  double T_color; /* picture color */
   
   double color;
 
+  sp disk_spherical_coord;
+
+  
   /* */
   double F_0 = F_lambda(T, lambda); /* temperature may depend on rho, in that case set it in the cycle below */
-    
+
+  double F_spot = F_lambda(T_spot, lambda); /* side of the disk */
+
   /* from top side of the disk */
   double result_1 = 0.0;
   /* from ridge of the disk */
@@ -1038,12 +1044,28 @@ double flux_disk(vec3 o, disk disk, double y_tilt, double z_tilt, double omega, 
 	      /* side surface */
 	      /* printf("%f\t %f\t %f\n", pt.x, pt.y, pt.z); */
 
-	      result_3 = result_3 + (F_0 * cos_on * S)/cos_rn_s;
+
+	      disk_spherical_coord = dec2sp(pt);
 	      
+	      printf("%d\t\t%f\n", i, disk_spherical_coord.phi);
+		
+	      if (disk_spherical_coord.phi >= (0.0 * M_PI/180.0) /* && disk_spherical_coord.phi <= (270.0 * M_PI/180.0) */ )
+		{
+		  result_3 = result_3 + (F_spot * cos_on * S)/cos_rn_s;
+		  T_color = T_spot;
+		  
+		}
+	      else
+		{
+		  result_3 = result_3 + (F_0 * cos_on * S)/cos_rn_s;
+		  T_color = T;
+		}
+	      //result_3 = result_3 + (F_side * cos_on * S)/cos_rn_s;
+
 	      //color = (F_0 * cos_on * S)/cos_rn_u;
 	      if (picture == 1)
 		{
-		  printf("%f\t %f\t %f\t %f\t %f\n", phase_orb*180.0/M_PI, pt.x, pt.y, pt.z, T);
+		  printf("%f\t %f\t %f\t %f\t %f\n", phase_orb*180.0/M_PI, pt.x, pt.y, pt.z, T_color);
 		}
 	      else if (picture == 0)
 		{}

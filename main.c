@@ -49,7 +49,7 @@ int main(int argc, char **argv)
 
   int isotrope;
 
-  
+  double Lx_disk;
   
   /**/
   
@@ -78,6 +78,7 @@ int main(int argc, char **argv)
   sscanf(argv[23], "%lf", &PSI_pr);
   sscanf(argv[24], "%lf", &kappa);
   sscanf(argv[25], "%d", &isotrope);
+  sscanf(argv[26], "%lf", &Lx_disk);
 
   /**/
 
@@ -144,8 +145,6 @@ int main(int argc, char **argv)
     {
       phi = (double) i * 2.0 * M_PI/(lc_num - 1) - M_PI;
 
-      phi = - phi;
-
       o.x = sin(inclination) * cos(phi);
       o.y = sin(inclination) * sin(phi);
       o.z = cos(inclination);
@@ -162,19 +161,20 @@ int main(int argc, char **argv)
 
       neutron_star_sp.phi = 0.0 * M_PI/180.0;
       //neutron_star_sp.theta = 3.0 * M_PI/180.0;
-      neutron_star_sp.theta = 3.0 * M_PI/180.0;
+
+      /* new angle !!! */
+      neutron_star_sp.theta = 10.0 * M_PI/180.0;
+      
       neutron_star_sp.r = 1.0;
 
       neutron_star = sp2dec(neutron_star_sp);      
       neutron_star = rotate(neutron_star, 0.0, -phi);
 
-
-
       neutron_star = axrot(neutron_star, o, kappa);
 
       phase[i] = phi;
 
-      flx[i] = flux_disk(o, d, y_tilt, z_tilt, omega, q, disk_tiles, phi, T_disk, lambda_cm, a_cm, picture) + flux_star(o, q, omega, beta, u, d, d2, Lx, albedo, star_tiles, T_star, lambda_cm, a_cm, neutron_star, PSI_pr, picture, isotrope);
+      flx[i] = flux_disk(o, d, y_tilt, z_tilt, omega, q, disk_tiles, phi, T_disk, lambda_cm, a_cm, picture) + flux_star(o, q, omega, beta, u, d, d2, Lx, Lx_disk, albedo, star_tiles, T_star, lambda_cm, a_cm, neutron_star, PSI_pr, picture, isotrope);
 
     }
 
