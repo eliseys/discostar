@@ -50,6 +50,8 @@ int main(int argc, char **argv)
   int isotrope;
 
   double Lx_disk;
+
+  int spot_disk;
   
   /**/
   
@@ -79,6 +81,7 @@ int main(int argc, char **argv)
   sscanf(argv[24], "%lf", &kappa);
   sscanf(argv[25], "%d", &isotrope);
   sscanf(argv[26], "%lf", &Lx_disk);
+  sscanf(argv[27], "%d", &spot_disk);
 
   /**/
 
@@ -174,7 +177,7 @@ int main(int argc, char **argv)
 
       phase[i] = phi;
 
-      flx[i] = flux_disk(o, d, y_tilt, z_tilt, omega, q, disk_tiles, phi, T_disk, lambda_cm, a_cm, picture) + flux_star(o, q, omega, beta, u, d, d2, Lx, Lx_disk, albedo, star_tiles, T_star, lambda_cm, a_cm, neutron_star, PSI_pr, picture, isotrope);
+      flx[i] = flux_disk(o, d, y_tilt, z_tilt, omega, q, disk_tiles, phi, T_disk, lambda_cm, a_cm, picture, spot_disk) + flux_star(o, q, omega, beta, u, d, d2, Lx, Lx_disk, albedo, star_tiles, T_star, lambda_cm, a_cm, neutron_star, PSI_pr, picture, isotrope);
 
     }
 

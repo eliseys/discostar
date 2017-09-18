@@ -758,7 +758,7 @@ double flux_star(vec3 o, double q, double omega, double beta, double u, disk dis
 }
 
 
-double flux_disk(vec3 o, disk disk, double y_tilt, double z_tilt, double omega, double q, int disk_tiles, double phi_orb, double T, double lambda, double a, int picture)
+double flux_disk(vec3 o, disk disk, double y_tilt, double z_tilt, double omega, double q, int disk_tiles, double phi_orb, double T, double lambda, double a, int picture, int spot_disk)
 {
 
   sp coord = dec2sp(o);
@@ -797,6 +797,8 @@ double flux_disk(vec3 o, disk disk, double y_tilt, double z_tilt, double omega, 
   vec3 pn;
   vec3 ps;
 
+  vec3 pt_non_shifted;
+  
   /* unity normal vectors to top and bottom surface of the disk */
   vec3 n1;
   n1.x = disk.h.x/h;
@@ -834,7 +836,7 @@ double flux_disk(vec3 o, disk disk, double y_tilt, double z_tilt, double omega, 
 
   double T_scale = T; /* temperature on radius rho_scale */
   double T_rho;
-  double T_spot = 30000.0;
+  double T_spot = 45000.0;
   double T_color; /* picture color */
   
   double color;
@@ -1043,19 +1045,29 @@ double flux_disk(vec3 o, disk disk, double y_tilt, double z_tilt, double omega, 
 	    {
 	      /* side surface */
 	      /* printf("%f\t %f\t %f\n", pt.x, pt.y, pt.z); */
+	      pt_non_shifted.x = pt.x - 1.0;
+	      pt_non_shifted.y = pt.y;
+	      pt_non_shifted.z = pt.z;
 
-
-	      disk_spherical_coord = dec2sp(pt);
+	      disk_spherical_coord = dec2sp(pt_non_shifted);
 	      
-	      printf("%d\t\t%f\n", i, disk_spherical_coord.phi);
-		
-	      if (disk_spherical_coord.phi >= (0.0 * M_PI/180.0) /* && disk_spherical_coord.phi <= (270.0 * M_PI/180.0) */ )
+	      //printf("%d\t%f\t\t%f\n", i, (phi_orb * 180.0/M_PI + 180.0), disk_spherical_coord.phi);
+
+	      if (spot_disk == 1)
 		{
-		  result_3 = result_3 + (F_spot * cos_on * S)/cos_rn_s;
-		  T_color = T_spot;
-		  
+		  if ( disk_spherical_coord.phi >= (200.0 * M_PI/180.0) && disk_spherical_coord.phi <= (290.0 * M_PI/180.0) )
+		    {
+		      result_3 = result_3 + (F_spot * cos_on * S)/cos_rn_s;
+		      T_color = T_spot;
+		      
+		    }
+		  else
+		    {
+		      result_3 = result_3 + (F_0 * cos_on * S)/cos_rn_s;
+		      T_color = T;
+		    }
 		}
-	      else
+	      else if (spot_disk == 0)
 		{
 		  result_3 = result_3 + (F_0 * cos_on * S)/cos_rn_s;
 		  T_color = T;
