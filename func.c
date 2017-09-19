@@ -758,7 +758,7 @@ double flux_star(vec3 o, double q, double omega, double beta, double u, disk dis
 }
 
 
-double flux_disk(vec3 o, disk disk, double y_tilt, double z_tilt, double omega, double q, int disk_tiles, double phi_orb, double T, double lambda, double a, int picture, int spot_disk)
+double flux_disk(vec3 o, disk disk, double y_tilt, double z_tilt, double omega, double q, int disk_tiles, double phi_orb, double T, double lambda, double a, int picture, int spot_disk, double T_spot, double spot_beg, double spot_end)
 {
 
   sp coord = dec2sp(o);
@@ -836,7 +836,6 @@ double flux_disk(vec3 o, disk disk, double y_tilt, double z_tilt, double omega, 
 
   double T_scale = T; /* temperature on radius rho_scale */
   double T_rho;
-  double T_spot = 45000.0;
   double T_color; /* picture color */
   
   double color;
@@ -1055,7 +1054,7 @@ double flux_disk(vec3 o, disk disk, double y_tilt, double z_tilt, double omega, 
 
 	      if (spot_disk == 1)
 		{
-		  if ( disk_spherical_coord.phi >= (200.0 * M_PI/180.0) && disk_spherical_coord.phi <= (290.0 * M_PI/180.0) )
+		  if ( disk_spherical_coord.phi >= spot_beg && disk_spherical_coord.phi <= spot_end )
 		    {
 		      result_3 = result_3 + (F_spot * cos_on * S)/cos_rn_s;
 		      T_color = T_spot;

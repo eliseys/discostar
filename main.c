@@ -52,6 +52,11 @@ int main(int argc, char **argv)
   double Lx_disk;
 
   int spot_disk;
+  double T_spot;
+  double spot_beg;
+  double spot_end;
+
+  double ns_theta;
   
   /**/
   
@@ -82,6 +87,11 @@ int main(int argc, char **argv)
   sscanf(argv[25], "%d", &isotrope);
   sscanf(argv[26], "%lf", &Lx_disk);
   sscanf(argv[27], "%d", &spot_disk);
+  sscanf(argv[28], "%lf", &T_spot);
+  sscanf(argv[29], "%lf", &spot_beg);
+  sscanf(argv[30], "%lf", &spot_end);
+  sscanf(argv[31], "%lf", &ns_theta);
+
 
   /**/
 
@@ -98,6 +108,9 @@ int main(int argc, char **argv)
 
   PSI_pr = PSI_pr * (M_PI/180.0);
   kappa = kappa * (M_PI/180.0);
+
+  spot_beg = spot_beg * (M_PI/180.0);
+  spot_end = spot_end * (M_PI/180.0);
   
   double omega = omg(q, mu);  /* Dimentionless potential */
 
@@ -166,7 +179,7 @@ int main(int argc, char **argv)
       //neutron_star_sp.theta = 3.0 * M_PI/180.0;
 
       /* new angle !!! */
-      neutron_star_sp.theta = 10.0 * M_PI/180.0;
+      neutron_star_sp.theta = ns_theta * M_PI/180.0;
       
       neutron_star_sp.r = 1.0;
 
@@ -177,7 +190,7 @@ int main(int argc, char **argv)
 
       phase[i] = phi;
 
-      flx[i] = flux_disk(o, d, y_tilt, z_tilt, omega, q, disk_tiles, phi, T_disk, lambda_cm, a_cm, picture, spot_disk) + flux_star(o, q, omega, beta, u, d, d2, Lx, Lx_disk, albedo, star_tiles, T_star, lambda_cm, a_cm, neutron_star, PSI_pr, picture, isotrope);
+      flx[i] = flux_disk(o, d, y_tilt, z_tilt, omega, q, disk_tiles, phi, T_disk, lambda_cm, a_cm, picture, spot_disk, T_spot, spot_beg, spot_end) + flux_star(o, q, omega, beta, u, d, d2, Lx, Lx_disk, albedo, star_tiles, T_star, lambda_cm, a_cm, neutron_star, PSI_pr, picture, isotrope);
 
     }
 
