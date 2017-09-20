@@ -63,7 +63,7 @@ a 	    	6.35e11
 # NUMBER OF LIGHT CURVE POINTS
 #---------------------------------------
 
-lc_num	     	100
+lc_num	     	5
 
 #---------------------------------------
 # STAR AND DISK TILES NUMBER
@@ -82,4 +82,4 @@ threads		4
 # PRINT 3D-PICTURE
 #---------------------------------------
 
-picture		0
+picture		1

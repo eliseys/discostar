@@ -97,6 +97,10 @@ int main(int argc, char **argv)
 
   double A_cm = 1E-8;
   double lambda_cm = lambda_A * A_cm;
+
+
+  /* h in the parameters list is the full width of the disk */
+  h = h * 0.5; /* here h is the semiwidth of the disk */
   
   /* convert angles to radians */
   y_tilt = y_tilt * (M_PI/180.0);
@@ -111,6 +115,8 @@ int main(int argc, char **argv)
 
   spot_beg = spot_beg * (M_PI/180.0);
   spot_end = spot_end * (M_PI/180.0);
+
+  
   
   double omega = omg(q, mu);  /* Dimentionless potential */
 

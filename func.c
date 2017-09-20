@@ -817,6 +817,7 @@ double flux_disk(vec3 o, disk disk, double y_tilt, double z_tilt, double omega, 
   vec3 nu, nd, ns;
   
   double lp;
+  double len_nu, len_nd;
   
   /* dot products */
   double cos_rn_u;
@@ -928,6 +929,17 @@ double flux_disk(vec3 o, disk disk, double y_tilt, double z_tilt, double omega, 
 	  p.z = r * cos(theta);
 
 
+	  /* disk with complex profile h = h(rho) */
+
+	  if (j <= N - 1)
+	    {
+	      p.z = p.z + (h * sqrt(p.x*p.x + p.y*p.y))/R - h;
+	    }
+	  if (j >= M && j <= steps_theta)
+	    {
+	      p.z = p.z - (h * sqrt(p.x*p.x + p.y*p.y))/R + h;
+	    }
+
 	  /* Temperature profile of the disk */
 	  rho = r * sin(theta);
 	  
@@ -947,7 +959,7 @@ double flux_disk(vec3 o, disk disk, double y_tilt, double z_tilt, double omega, 
 	  ps.x = p.x + 1.0;
 	  ps.y = p.y;
 	  ps.z = p.z;
-	  
+
 	  /* normalized radius vector */
 	  lp = len(p);
 	  pn.x = p.x/lp;
@@ -956,15 +968,35 @@ double flux_disk(vec3 o, disk disk, double y_tilt, double z_tilt, double omega, 
 
 	  /* surface normal vectors */
 	  /* top of the disc */
+	  /* simple constant profile disk */
 	  nu.x = 0.0;
 	  nu.y = 0.0;
 	  nu.z = 1.0;
+
+	  /* normal vector for complex profile disk */
+	  nu.x = -(h/R) * p.x/sqrt(p.x*p.x + p.y*p.y);
+	  nu.y = -(h/R) * p.y/sqrt(p.x*p.x + p.y*p.y);
+	  nu.z = 1.0;
+
+	  len_nu = len(nu);
+	  nu.x = nu.x/len_nu;
+	  nu.y = nu.y/len_nu;
+	  nu.z = nu.z/len_nu;
+	  /**/
 	  
 	  /* bottom of the disc */
-	  nd.x = 0.0;
-	  nd.y = 0.0;
+	  /* simple constant profile disk */	  
+	  nd.x = (h/R) * p.x/sqrt(p.x*p.x + p.y*p.y);
+	  nd.y = (h/R) * p.y/sqrt(p.x*p.x + p.y*p.y);
 	  nd.z = -1.0;
 
+
+	  len_nd = len(nd);
+	  nd.x = nd.x/len_nd;
+	  nd.y = nd.y/len_nd;
+	  nd.z = nd.z/len_nd;
+
+	  
 	  /* side of the disc */
 	  ns.x = cos(phi);
 	  ns.y = sin(phi);
