@@ -23,29 +23,34 @@ isotrope	0
 # DISK PARAMETERS
 #---------------------------------------
 
-h		0.023
+h		0.105
 R		0.23
-y_tilt		15.0 
-z_tilt		54.0
-y_tilt2		15.0
-z_tilt2		-25.0	
-spot_disk	0
-T_spot		0.0
-spot_beg	120.0
+y_tilt		0.0 
+z_tilt		0.0
+y_tilt2		0.0
+z_tilt2		0.0
+
+# 0,1,2,3 -- none, top, side, bottom
+spot_disk    	0
+
+T_spot		30000.0
+spot_beg	90.0
 spot_end	180.0
+spot_rho_in	0.15
+spot_rho_out	0.20
 
 #---------------------------------------
 # TEMPERATURES, KELVINS
 #---------------------------------------
 
-T_disk		17000.0
+T_disk		15000.0
 T_star	  	8400.0
 
 #---------------------------------------
 # OBSERVER
 #---------------------------------------
 
-inclination	80.0
+inclination	85.0
 
 #---------------------------------------
 # ANGSTREM

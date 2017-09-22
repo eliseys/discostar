@@ -57,6 +57,9 @@ int main(int argc, char **argv)
   double spot_end;
 
   double ns_theta;
+
+  double spot_rho_in;
+  double spot_rho_out;
   
   /**/
   
@@ -91,6 +94,8 @@ int main(int argc, char **argv)
   sscanf(argv[29], "%lf", &spot_beg);
   sscanf(argv[30], "%lf", &spot_end);
   sscanf(argv[31], "%lf", &ns_theta);
+  sscanf(argv[32], "%lf", &spot_rho_in);
+  sscanf(argv[33], "%lf", &spot_rho_out);
 
 
   /**/
@@ -196,7 +201,7 @@ int main(int argc, char **argv)
 
       phase[i] = phi;
 
-      flx[i] = flux_disk(o, d, y_tilt, z_tilt, omega, q, disk_tiles, phi, T_disk, lambda_cm, a_cm, picture, spot_disk, T_spot, spot_beg, spot_end) + flux_star(o, q, omega, beta, u, d, d2, Lx, Lx_disk, albedo, star_tiles, T_star, lambda_cm, a_cm, neutron_star, PSI_pr, picture, isotrope);
+      flx[i] = flux_disk(o, d, y_tilt, z_tilt, omega, q, disk_tiles, phi, T_disk, lambda_cm, a_cm, picture, spot_disk, T_spot, spot_beg, spot_end, spot_rho_in, spot_rho_out) + flux_star(o, q, omega, beta, u, d, d2, Lx, Lx_disk, albedo, star_tiles, T_star, lambda_cm, a_cm, neutron_star, PSI_pr, picture, isotrope);
 
     }
 
