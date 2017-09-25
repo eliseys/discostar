@@ -428,7 +428,16 @@ double distance_to_disk_inside(vec3 p, disk disk)
   double r1 = sqrt(fabs(r * r - (hr * hr)/(h * h)));
   double r2 = fabs(hr/h); 
 
-  double d = r1 - R;
+  double d;
+  
+  if (r2 < h)
+    {
+      d = - (r1 - R);
+    }
+  else if (r2 >= h)
+    {
+      d = sqrt((r1 - R) * (r1 - R) + (r2 - h) * (r2 - h));
+    }
 
   return d;
 }
@@ -589,12 +598,13 @@ double eclipse_by_disk_inside(disk disk, vec3 o, vec3 p)
 
   double ray;
   
-  if (result < eps && direction_test < 0.0)
+  if (result < eps && direction_test < 0.0 )
     ray = 1.0;
   else if (result < eps && direction_test > 0.0 )
     ray = 0.0;
-  else if (result > eps)
+  else if (result > eps )
     ray = 1.0;
+
 
   return ray;
 }
@@ -835,6 +845,7 @@ double flux_star(vec3 o, double q, double omega, double beta, double u, disk dis
 	      F_0 = F_lambda(T_sum, lambda);
 	      
 	      result = result + F_0 * (1 - u + u * cos_on) * pow(g,beta) * cos_on * S;
+
 	      
 	      //color = F_0 * (1 - u + u * cos_on) * pow(g,beta) * cos_on * S;
 	      if (picture == 1)
@@ -934,6 +945,7 @@ double flux_disk(vec3 o, disk disk, double y_tilt, double z_tilt, double omega, 
     
   /* overlapping */
   double ray;
+  double ray_2;
 
   /* */
   double S_sp, S_cy;
@@ -965,6 +977,9 @@ double flux_disk(vec3 o, disk disk, double y_tilt, double z_tilt, double omega, 
   double result_3 = 0.0;
 
   double cos_on;
+  double cos_on1;
+  double cos_on2;
+
   double cos_onut;
   double cos_ondt;
   double cos_onst;
@@ -1129,7 +1144,7 @@ double flux_disk(vec3 o, disk disk, double y_tilt, double z_tilt, double omega, 
 	  S_sp = a * a * r * r * sin(theta) * delta_phi * delta_theta;
 
 	  /* cylindrical surface element */
-	  S_cy = a * r * delta_phi * delta_N;
+	  S_cy = a * a * r * delta_phi * delta_N;
  
 	  
 	  /* tilt and shift disc */
@@ -1173,10 +1188,14 @@ double flux_disk(vec3 o, disk disk, double y_tilt, double z_tilt, double omega, 
 	  
 	  disk_spherical_coord = dec2sp(pt_non_shifted);
 
-	  //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-	  //ray_2 = eclipse_by_disk_inside();
+	  //cos_on1 = dot(n1,o);
+	  //cos_on2 = dot(n2,o);
+
 	  
-	  if ( j <= N - 1 && ray == 1.0 && cos_onut > eps)
+	  ray_2 = eclipse_by_disk_inside(disk, o, pt_non_shifted);
+	  //ray_2 = 1.0;
+	  
+	  if ( j <= N - 1 && ray == 1.0  &&  ray_2 == 1.0  && cos_onut > eps )
 	    {
 	      /* top surface */
 	      /* printf("%f\t %f\t %f\n", pt.x, pt.y, pt.z); */
@@ -1186,19 +1205,22 @@ double flux_disk(vec3 o, disk disk, double y_tilt, double z_tilt, double omega, 
 		  if ( disk_spherical_coord.phi >= spot_beg && disk_spherical_coord.phi <= spot_end &&
 		       disk_spherical_coord.r >= spot_rho_in && disk_spherical_coord.r <= spot_rho_out)
 		    {
-		      result_1 = result_1 + (F_spot * cos_on * S_cy)/cos_rn_u;
-		      T_color = T_spot; 
+		      result_1 = result_1 + (F_spot * cos_onut * S_cy)/cos_rn_u;
+		      T_color = T_spot;
+		      /* T_color = (F_spot * cos_onut * S_cy)/cos_rn_u; */
 		    }
 		  else
 		    {
-		      result_1 = result_1 + (F_0 * cos_on * S_cy)/cos_rn_u;
+		      result_1 = result_1 + (F_0 * cos_onut * S_cy)/cos_rn_u;
 		      T_color = T;
+		      /* T_color = (F_0 * cos_onut * S_cy)/cos_rn_u; */
 		    }
 		}
 	      else if (spot_disk == 0 || spot_disk == 2 || spot_disk == 3)
 		{
-		  result_1 = result_1 + (F_0 * cos_on * S_cy)/cos_rn_u;
+		  result_1 = result_1 + (F_0 * cos_onut * S_cy)/cos_rn_u;
 		  T_color = T;
+		  /* T_color = (F_0 * cos_onut * S_cy)/cos_rn_u; */
 		}
 	      
 	      //result_1 = result_1 + (F_0 * cos_on * S)/cos_rn_u;
@@ -1213,7 +1235,7 @@ double flux_disk(vec3 o, disk disk, double y_tilt, double z_tilt, double omega, 
 		{}
 
 	    }
-	  else if ( j >= M && j <= steps_theta && ray == 1.0 && cos_ondt > eps)
+	  else if ( j >= M && j <= steps_theta && ray == 1.0 && ray_2 == 1.0 && cos_ondt > eps)
 	    {
 	      /* bottom surface */
 	      /* printf("%f\t %f\t %f\n", pt.x, pt.y, pt.z); */
@@ -1223,18 +1245,18 @@ double flux_disk(vec3 o, disk disk, double y_tilt, double z_tilt, double omega, 
 		  if ( disk_spherical_coord.phi >= spot_beg && disk_spherical_coord.phi <= spot_end &&
 		       disk_spherical_coord.r >= spot_rho_in && disk_spherical_coord.r <= spot_rho_out)
 		    {
-		      result_2 = result_2 + (F_spot * cos_on * S_cy)/cos_rn_d;
+		      result_2 = result_2 + (F_spot * cos_ondt * S_cy)/cos_rn_d;
 		      T_color = T_spot; 
 		    }
 		  else
 		    {
-		      result_2 = result_2 + (F_0 * cos_on * S_cy)/cos_rn_d;
+		      result_2 = result_2 + (F_0 * cos_ondt * S_cy)/cos_rn_d;
 		      T_color = T;
 		    }
 		}
 	      else if (spot_disk == 0 || spot_disk == 1 || spot_disk == 2)
 		{
-		  result_2 = result_2 + (F_0 * cos_on * S_cy)/cos_rn_d;
+		  result_2 = result_2 + (F_0 * cos_ondt * S_cy)/cos_rn_d;
 		  T_color = T;
 		}
 	      
@@ -1262,20 +1284,23 @@ double flux_disk(vec3 o, disk disk, double y_tilt, double z_tilt, double omega, 
 		{
 		  if ( disk_spherical_coord.phi >= spot_beg && disk_spherical_coord.phi <= spot_end )
 		    {
-		      result_3 = result_3 + (F_spot * cos_on * S_sp)/cos_rn_s;
+		      result_3 = result_3 + (F_spot * cos_onst * S_sp)/cos_rn_s;
 		      T_color = T_spot;
+		      /* T_color = (F_spot * cos_onst * S_sp)/cos_rn_s; */
 		      
 		    }
 		  else
 		    {
-		      result_3 = result_3 + (F_0 * cos_on * S_sp)/cos_rn_s;
+		      result_3 = result_3 + (F_0 * cos_onst * S_sp)/cos_rn_s;
 		      T_color = T;
+		      /* T_color = (F_0 * cos_onst * S_sp)/cos_rn_s; */
 		    }
 		}
 	      else if (spot_disk == 0 || spot_disk == 1 || spot_disk == 3)
 		{
-		  result_3 = result_3 + (F_0 * cos_on * S_sp)/cos_rn_s;
+		  result_3 = result_3 + (F_0 * cos_onst * S_sp)/cos_rn_s;
 		  T_color = T;
+		  /* T_color = (F_0 * cos_onst * S_sp)/cos_rn_s; */
 		}
 	      //result_3 = result_3 + (F_side * cos_on * S)/cos_rn_s;
 
