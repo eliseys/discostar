@@ -52,6 +52,10 @@ ns_theta = p['ns_theta']
 spot_rho_in = p['spot_rho_in']
 spot_rho_out = p['spot_rho_out']
 
+drd_phi = p['drd_phi']
+drd_theta = p['drd_theta']
+
+
 if picture == 0:
     #output = 'LC.data'
     output = 'LC_Lx_{Lx}_{Lx_disk}_NS_{PSI_pr}_{kappa}_{ns_theta}_hR_{hR}_tilt_{y_tilt}_{z_tilt}_{y_tilt2}_{z_tilt2}_Td_{T_disk}_spot_{spot_disk}_{T_spot}_{spot_beg}_{spot_end}_i_{inclination}.data'
@@ -101,7 +105,9 @@ arg = ('./disco' + ' ' +
        str(p['spot_end']) + ' ' +
        str(p['ns_theta']) + ' ' +
        str(p['spot_rho_in']) + ' ' +
-       str(p['spot_rho_out'])
+       str(p['spot_rho_out']) + ' ' +
+       str(p['drd_phi']) + ' ' +
+       str(p['drd_theta'])
 )
 
 

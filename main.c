@@ -60,6 +60,9 @@ int main(int argc, char **argv)
 
   double spot_rho_in;
   double spot_rho_out;
+
+  double drd_phi;
+  double drd_theta;
   
   /**/
   
@@ -96,6 +99,8 @@ int main(int argc, char **argv)
   sscanf(argv[31], "%lf", &ns_theta);
   sscanf(argv[32], "%lf", &spot_rho_in);
   sscanf(argv[33], "%lf", &spot_rho_out);
+  sscanf(argv[34], "%lf", &drd_phi);
+  sscanf(argv[35], "%lf", &drd_theta);
 
 
   /**/
@@ -121,6 +126,8 @@ int main(int argc, char **argv)
   spot_beg = spot_beg * (M_PI/180.0);
   spot_end = spot_end * (M_PI/180.0);
 
+  drd_phi = drd_phi * (M_PI/180.0);
+  drd_theta = drd_theta * (M_PI/180.0);
   
   
   double omega = omg(q, mu);  /* Dimentionless potential */
@@ -132,7 +139,8 @@ int main(int argc, char **argv)
   /* observer */
   /* double phi = 90.0 * (M_PI/180.0); */
   double phi;
-
+  double flux_from_the_star;
+  
   vec3 o;
   /* o.x = sin(inclination) * cos(phi); */
   /* o.y = sin(inclination) * sin(phi); */
@@ -151,7 +159,8 @@ int main(int argc, char **argv)
   
   double phase[lc_num];
   double flx[lc_num];
-  
+  double T_Lagrange_point[lc_num];
+
   /* double disk_flx = flux_disk(o, d, y_tilt, z_tilt, omega, q, b, disk_tiles, phi, T_disk, lambda_cm, a_cm); */
   /* double star_flx = flux_star(o, q, omega, beta, u, d, d2, Lx, albedo, star_tiles, T_star, lambda_cm, a_cm); */
 
@@ -162,12 +171,22 @@ int main(int argc, char **argv)
   int i; /* light curve step */
 
   vec3 w;
+
+  double * star;
+
+  sp disk_reflection_diagr;
+  /* disk_reflection_diagr.phi = drd_phi; */
+  /* disk_reflection_diagr.theta = drd_theta; */
+  /* disk_reflection_diagr.r = 1.0; */
+
+  vec3 drd_vec3;
+  /* printf("%f %f %f\n", drd_vec3.x, drd_vec3.y, drd_vec3.z); */
   
   omp_set_dynamic(0);
   omp_set_num_threads(threads);
 
 
-#pragma omp parallel for private(i, phi, o, d, d2, neutron_star_sp, neutron_star)
+#pragma omp parallel for private(i, phi, o, d, d2, drd_vec3, disk_reflection_diagr, neutron_star_sp, neutron_star, star, flux_from_the_star)
   for(i = 0; i < lc_num; i++)
     {
       phi = (double) i * 2.0 * M_PI/(lc_num - 1) - M_PI;
@@ -186,6 +205,19 @@ int main(int argc, char **argv)
       d2.y = h * sin(y_tilt2) * sin(z_tilt + z_tilt2 - phi + M_PI);
       d2.z = h * cos(y_tilt2);
 
+      disk_reflection_diagr.phi = drd_phi;
+      disk_reflection_diagr.theta = drd_theta;
+      disk_reflection_diagr.r = 1.0;
+      
+      //printf("%f %f %f\n", drd_vec3.x, drd_vec3.y, drd_vec3.z);
+      drd_vec3 = sp2dec(disk_reflection_diagr);
+
+      drd_vec3 = rotate(drd_vec3, y_tilt, z_tilt - phi + M_PI);
+
+      //printf("%f %f %f\n", drd_vec3.x, drd_vec3.y, drd_vec3.z);
+      
+      disk_reflection_diagr = dec2sp(drd_vec3);
+  
       neutron_star_sp.phi = 0.0 * M_PI/180.0;
       //neutron_star_sp.theta = 3.0 * M_PI/180.0;
 
@@ -201,30 +233,41 @@ int main(int argc, char **argv)
 
       phase[i] = phi;
 
-      flx[i] = flux_disk(o, d, y_tilt, z_tilt, omega, q, disk_tiles, phi, T_disk, lambda_cm, a_cm, picture, spot_disk, T_spot, spot_beg, spot_end, spot_rho_in, spot_rho_out) + flux_star(o, q, omega, beta, u, d, d2, Lx, Lx_disk, albedo, star_tiles, T_star, lambda_cm, a_cm, neutron_star, PSI_pr, picture, isotrope);
+      star = flux_star(o, q, omega, beta, u, d, d2, Lx, Lx_disk, albedo, star_tiles, T_star, lambda_cm, a_cm, neutron_star, PSI_pr, picture, isotrope, disk_reflection_diagr);
+      flux_from_the_star = star[0];
+      T_Lagrange_point[i] = star[1];
+
+
+      flx[i] = flux_disk(o, d, y_tilt, z_tilt, omega, q, disk_tiles, phi, T_disk, lambda_cm, a_cm, picture, spot_disk, T_spot, spot_beg, spot_end, spot_rho_in, spot_rho_out) + flux_from_the_star;
 
     }
-
+  
+  free(star);
+  
   double min = flx[0]; /* searching minimum of the light curve */
-    
+  //double max = T_Lagrange_point[0];
+  //printf("FIRST ASSIGMENT %f\n", max);
+
+  
   for(i = 1; i < lc_num; i++)
     {
       if (flx[i] < min)
   	{
   	  min = flx[i];
   	}
-    }
 
+    }
+  
   for(i = 0; i < lc_num; i++)
     {
       if (picture == 0)
-	{
-	  printf("%.20f\t %.20f\n", phase[i]/(2.0 * M_PI), flx[i]/min);
-	}
+  	{
+  	  printf("%.20f\t %.20f\t %.20f\n", phase[i]/(2.0 * M_PI), flx[i]/min, T_Lagrange_point[i]/8400.0 - 1.0);
+  	}
       else if (picture == 1)
-	{}
+  	{}
     }
-  
+
   /* for(i = 0; i < lc_num; i++) */
   /*   { */
   /*     /\* 2nd phase just copy of the first one *\/ */

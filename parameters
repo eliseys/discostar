@@ -12,39 +12,45 @@ albedo	     0.5
 # NS X-RAY LUMINOSITY, ERG/S; ORIENTATON
 #---------------------------------------
 
-Lx		3.5e+37
-Lx_disk		0.0
-PSI_pr		0.0
-kappa		25.0
-ns_theta	0.0
+Lx		5.0e+37
+Lx_disk		2.0e+37
+PSI_pr		270.0
+kappa		195.0
+ns_theta	-10.0
 isotrope	0
 
 #---------------------------------------
 # DISK PARAMETERS
 #---------------------------------------
 
-h		0.046
-R		0.23
+h		0.03
+R		0.3
 y_tilt		20.0 
-z_tilt		90.0
+z_tilt		180.0
 y_tilt2		20.0
-z_tilt2		-40.0
+z_tilt2		0.0
 
 # 0,1,2,3 -- none, top, side, bottom
 
-spot_disk    	1
+spot_disk       0	   
 
-T_spot		45000.0
+T_spot		30000.0
 spot_beg	30.0
 spot_end	150.0
-spot_rho_in	0.12
+spot_rho_in	0.05
 spot_rho_out	0.23
+
+
+# disk reflection diagram axis
+
+drd_phi		0.0
+drd_theta	30.0
 
 #---------------------------------------
 # TEMPERATURES, KELVINS
 #---------------------------------------
 
-T_disk		15000.0
+T_disk		11000.0
 T_star	  	8400.0
 
 #---------------------------------------
@@ -69,7 +75,7 @@ a 	    	6.35e11
 # NUMBER OF LIGHT CURVE POINTS
 #---------------------------------------
 
-lc_num		5
+lc_num		100
 
 #---------------------------------------
 # STAR AND DISK TILES NUMBER
@@ -88,4 +94,4 @@ threads		4
 # PRINT 3D-PICTURE
 #---------------------------------------
 
-picture		1
+picture		0

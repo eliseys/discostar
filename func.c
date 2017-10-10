@@ -610,7 +610,7 @@ double eclipse_by_disk_inside(disk disk, vec3 o, vec3 p)
 }
 
 
-double flux_star(vec3 o, double q, double omega, double beta, double u, disk disk, vec3 d2, double Lx, double Lx_disk, double albedo, int tiles, double T, double lambda, double a, vec3 neutron_star, double PSI_pr, int picture, int isotrope)
+double * flux_star(vec3 o, double q, double omega, double beta, double u, disk disk, vec3 d2, double Lx, double Lx_disk, double albedo, int tiles, double T, double lambda, double a, vec3 neutron_star, double PSI_pr, int picture, int isotrope, sp disk_reflection_diagr)
 {
   /* */
   int steps = sqrt(tiles/2.0);
@@ -662,7 +662,7 @@ double flux_star(vec3 o, double q, double omega, double beta, double u, disk dis
   double R = disk.R;
   double disk_shadow_semi_angle = atan(h/R);
   double cos_disk_shadow_semi_angle = cos(0.5 * M_PI - disk_shadow_semi_angle);
-    
+  double cos_drd;
   
   double S;
   double Fx;
@@ -670,7 +670,7 @@ double flux_star(vec3 o, double q, double omega, double beta, double u, disk dis
   double T_irr_4;
   double T_sum;
   double F_0;
-
+  double T_Lagrange_point;
   
   double color;
   
@@ -707,7 +707,8 @@ double flux_star(vec3 o, double q, double omega, double beta, double u, disk dis
   /* double *Fx_dd; */
   /* Fx_dd = x_ray_direction_diagram(PSI_pr); */
 
-
+  vec3 drd_vec3 = sp2dec(disk_reflection_diagr);
+    
   double Fx_sum = 0.0;
   sp star_surface_spherical_coordinates;
   
@@ -747,10 +748,10 @@ double flux_star(vec3 o, double q, double omega, double beta, double u, disk dis
 	  /* star`s dot products */
 	  cos_on = dot(o,n);
 
-	  if (cos_on < - eps)
-	    {
-	      continue;
-	    }
+	  /* if (cos_on < - eps) */
+	  /*   { */
+	  /*     continue; */
+	  /*   } */
 
 	  /* star */
 	  r = radius_star(phi, theta, q, omega);
@@ -792,7 +793,12 @@ double flux_star(vec3 o, double q, double omega, double beta, double u, disk dis
 	  psn.x = ps.x/lps;
 	  psn.y = ps.y/lps;
 	  psn.z = ps.z/lps;
-	  	    
+
+
+	  cos_drd = dot(psn, drd_vec3);
+
+	  //printf("PSN %f %f %f\t DRD %f %f %f\n", psn.x, psn.y, psn.z, drd_vec3.x, drd_vec3.y, drd_vec3.z);
+	  
 	  /* Irradiation */	  
 	  /* */
 	  cos_irr = dot(psn, hn);
@@ -821,7 +827,7 @@ double flux_star(vec3 o, double q, double omega, double beta, double u, disk dis
 
 	      if (isotrope == 0)
 		{
-		  Fx = Ix_dd[diagr_index] * (1.0 - albedo) * fabs(cos_in) / (lps * lps * a * a) + (1.0 - albedo) * Lx_disk * cos_irr * fabs(cos_in) / (4.0 * M_PI * lps * lps * a * a);
+		  Fx = Ix_dd[diagr_index] * (1.0 - albedo) * fabs(cos_in) / (lps * lps * a * a) + (1.0 - albedo) * cos_drd * Lx_disk * fabs(cos_in) / (2.0 * M_PI * lps * lps * a * a);
 		}
 	      else if (isotrope == 1)
 		{
@@ -833,7 +839,14 @@ double flux_star(vec3 o, double q, double omega, double beta, double u, disk dis
 	    {
 	      Fx = 0.0;
 	    }
-	  	  
+
+	  if (j == steps_theta/2 && i == 0) /* Lagrange point */
+		{
+		  T_irr_4 = Fx / SIGMA;
+		  T_sum = pow((T_star_4 + T_irr_4),0.25); 
+
+		  T_Lagrange_point = T_sum;
+		}	  
 	  
 	  if (ray == 1.0 && cos_on > 0.0 + eps)
 	    {
@@ -863,7 +876,12 @@ double flux_star(vec3 o, double q, double omega, double beta, double u, disk dis
 
   
   //free(Ix_dd);
-  return result;
+  double *output = (double*) malloc(sizeof(double) * 2);
+
+  output[0] = result; 
+  output[1] = T_Lagrange_point; 
+
+  return output;
   
 }
 

@@ -391,17 +391,32 @@ double * x_ray_direction_diagram(double PSI_pr, double Lx)
 
   /* printf("%.10f\n", test); */
 
+  
+
+
 
   for (k = 1; k < 180; k++)
     {
+
       result[k] = Lx * 4.0 * M_PI * flux_sum[k]/full_sum;
 
+      //test for directions
+      /* if (k <= 90) */
+      /* 	{ */
+      /* 	  result[k] = Lx * 4.0 * M_PI * 1.0/90.0;   */
+      /* 	} */
+      /* else */
+      /* 	{ */
+      /* 	  result[k] = 0.0; */
+      /* 	} */
+      
       //printf("%f\t %d\t %f\n", (PSI_pr * 180.0/M_PI), k, result[k]);
       
     }
 
   result[0] = 0.0;
 
+  //result[0] = 1.0/90.0;
   
   return result;
 

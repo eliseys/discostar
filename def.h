@@ -85,7 +85,7 @@ double distance_to_disk_inside(vec3 p, disk disk);
 double eclipse_by_disk(disk disk, vec3 o, vec3 p);
 double eclipse_by_disk_inside(disk disk, vec3 o, vec3 p);
 
-double flux_star(vec3 o, double q, double omega, double beta, double u, disk disk, vec3 d2, double Lx, double Lx_disk, double albedo, int star_tiles, double T_star, double lambda, double a, vec3 neutron_star, double PSI_pr, int picture, int isotrope);
+double * flux_star(vec3 o, double q, double omega, double beta, double u, disk disk, vec3 d2, double Lx, double Lx_disk, double albedo, int star_tiles, double T_star, double lambda, double a, vec3 neutron_star, double PSI_pr, int picture, int isotrope, sp disk_reflection_diagr);
 double flux_disk(vec3 o, disk disk, double y_tilt, double z_tilt, double omega, double q, int disk_tiles, double phi_orb, double T_disk, double lambda, double a, int picture, int spot_disk, double T_spot, double spot_beg, double spot_end, double spot_rho_in, double spot_rho_out);
 
 
