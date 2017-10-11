@@ -798,6 +798,8 @@ double * flux_star(vec3 o, double q, double omega, double beta, double u, disk d
 	  cos_drd = dot(psn, drd_vec3);
 
 	  //printf("PSN %f %f %f\t DRD %f %f %f\n", psn.x, psn.y, psn.z, drd_vec3.x, drd_vec3.y, drd_vec3.z);
+
+	  //printf("COS_DRD %f\n", cos_drd);
 	  
 	  /* Irradiation */	  
 	  /* */
@@ -827,7 +829,7 @@ double * flux_star(vec3 o, double q, double omega, double beta, double u, disk d
 
 	      if (isotrope == 0)
 		{
-		  Fx = Ix_dd[diagr_index] * (1.0 - albedo) * fabs(cos_in) / (lps * lps * a * a) + (1.0 - albedo) * cos_drd * Lx_disk * fabs(cos_in) / (2.0 * M_PI * lps * lps * a * a);
+		  Fx = Ix_dd[diagr_index] * (1.0 - albedo) * fabs(cos_in) / (lps * lps * a * a) + (1.0 - albedo) * fabs(cos_drd) * Lx_disk * fabs(cos_in) / (2.0 * M_PI * lps * lps * a * a);
 		}
 	      else if (isotrope == 1)
 		{

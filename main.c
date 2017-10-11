@@ -175,12 +175,8 @@ int main(int argc, char **argv)
   double * star;
 
   sp disk_reflection_diagr;
-  /* disk_reflection_diagr.phi = drd_phi; */
-  /* disk_reflection_diagr.theta = drd_theta; */
-  /* disk_reflection_diagr.r = 1.0; */
 
   vec3 drd_vec3;
-  /* printf("%f %f %f\n", drd_vec3.x, drd_vec3.y, drd_vec3.z); */
   
   omp_set_dynamic(0);
   omp_set_num_threads(threads);
@@ -217,7 +213,9 @@ int main(int argc, char **argv)
       //printf("%f %f %f\n", drd_vec3.x, drd_vec3.y, drd_vec3.z);
       
       disk_reflection_diagr = dec2sp(drd_vec3);
-  
+
+      //printf("%f %f %f\n", disk_reflection_diagr.phi, disk_reflection_diagr.theta, disk_reflection_diagr.r);
+
       neutron_star_sp.phi = 0.0 * M_PI/180.0;
       //neutron_star_sp.theta = 3.0 * M_PI/180.0;
 
