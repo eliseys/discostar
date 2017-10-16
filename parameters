@@ -2,93 +2,93 @@
 # DONOR STAR PARAMETERS
 #---------------------------------------
 
-q	     0.58
-mu	     1.0
-beta	     0.0
-u	     0.0
-albedo	     0.5
+q	     0.58#
+mu	     1.0#
+beta	     0.0#
+u	     0.0#
+albedo	     0.5#
 
 #---------------------------------------
 # NS X-RAY LUMINOSITY, ERG/S; ORIENTATON
 #---------------------------------------
 
-Lx		4.0e+37
-Lx_disk		0.0e+37
-PSI_pr		270.0
-kappa		195.0
-ns_theta	0.0
-isotrope	1
+Lx		4.0e+37#
+Lx_disk		0.0e+37#
+PSI_pr		270.0#
+kappa		195.0#
+ns_theta	0.0#
+isotrope	1#
 
 #---------------------------------------
 # DISK PARAMETERS
 #---------------------------------------
 
-h		0.06
-R		0.3
-y_tilt		20.0 
-z_tilt		180.0
-y_tilt2		20.0
-z_tilt2	        0.0
+h		0.06#
+R		0.3#
+y_tilt		20.0# 
+z_tilt		180.0#
+y_tilt2		20.0#
+z_tilt2	        0.0#
 
 # 0,1,2,3 -- none, top, side, bottom
 
-spot_disk       0	   
+spot_disk       0#	   
 
-T_spot		30000.0
-spot_beg	30.0
-spot_end	150.0
-spot_rho_in	0.05
-spot_rho_out	0.23
+T_spot		30000.0#
+spot_beg	30.0#
+spot_end	150.0#
+spot_rho_in	0.05#
+spot_rho_out	0.23#
 
 
 # disk reflection diagram axis
 
-drd_phi		180.0
-drd_theta	20.0
+drd_phi		180.0#
+drd_theta	20.0#
 
 #---------------------------------------
 # TEMPERATURES, KELVINS
 #---------------------------------------
 
-T_disk		10000.0
-T_star	  	8400.0
+T_disk		10000.0#
+T_star	  	8400.0#
 
 #---------------------------------------
 # OBSERVER
 #---------------------------------------
 
-inclination	80.0
+inclination	80.0#
 
 #---------------------------------------
 # ANGSTREM
 #---------------------------------------
 
-lambda_A	4400.0
+lambda_A	4400.0#
 
 #---------------------------------------
 # SEMIMAJOR AXIS, CM
 #---------------------------------------
 
-a 	    	6.35e11
+a 	    	6.35e11#
 
 #---------------------------------------
 # NUMBER OF LIGHT CURVE POINTS
 #---------------------------------------
 
-lc_num		100
+lc_num		100#
 
 #---------------------------------------
 # STAR AND DISK TILES NUMBER
 #---------------------------------------
 
-star_tiles   	8000
-disk_tiles   	2000
+star_tiles   	8000#
+disk_tiles   	2000#
 
 #---------------------------------------
 # OPENMP THREADS
 #---------------------------------------
 
-threads		4
+threads		4#
 
 #---------------------------------------
 # PRINT 3D-PICTURE
