@@ -11,10 +11,9 @@ scope = ['https://spreadsheets.google.com/feeds']
 creds = ServiceAccountCredentials.from_json_keyfile_name('../discostar_parameters/client_secret.json', scope)
 client = gspread.authorize(creds)
 #sheet = client.open("Discostar").sheet1
-sheet = client.open("Discostar").get_worksheet(1)
+sheet = client.open("Discostar").get_worksheet(2)
 
 parameter_name = sheet.row_values(1) # 1st row in google spreadsheet -- names of the parameters
-
 parameter_name = [x for x in parameter_name if x != ''] # deleting empty strings
 
 p = {}
@@ -124,10 +123,10 @@ for i, x in enumerate(p['DATA']):
     )
 
 
-    if picture == 0:
-        print 'discostar calculates the lightcurve ...'
-    elif picture == 1:
-        print 'discostar draws the picture ...'
+    #if picture == 0:
+    #    print 'discostar calculates the lightcurve ...'
+    #elif picture == 1:
+    #    print 'discostar draws the picture ...'
         
 
 
@@ -137,12 +136,12 @@ for i, x in enumerate(p['DATA']):
 
     f.close
 
-    print 'done'
+    #print 'done'
 
     if picture == 0:
-        print 'lightcurve written to', output_filename
-        print '\n'
-        print '\n'
+        #print 'lightcurve written to', output_filename
+        #print '\n'
+        #print '\n'
         if (spot_disk != 0 and isotrope == 0):
             print '"../LC2/%s" @legend "%3.0f (%3.0f %2.0f %2.0f) (%3.0f %2.0f %2.0f) hR=%1.2f (%1.1e %1.1e) Td=%5.0f SPOT %d",\\' % (output_filename,z_tilt,PSI_pr,kappa,ns_theta,z_tilt2,y_tilt,y_tilt2,h/R,Lx,Lx_disk,T_disk,spot_disk)
         elif (spot_disk != 0 and isotrope == 1):
@@ -151,10 +150,10 @@ for i, x in enumerate(p['DATA']):
             print '"../LC2/%s" @legend "%3.0f ISO (%3.0f %2.0f %2.0f) hR=%1.2f (%1.1e %1.1e) Td=%5.0f NO SPOT",\\' % (output_filename,z_tilt,z_tilt2,y_tilt,y_tilt2,h/R,Lx,Lx_disk,T_disk)
         elif (spot_disk == 0 and isotrope == 0):
             print '"../LC2/%s" @legend "%3.0f (%3.0f %2.0f %2.0f) (%3.0f %2.0f %2.0f) hR=%1.2f (%1.1e %1.1e) Td=%5.0f NO SPOT",\\' % (output_filename,z_tilt,PSI_pr,kappa,ns_theta,z_tilt2,y_tilt,y_tilt2,h/R,Lx,Lx_disk,T_disk)   
-        print '\n'
-        print '\n'
+        #print '\n'
+        #print '\n'
 
         
-    elif picture == 1:
-        print 'data for picture written to', output_filename
+    #elif picture == 1:
+    #    print 'data for picture written to', output_filename
 

@@ -610,7 +610,7 @@ double eclipse_by_disk_inside(disk disk, vec3 o, vec3 p)
 }
 
 
-double * flux_star(vec3 o, double q, double omega, double beta, double u, disk disk, vec3 d2, double Lx, double Lx_disk, double albedo, int tiles, double T, double lambda, double a, vec3 neutron_star, double PSI_pr, int picture, int isotrope, sp disk_reflection_diagr)
+double * flux_star(vec3 o, double q, double omega, double beta, double u, disk disk, vec3 d2, double Lx, double Lx_disk, double Lx_iso, double Lx_disk_2, double albedo, int tiles, double T, double lambda, double a, vec3 neutron_star, double PSI_pr, int picture, int isotrope, sp disk_reflection_diagr)
 {
   /* */
   int steps = sqrt(tiles/2.0);
@@ -748,10 +748,10 @@ double * flux_star(vec3 o, double q, double omega, double beta, double u, disk d
 	  /* star`s dot products */
 	  cos_on = dot(o,n);
 
-	  /* if (cos_on < - eps) */
-	  /*   { */
-	  /*     continue; */
-	  /*   } */
+	  if (cos_on < - eps)
+	    {
+	      continue;
+	    }
 
 	  /* star */
 	  r = radius_star(phi, theta, q, omega);
@@ -829,7 +829,7 @@ double * flux_star(vec3 o, double q, double omega, double beta, double u, disk d
 
 	      if (isotrope == 0)
 		{
-		  Fx = Ix_dd[diagr_index] * (1.0 - albedo) * fabs(cos_in) / (lps * lps * a * a) + (1.0 - albedo) * fabs(cos_drd) * Lx_disk * fabs(cos_in) / (2.0 * M_PI * lps * lps * a * a);
+		  Fx = Ix_dd[diagr_index] * (1.0 - albedo) * fabs(cos_in) / (lps * lps * a * a) + (1.0 - albedo) * fabs(cos_drd) * Lx_disk_2 * fabs(cos_in) / (2.0 * M_PI * lps * lps * a * a) + (1.0 - albedo) * fabs(cos_irr) * Lx_disk * fabs(cos_in) / (2.0 * M_PI * lps * lps * a * a) + (1.0 - albedo) * Lx_iso * fabs(cos_in) / (4.0 * M_PI * lps * lps * a * a);
 		}
 	      else if (isotrope == 1)
 		{

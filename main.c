@@ -50,6 +50,8 @@ int main(int argc, char **argv)
   int isotrope;
 
   double Lx_disk;
+  double Lx_disk_2;
+  double Lx_iso;
 
   int spot_disk;
   double T_spot;
@@ -101,6 +103,9 @@ int main(int argc, char **argv)
   sscanf(argv[33], "%lf", &spot_rho_out);
   sscanf(argv[34], "%lf", &drd_phi);
   sscanf(argv[35], "%lf", &drd_theta);
+  sscanf(argv[36], "%lf", &Lx_disk_2);
+  sscanf(argv[37], "%lf", &Lx_iso);
+
 
 
   /**/
@@ -231,7 +236,7 @@ int main(int argc, char **argv)
 
       phase[i] = phi;
 
-      star = flux_star(o, q, omega, beta, u, d, d2, Lx, Lx_disk, albedo, star_tiles, T_star, lambda_cm, a_cm, neutron_star, PSI_pr, picture, isotrope, disk_reflection_diagr);
+      star = flux_star(o, q, omega, beta, u, d, d2, Lx, Lx_disk, Lx_disk_2, Lx_iso, albedo, star_tiles, T_star, lambda_cm, a_cm, neutron_star, PSI_pr, picture, isotrope, disk_reflection_diagr);
       flux_from_the_star = star[0];
       T_Lagrange_point[i] = star[1];
 
