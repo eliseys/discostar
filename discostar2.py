@@ -11,7 +11,7 @@ scope = ['https://spreadsheets.google.com/feeds']
 creds = ServiceAccountCredentials.from_json_keyfile_name('../discostar_parameters/client_secret.json', scope)
 client = gspread.authorize(creds)
 #sheet = client.open("Discostar").sheet1
-sheet = client.open("Discostar").get_worksheet(2)
+sheet = client.open("Discostar").get_worksheet(5)
 
 parameter_name = sheet.row_values(1) # 1st row in google spreadsheet -- names of the parameters
 parameter_name = [x for x in parameter_name if x != ''] # deleting empty strings
@@ -56,6 +56,8 @@ for i, x in enumerate(p['DATA']):
     kappa = p['kappa'][i]
     isotrope = p['isotrope'][i]
     Lx_disk = p['Lx_disk'][i]
+    Lx_disk_2 = p['Lx_disk_2'][i]
+    Lx_iso = p['Lx_iso'][i]
     spot_disk = p['spot_disk'][i]
     T_spot = p['T_spot'][i]
     spot_beg = p['spot_beg'][i]
@@ -70,15 +72,15 @@ for i, x in enumerate(p['DATA']):
 
     if picture == 0:
         #output = 'LC.data'
-        output = 'LC_Lx_{Lx}_{Lx_disk}_NS_{PSI_pr}_{kappa}_{ns_theta}_h_R_{h}_{R}_tilt_{y_tilt}_{z_tilt}_{y_tilt2}_{z_tilt2}_Td_{T_disk}_spot_{spot_disk}_{T_spot}_{spot_beg}_{spot_end}_drd_{drd_phi}_{drd_theta}_i_{inclination}.data'
+        output = 'LC_Lx_{Lx}_{Lx_disk}_{Lx_disk_2}_{Lx_iso}_NS_{PSI_pr}_{kappa}_{ns_theta}_h_R_{h}_{R}_tilt_{y_tilt}_{z_tilt}_{y_tilt2}_{z_tilt2}_Td_{T_disk}_spot_{spot_disk}_{T_spot}_{spot_beg}_{spot_end}_drd_{drd_phi}_{drd_theta}_i_{inclination}.data'
         if (isotrope == 0 and spot_disk != 0):
-            output_filename = output.format(Lx=Lx, Lx_disk=Lx_disk, PSI_pr=PSI_pr, kappa=kappa, ns_theta=ns_theta, h=h, R=R, y_tilt=y_tilt, z_tilt=z_tilt, y_tilt2=y_tilt2, z_tilt2=z_tilt2, T_disk = T_disk, spot_disk=spot_disk, T_spot=T_spot, spot_beg=spot_beg, spot_end=spot_end, drd_phi=drd_phi, drd_theta=drd_theta, inclination=inclination)
+            output_filename = output.format(Lx=Lx, Lx_disk=Lx_disk, Lx_disk_2=Lx_disk_2, Lx_iso=Lx_iso, PSI_pr=PSI_pr, kappa=kappa, ns_theta=ns_theta, h=h, R=R, y_tilt=y_tilt, z_tilt=z_tilt, y_tilt2=y_tilt2, z_tilt2=z_tilt2, T_disk = T_disk, spot_disk=spot_disk, T_spot=T_spot, spot_beg=spot_beg, spot_end=spot_end, drd_phi=drd_phi, drd_theta=drd_theta, inclination=inclination)
         elif (isotrope == 1 and spot_disk != 0):
-            output_filename = output.format(Lx=Lx, Lx_disk=Lx_disk, PSI_pr='', kappa='', ns_theta='', h=h, R=R, y_tilt=y_tilt, z_tilt=z_tilt, y_tilt2=y_tilt2, z_tilt2=z_tilt2, T_disk = T_disk, spot_disk=spot_disk, T_spot=T_spot, spot_beg=spot_beg, spot_end=spot_end, drd_phi=drd_phi, drd_theta=drd_theta, inclination=inclination)
+            output_filename = output.format(Lx=Lx, Lx_disk=Lx_disk, Lx_disk_2=Lx_disk_2, Lx_iso=Lx_iso, PSI_pr='', kappa='', ns_theta='', h=h, R=R, y_tilt=y_tilt, z_tilt=z_tilt, y_tilt2=y_tilt2, z_tilt2=z_tilt2, T_disk = T_disk, spot_disk=spot_disk, T_spot=T_spot, spot_beg=spot_beg, spot_end=spot_end, drd_phi=drd_phi, drd_theta=drd_theta, inclination=inclination)
         elif (isotrope == 1 and spot_disk == 0):
-            output_filename = output.format(Lx=Lx, Lx_disk=Lx_disk, PSI_pr='', kappa='', ns_theta='', h=h, R=R, y_tilt=y_tilt, z_tilt=z_tilt, y_tilt2=y_tilt2, z_tilt2=z_tilt2, T_disk = T_disk, spot_disk=spot_disk, T_spot='', spot_beg='', spot_end='', drd_phi=drd_phi, drd_theta=drd_theta, inclination=inclination)
+            output_filename = output.format(Lx=Lx, Lx_disk=Lx_disk, Lx_disk_2=Lx_disk_2, Lx_iso=Lx_iso, PSI_pr='', kappa='', ns_theta='', h=h, R=R, y_tilt=y_tilt, z_tilt=z_tilt, y_tilt2=y_tilt2, z_tilt2=z_tilt2, T_disk = T_disk, spot_disk=spot_disk, T_spot='', spot_beg='', spot_end='', drd_phi=drd_phi, drd_theta=drd_theta, inclination=inclination)
         elif (isotrope == 0 and spot_disk == 0):
-            output_filename = output.format(Lx=Lx, Lx_disk=Lx_disk, PSI_pr=PSI_pr, kappa=kappa, ns_theta=ns_theta, h=h, R=R, y_tilt=y_tilt, z_tilt=z_tilt, y_tilt2=y_tilt2, z_tilt2=z_tilt2, T_disk = T_disk, spot_disk=spot_disk, T_spot='', spot_beg='', spot_end='', drd_phi=drd_phi, drd_theta=drd_theta, inclination=inclination)
+            output_filename = output.format(Lx=Lx, Lx_disk=Lx_disk, Lx_disk_2=Lx_disk_2, Lx_iso=Lx_iso, PSI_pr=PSI_pr, kappa=kappa, ns_theta=ns_theta, h=h, R=R, y_tilt=y_tilt, z_tilt=z_tilt, y_tilt2=y_tilt2, z_tilt2=z_tilt2, T_disk = T_disk, spot_disk=spot_disk, T_spot='', spot_beg='', spot_end='', drd_phi=drd_phi, drd_theta=drd_theta, inclination=inclination)
             
     elif picture == 1:
         output_filename = 'VIEW.data'
@@ -119,7 +121,10 @@ for i, x in enumerate(p['DATA']):
            str(p['spot_rho_in'][i]) + ' ' +
            str(p['spot_rho_out'][i]) + ' ' +
            str(p['drd_phi'][i]) + ' ' +
-           str(p['drd_theta'][i])
+           str(p['drd_theta'][i]) + ' ' +
+           str(p['Lx_disk_2'][i]) + ' ' +
+           str(p['Lx_iso'][i])
+
     )
 
 
@@ -143,13 +148,13 @@ for i, x in enumerate(p['DATA']):
         #print '\n'
         #print '\n'
         if (spot_disk != 0 and isotrope == 0):
-            print '"../LC2/%s" @legend "%3.0f (%3.0f %2.0f %2.0f) (%3.0f %2.0f %2.0f) hR=%1.2f (%1.1e %1.1e) Td=%5.0f SPOT %d",\\' % (output_filename,z_tilt,PSI_pr,kappa,ns_theta,z_tilt2,y_tilt,y_tilt2,h/R,Lx,Lx_disk,T_disk,spot_disk)
+            print '"../LC2/%s" @legend "%3.0f (%3.0f %2.0f %2.0f) (%3.0f %2.0f %2.0f) h=%1.2f R=%1.2f (%1.1e %1.1e) Td=%5.0f SPOT %d",\\' % (output_filename,z_tilt,PSI_pr,kappa,ns_theta,z_tilt2,y_tilt,y_tilt2,h,R,Lx,Lx_iso,T_disk,spot_disk)
         elif (spot_disk != 0 and isotrope == 1):
-            print '"../LC2/%s" @legend "%3.0f ISO (%3.0f %2.0f %2.0f) hR=%1.2f (%1.1e %1.1e) Td=%5.0f SPOT %d",\\' % (output_filename,z_tilt,z_tilt2,y_tilt,y_tilt2,h/R,Lx,Lx_disk,T_disk,spot_disk)
+            print '"../LC2/%s" @legend "%3.0f ISO (%3.0f %2.0f %2.0f) h=%1.2f R=%1.2f (%1.1e %1.1e) Td=%5.0f SPOT %d",\\' % (output_filename,z_tilt,z_tilt2,y_tilt,y_tilt2,h,R,Lx,Lx_iso,T_disk,spot_disk)
         elif (spot_disk == 0 and isotrope == 1):
-            print '"../LC2/%s" @legend "%3.0f ISO (%3.0f %2.0f %2.0f) hR=%1.2f (%1.1e %1.1e) Td=%5.0f NO SPOT",\\' % (output_filename,z_tilt,z_tilt2,y_tilt,y_tilt2,h/R,Lx,Lx_disk,T_disk)
+            print '"../LC2/%s" @legend "%3.0f ISO (%3.0f %2.0f %2.0f) h=%1.2f R=%1.2f (%1.1e %1.1e) Td=%5.0f",\\' % (output_filename,z_tilt,z_tilt2,y_tilt,y_tilt2,h,R,Lx,Lx_iso,T_disk)
         elif (spot_disk == 0 and isotrope == 0):
-            print '"../LC2/%s" @legend "%3.0f (%3.0f %2.0f %2.0f) (%3.0f %2.0f %2.0f) hR=%1.2f (%1.1e %1.1e) Td=%5.0f NO SPOT",\\' % (output_filename,z_tilt,PSI_pr,kappa,ns_theta,z_tilt2,y_tilt,y_tilt2,h/R,Lx,Lx_disk,T_disk)   
+            print '"../LC2/%s" @legend "%3.0f (%3.0f %2.0f %2.0f) (%3.0f %2.0f %2.0f) h=%1.2f R=%1.2f (%1.1e %1.1e) Td=%5.0f",\\' % (output_filename,z_tilt,PSI_pr,kappa,ns_theta,z_tilt2,y_tilt,y_tilt2,h,R,Lx,Lx_iso,T_disk)   
         #print '\n'
         #print '\n'
 

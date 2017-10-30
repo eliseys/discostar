@@ -159,13 +159,13 @@ if picture == 0:
     print '\n'
     print '\n'
     if (spot_disk != 0 and isotrope == 0):
-        print '"../LC2/%s" @legend "%3.0f (%3.0f %2.0f %2.0f) (%3.0f %2.0f %2.0f) hR=%1.2f (%1.1e %1.1e %1.1e) Td=%5.0f SPOT %d",\\' % (output_filename,z_tilt,PSI_pr,kappa,ns_theta,z_tilt2,y_tilt,y_tilt2,h/R,Lx,Lx_disk,Lx_disk_2,T_disk,spot_disk)
+        print '"../LC2/%s" @legend "%3.0f (%3.0f %2.0f %2.0f) (%3.0f %2.0f %2.0f) h=%1.2f R=%1.2f (%1.1e %1.1e %1.1e) Td=%5.0f SPOT %d",\\' % (output_filename,z_tilt,PSI_pr,kappa,ns_theta,z_tilt2,y_tilt,y_tilt2,h,R,Lx,Lx_disk,Lx_iso,T_disk,spot_disk)
     elif (spot_disk != 0 and isotrope == 1):
-        print '"../LC2/%s" @legend "%3.0f ISO (%3.0f %2.0f %2.0f) hR=%1.2f (%1.1e %1.1e %1.1e) Td=%5.0f SPOT %d",\\' % (output_filename,z_tilt,z_tilt2,y_tilt,y_tilt2,h/R,Lx,Lx_disk,Lx_disk_2,T_disk,spot_disk)
+        print '"../LC2/%s" @legend "%3.0f ISO (%3.0f %2.0f %2.0f) h=%1.2f R=%1.2f (%1.1e %1.1e %1.1e) Td=%5.0f SPOT %d",\\' % (output_filename,z_tilt,z_tilt2,y_tilt,y_tilt2,h,R,Lx,Lx_disk,Lx_iso,T_disk,spot_disk)
     elif (spot_disk == 0 and isotrope == 1):
-        print '"../LC2/%s" @legend "%3.0f ISO (%3.0f %2.0f %2.0f) hR=%1.2f (%1.1e %1.1e %1.1e) Td=%5.0f NO SPOT",\\' % (output_filename,z_tilt,z_tilt2,y_tilt,y_tilt2,h/R,Lx,Lx_disk,Lx_disk_2,T_disk)
+        print '"../LC2/%s" @legend "%3.0f ISO (%3.0f %2.0f %2.0f) h=%1.2f R=%1.2f (%1.1e %1.1e %1.1e) Td=%5.0f",\\' % (output_filename,z_tilt,z_tilt2,y_tilt,y_tilt2,h,R,Lx,Lx_disk,Lx_iso,T_disk)
     elif (spot_disk == 0 and isotrope == 0):
-        print '"../LC2/%s" @legend "%3.0f (%3.0f %2.0f %2.0f) (%3.0f %2.0f %2.0f) hR=%1.2f (%1.1e %1.1e %1.1e) Td=%5.0f NO SPOT",\\' % (output_filename,z_tilt,PSI_pr,kappa,ns_theta,z_tilt2,y_tilt,y_tilt2,h/R,Lx,Lx_disk,Lx_disk_2,T_disk)   
+        print '"../LC2/%s" @legend "%3.0f (%3.0f %2.0f %2.0f) (%3.0f %2.0f %2.0f) h=%1.2f R=%1.2f (%1.1e %1.1e %1.1e) Td=%5.0f",\\' % (output_filename,z_tilt,PSI_pr,kappa,ns_theta,z_tilt2,y_tilt,y_tilt2,h,R,Lx,Lx_disk,Lx_iso,T_disk)   
     print '\n'
     print '\n'
 

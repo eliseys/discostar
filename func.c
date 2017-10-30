@@ -829,7 +829,7 @@ double * flux_star(vec3 o, double q, double omega, double beta, double u, disk d
 
 	      if (isotrope == 0)
 		{
-		  Fx = Ix_dd[diagr_index] * (1.0 - albedo) * fabs(cos_in) / (lps * lps * a * a) + (1.0 - albedo) * fabs(cos_drd) * Lx_disk_2 * fabs(cos_in) / (2.0 * M_PI * lps * lps * a * a) + (1.0 - albedo) * fabs(cos_irr) * Lx_disk * fabs(cos_in) / (2.0 * M_PI * lps * lps * a * a) + (1.0 - albedo) * Lx_iso * fabs(cos_in) / (4.0 * M_PI * lps * lps * a * a);
+		  Fx = Ix_dd[diagr_index] * (1.0 - albedo) * fabs(cos_in) / (lps * lps * a * a) + (1.0 - albedo) * fabs(cos_drd) * Lx_disk_2 * fabs(cos_in) / (2.0 * M_PI * lps * lps * a * a) + (1.0 - albedo) * fabs(cos_irr2) * Lx_disk * fabs(cos_in) / (2.0 * M_PI * lps * lps * a * a) + (1.0 - albedo) * Lx_iso * fabs(cos_in) / (4.0 * M_PI * lps * lps * a * a);
 		}
 	      else if (isotrope == 1)
 		{

@@ -265,7 +265,7 @@ int main(int argc, char **argv)
     {
       if (picture == 0)
   	{
-  	  printf("%.20f\t %.20f\t %.20f\n", phase[i]/(2.0 * M_PI), flx[i]/min, T_Lagrange_point[i]/8400.0 - 1.0);
+  	  printf("%.20f\t %.20f\t %.20f\n", phase[lc_num - i - 1]/(2.0 * M_PI), flx[i]/min, T_Lagrange_point[i]/8400.0 - 1.0);
   	}
       else if (picture == 1)
   	{}
