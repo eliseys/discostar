@@ -888,7 +888,7 @@ double * flux_star(vec3 o, double q, double omega, double beta, double u, disk d
 }
 
 
-double flux_disk(vec3 o, disk disk, double y_tilt, double z_tilt, double omega, double q, int disk_tiles, double phi_orb, double T, double lambda, double a, int picture, int spot_disk, double T_spot, double spot_beg, double spot_end, double spot_rho_in, double spot_rho_out)
+double flux_disk(vec3 o, disk disk, double rho_in, double y_tilt, double z_tilt, double omega, double q, int disk_tiles, double phi_orb, double T, double lambda, double a, int picture, int spot_disk, double T_spot, double spot_beg, double spot_end, double spot_rho_in, double spot_rho_out)
 {
 
   sp coord = dec2sp(o);
@@ -972,10 +972,17 @@ double flux_disk(vec3 o, disk disk, double y_tilt, double z_tilt, double omega, 
   
   /* Temperature profile of the disk */
   double rho;
-  double rho_in = 0.01; /* inner radius where T becomes 0 for rho < rho_in */
-  double rho_scale = 0.5 * R; /* rho scale for T */
+  /* double rho_in = 0.000236; inner radius where T becomes 0 for rho < rho_in (approx. 100 R_NS, R_NS = 15 km) */
+  //double rho_scale = 0.5 * R; /* rho scale for T */
 
-  double T_scale = T; /* temperature on radius rho_scale */
+  //double T_scale = (sqrt(R)*T)/pow(2.0*(-1.0/R + 1.0/rho_in), 1.0/4.0);
+
+  // 2.0 * h because h is semithickness
+  //double T_scale = T * pow((R * R + R * 2.0 * h)/(1.0/(R*R) - 1.0/R + 1.0/rho_in), 1.0/4.0);
+  double T_scale = T * pow((R * R + R * 2.0 * h)/(2.0*h/R + log(R) - log(rho_in)), 1.0/4.0);
+
+  printf("T_scale\t%f\tlog(R)\t%f\tlog(rho_in)\t%f\n", T_scale, log(R), log(rho_in));
+  
   double T_rho;
   double T_color; /* picture color */
   
@@ -985,7 +992,8 @@ double flux_disk(vec3 o, disk disk, double y_tilt, double z_tilt, double omega, 
 
   
   /* */
-  double F_0 = F_lambda(T, lambda); /* temperature may depend on rho, in that case set it in the cycle below */
+  /* double F_0 = F_lambda(T, lambda); temperature may depend on rho, in that case set it in the cycle below */
+  double F_0; /* temperature may depend on rho, in that case set it in the cycle below */
 
   double F_spot = F_lambda(T_spot, lambda); /* side of the disk */
 
@@ -1091,12 +1099,19 @@ double flux_disk(vec3 o, disk disk, double y_tilt, double z_tilt, double omega, 
 	  
 	  if (rho > rho_in)
 	    {
-	      T_rho = T_scale * pow(rho/rho_scale, -3./4.);
+	      /* T_rho = T_scale * pow(rho, -3./4.); */
+	      T_rho = T_scale * pow(rho, -1./2.);
+
 	    }
 	  else
 	    {
 	      T_rho = 0.0;
 	    }
+
+
+	  F_0 = F_lambda(T_rho, lambda);
+
+	  //printf("T_rho %f \t F_0 %f \n", T_rho, F_0);
 	  
 	  /* flux on on wavelenght lambda */
 	  /* F_0 = F_lambda(T_rho, lambda); */
@@ -1232,14 +1247,14 @@ double flux_disk(vec3 o, disk disk, double y_tilt, double z_tilt, double omega, 
 		  else
 		    {
 		      result_1 = result_1 + (F_0 * cos_onut * S_cy)/cos_rn_u;
-		      T_color = T;
+		      T_color = T_rho;
 		      /* T_color = (F_0 * cos_onut * S_cy)/cos_rn_u; */
 		    }
 		}
 	      else if (spot_disk == 0 || spot_disk == 2 || spot_disk == 3)
 		{
 		  result_1 = result_1 + (F_0 * cos_onut * S_cy)/cos_rn_u;
-		  T_color = T;
+		  T_color = T_rho;
 		  /* T_color = (F_0 * cos_onut * S_cy)/cos_rn_u; */
 		}
 	      
@@ -1271,13 +1286,13 @@ double flux_disk(vec3 o, disk disk, double y_tilt, double z_tilt, double omega, 
 		  else
 		    {
 		      result_2 = result_2 + (F_0 * cos_ondt * S_cy)/cos_rn_d;
-		      T_color = T;
+		      T_color = T_rho;
 		    }
 		}
 	      else if (spot_disk == 0 || spot_disk == 1 || spot_disk == 2)
 		{
 		  result_2 = result_2 + (F_0 * cos_ondt * S_cy)/cos_rn_d;
-		  T_color = T;
+		  T_color = T_rho;
 		}
 	      
 	      //result_2 = result_2 + (F_0 * cos_on * S)/cos_rn_d;
@@ -1312,14 +1327,14 @@ double flux_disk(vec3 o, disk disk, double y_tilt, double z_tilt, double omega, 
 		  else
 		    {
 		      result_3 = result_3 + (F_0 * cos_onst * S_sp)/cos_rn_s;
-		      T_color = T;
+		      T_color = T_rho;
 		      /* T_color = (F_0 * cos_onst * S_sp)/cos_rn_s; */
 		    }
 		}
 	      else if (spot_disk == 0 || spot_disk == 1 || spot_disk == 3)
 		{
 		  result_3 = result_3 + (F_0 * cos_onst * S_sp)/cos_rn_s;
-		  T_color = T;
+		  T_color = T_rho;
 		  /* T_color = (F_0 * cos_onst * S_sp)/cos_rn_s; */
 		}
 	      //result_3 = result_3 + (F_side * cos_on * S)/cos_rn_s;

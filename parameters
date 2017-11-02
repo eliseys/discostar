@@ -16,7 +16,7 @@ Lx		5.0e+37
 Lx_disk		0.0e+37
 Lx_disk_2	0.0e+37
 Lx_iso		1.0e+37
-PSI_pr		306.0
+PSI_pr		324.0
 kappa		-15.0
 ns_theta	0.0
 isotrope	0
@@ -25,12 +25,13 @@ isotrope	0
 # DISK PARAMETERS
 #---------------------------------------
 
-h		0.046
-R		0.23
-y_tilt		10.00
-z_tilt		324.0
-y_tilt2		25.0
-z_tilt2	       	0.0
+h		0.06
+R		0.3
+rho_in		0.000236
+y_tilt		20.0
+z_tilt		306.0
+y_tilt2		15.0
+z_tilt2	       	50.0
 
 # 0,1,2,3 -- none, top, side, bottom
 
@@ -51,7 +52,7 @@ drd_theta	30.0
 # TEMPERATURES, KELVINS
 #---------------------------------------
 
-T_disk		15000.0
+T_disk		16000.0
 T_star	  	8400.0
 
 #---------------------------------------

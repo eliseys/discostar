@@ -65,6 +65,8 @@ int main(int argc, char **argv)
 
   double drd_phi;
   double drd_theta;
+
+  double rho_in;
   
   /**/
   
@@ -105,8 +107,7 @@ int main(int argc, char **argv)
   sscanf(argv[35], "%lf", &drd_theta);
   sscanf(argv[36], "%lf", &Lx_disk_2);
   sscanf(argv[37], "%lf", &Lx_iso);
-
-
+  sscanf(argv[38], "%lf", &rho_in);
 
   /**/
 
@@ -241,7 +242,7 @@ int main(int argc, char **argv)
       T_Lagrange_point[i] = star[1];
 
 
-      flx[i] = flux_disk(o, d, y_tilt, z_tilt, omega, q, disk_tiles, phi, T_disk, lambda_cm, a_cm, picture, spot_disk, T_spot, spot_beg, spot_end, spot_rho_in, spot_rho_out) + flux_from_the_star;
+      flx[i] = flux_disk(o, d, rho_in, y_tilt, z_tilt, omega, q, disk_tiles, phi, T_disk, lambda_cm, a_cm, picture, spot_disk, T_spot, spot_beg, spot_end, spot_rho_in, spot_rho_out) + flux_from_the_star;
 
     }
   
@@ -265,6 +266,7 @@ int main(int argc, char **argv)
     {
       if (picture == 0)
   	{
+	  /* output is reversed           ---->         \|/    */
   	  printf("%.20f\t %.20f\t %.20f\n", phase[lc_num - i - 1]/(2.0 * M_PI), flx[i]/min, T_Lagrange_point[i]/8400.0 - 1.0);
   	}
       else if (picture == 1)
