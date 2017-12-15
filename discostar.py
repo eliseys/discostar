@@ -59,19 +59,22 @@ Lx_disk_2 = p['Lx_disk_2']
 Lx_iso = p['Lx_iso']
 
 rho_in = p['rho_in']
+A = p['A']
+
+uniform_disk = p['uniform_disk']
 
 
 if picture == 0:
     #output = 'LC.data'
-    output = 'LC_Lx_{Lx}_{Lx_disk}_{Lx_disk_2}_{Lx_iso}_NS_{PSI_pr}_{kappa}_{ns_theta}_h_R_rin_{h}_{R}_{rho_in}_tilt_{y_tilt}_{z_tilt}_{y_tilt2}_{z_tilt2}_Td_{T_disk}_spot_{spot_disk}_{T_spot}_{spot_beg}_{spot_end}_drd_{drd_phi}_{drd_theta}_i_{inclination}.data'
+    output = 'LC_Lx_{Lx}_{Lx_disk}_{Lx_disk_2}_{Lx_iso}_NS_{PSI_pr}_{kappa}_{ns_theta}_h_{h}_R_{R}_rho_in_{rho_in}_A_{A}_ud_{uniform_disk}_tilt_{y_tilt}_{z_tilt}_{y_tilt2}_{z_tilt2}_Td_{T_disk}_spot_{spot_disk}_{T_spot}_{spot_beg}_{spot_end}_drd_{drd_phi}_{drd_theta}_i_{inclination}.data'
     if (isotrope == 0 and spot_disk != 0):
-        output_filename = output.format(Lx=Lx, Lx_disk=Lx_disk, Lx_disk_2=Lx_disk_2, Lx_iso=Lx_iso, PSI_pr=PSI_pr, kappa=kappa, ns_theta=ns_theta, h=h, R=R, rho_in=rho_in, y_tilt=y_tilt, z_tilt=z_tilt, y_tilt2=y_tilt2, z_tilt2=z_tilt2, T_disk = T_disk, spot_disk=spot_disk, T_spot=T_spot, spot_beg=spot_beg, spot_end=spot_end, drd_phi=drd_phi, drd_theta=drd_theta, inclination=inclination)
+        output_filename = output.format(Lx=Lx, Lx_disk=Lx_disk, Lx_disk_2=Lx_disk_2, Lx_iso=Lx_iso, PSI_pr=PSI_pr, kappa=kappa, ns_theta=ns_theta, h=h, R=R, rho_in=rho_in, A=A, uniform_disk=uniform_disk, y_tilt=y_tilt, z_tilt=z_tilt, y_tilt2=y_tilt2, z_tilt2=z_tilt2, T_disk = T_disk, spot_disk=spot_disk, T_spot=T_spot, spot_beg=spot_beg, spot_end=spot_end, drd_phi=drd_phi, drd_theta=drd_theta, inclination=inclination)
     elif (isotrope == 1 and spot_disk != 0):
-        output_filename = output.format(Lx=Lx, Lx_disk=Lx_disk, Lx_disk_2=Lx_disk_2, Lx_iso=Lx_iso, PSI_pr='', kappa='', ns_theta='', h=h, R=R, rho_in=rho_in, y_tilt=y_tilt, z_tilt=z_tilt, y_tilt2=y_tilt2, z_tilt2=z_tilt2, T_disk = T_disk, spot_disk=spot_disk, T_spot=T_spot, spot_beg=spot_beg, spot_end=spot_end, drd_phi=drd_phi, drd_theta=drd_theta, inclination=inclination)
+        output_filename = output.format(Lx=Lx, Lx_disk=Lx_disk, Lx_disk_2=Lx_disk_2, Lx_iso=Lx_iso, PSI_pr='', kappa='', ns_theta='', h=h, R=R, rho_in=rho_in,  A=A, uniform_disk=uniform_disk, y_tilt=y_tilt, z_tilt=z_tilt, y_tilt2=y_tilt2, z_tilt2=z_tilt2, T_disk = T_disk, spot_disk=spot_disk, T_spot=T_spot, spot_beg=spot_beg, spot_end=spot_end, drd_phi=drd_phi, drd_theta=drd_theta, inclination=inclination)
     elif (isotrope == 1 and spot_disk == 0):
-        output_filename = output.format(Lx=Lx, Lx_disk=Lx_disk, Lx_disk_2=Lx_disk_2, Lx_iso=Lx_iso, PSI_pr='', kappa='', ns_theta='', h=h, R=R, rho_in=rho_in, y_tilt=y_tilt, z_tilt=z_tilt, y_tilt2=y_tilt2, z_tilt2=z_tilt2, T_disk = T_disk, spot_disk=spot_disk, T_spot='', spot_beg='', spot_end='', drd_phi=drd_phi, drd_theta=drd_theta, inclination=inclination)
+        output_filename = output.format(Lx=Lx, Lx_disk=Lx_disk, Lx_disk_2=Lx_disk_2, Lx_iso=Lx_iso, PSI_pr='', kappa='', ns_theta='', h=h, R=R, rho_in=rho_in, A=A, uniform_disk=uniform_disk, y_tilt=y_tilt, z_tilt=z_tilt, y_tilt2=y_tilt2, z_tilt2=z_tilt2, T_disk = T_disk, spot_disk=spot_disk, T_spot='', spot_beg='', spot_end='', drd_phi=drd_phi, drd_theta=drd_theta, inclination=inclination)
     elif (isotrope == 0 and spot_disk == 0):
-        output_filename = output.format(Lx=Lx, Lx_disk=Lx_disk, Lx_disk_2=Lx_disk_2, Lx_iso=Lx_iso, PSI_pr=PSI_pr, kappa=kappa, ns_theta=ns_theta, h=h, R=R, rho_in=rho_in, y_tilt=y_tilt, z_tilt=z_tilt, y_tilt2=y_tilt2, z_tilt2=z_tilt2, T_disk = T_disk, spot_disk=spot_disk, T_spot='', spot_beg='', spot_end='', drd_phi=drd_phi, drd_theta=drd_theta, inclination=inclination)
+        output_filename = output.format(Lx=Lx, Lx_disk=Lx_disk, Lx_disk_2=Lx_disk_2, Lx_iso=Lx_iso, PSI_pr=PSI_pr, kappa=kappa, ns_theta=ns_theta, h=h, R=R, rho_in=rho_in, A=A, uniform_disk=uniform_disk, y_tilt=y_tilt, z_tilt=z_tilt, y_tilt2=y_tilt2, z_tilt2=z_tilt2, T_disk = T_disk, spot_disk=spot_disk, T_spot='', spot_beg='', spot_end='', drd_phi=drd_phi, drd_theta=drd_theta, inclination=inclination)
         
 elif picture == 1:
     output_filename = 'VIEW.data'
@@ -115,8 +118,9 @@ arg = ('./disco' + ' ' +
        str(p['drd_theta']) + ' ' +
        str(p['Lx_disk_2']) + ' ' +
        str(p['Lx_iso']) + ' ' +
-       str(p['rho_in'])
-
+       str(p['rho_in']) + ' ' +
+       str(p['A']) + ' ' +
+       str(p['uniform_disk'])
 )
 
 
@@ -139,13 +143,13 @@ if picture == 0:
     print '\n'
     print '\n'
     if (spot_disk != 0 and isotrope == 0):
-        print '"../LC2/%s" @legend "%3.0f (%3.0f %2.0f %2.0f) (%3.0f %2.0f %2.0f) h=%1.2f R=%1.2f (%1.1e %1.1e %1.1e) Td=%5.0f SPOT %d",\\' % (output_filename,z_tilt,PSI_pr,kappa,ns_theta,z_tilt2,y_tilt,y_tilt2,h,R,Lx,Lx_disk,Lx_iso,T_disk,spot_disk)
+        print '"../LC2/%s" @legend "%3.0f (%3.0f %2.0f %2.0f) (%3.0f %2.0f %2.0f) h=%1.3f R=%1.2f (%1.1f %1.1f) Td=%2.0f SPOT %d",\\' % (output_filename,z_tilt,PSI_pr,kappa,ns_theta,z_tilt2,y_tilt,y_tilt2,h,R,Lx/1.0e+37,Lx_iso/1.0e+37,T_disk/1000.0,spot_disk)
     elif (spot_disk != 0 and isotrope == 1):
-        print '"../LC2/%s" @legend "%3.0f ISO (%3.0f %2.0f %2.0f) h=%1.2f R=%1.2f (%1.1e %1.1e %1.1e) Td=%5.0f SPOT %d",\\' % (output_filename,z_tilt,z_tilt2,y_tilt,y_tilt2,h,R,Lx,Lx_disk,Lx_iso,T_disk,spot_disk)
+        print '"../LC2/%s" @legend "%3.0f ISO (%3.0f %2.0f %2.0f) h=%1.3f R=%1.2f (%1.1f %1.1f) Td=%2.0f SPOT %d",\\' % (output_filename,z_tilt,z_tilt2,y_tilt,y_tilt2,h,R,Lx,Lx_disk/1.0e+37,Lx_iso/1.0e+37,T_disk/1000.0,spot_disk)
     elif (spot_disk == 0 and isotrope == 1):
-        print '"../LC2/%s" @legend "%3.0f ISO (%3.0f %2.0f %2.0f) h=%1.2f R=%1.2f (%1.1e %1.1e %1.1e) Td=%5.0f",\\' % (output_filename,z_tilt,z_tilt2,y_tilt,y_tilt2,h,R,Lx,Lx_disk,Lx_iso,T_disk)
+        print '"../LC2/%s" @legend "%3.0f ISO (%3.0f %2.0f %2.0f) h=%1.3f R=%1.2f (%1.1f %1.1f) Td=%2.0f",\\' % (output_filename,z_tilt,z_tilt2,y_tilt,y_tilt2,h,R,Lx/1.0e+37,Lx_iso/1.0e+37,T_disk/1000.0)
     elif (spot_disk == 0 and isotrope == 0):
-        print '"../LC2/%s" @legend "%3.0f (%3.0f %2.0f %2.0f) (%3.0f %2.0f %2.0f) h=%1.2f R=%1.2f (%1.1e %1.1e %1.1e) Td=%5.0f",\\' % (output_filename,z_tilt,PSI_pr,kappa,ns_theta,z_tilt2,y_tilt,y_tilt2,h,R,Lx,Lx_disk,Lx_iso,T_disk)   
+        print '"../LC2/%s" @legend "%3.0f (%3.0f %2.0f %2.0f) (%3.0f %2.0f %2.0f) h=%1.3f R=%1.2f (%1.1f %1.1f) Td=%2.0f",\\' % (output_filename,z_tilt,PSI_pr,kappa,ns_theta,z_tilt2,y_tilt,y_tilt2,h,R,Lx/1.0e+37,Lx_iso/1.0e+37,T_disk/1000.0)   
     print '\n'
     print '\n'
 

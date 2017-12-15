@@ -1,10 +1,8 @@
-#from __future__ import print_function
 import numpy as np
 from scipy.interpolate import interp1d
 import subprocess
-import matplotlib.pyplot as plt
 
-def light_curve(*args):
+def lc(*args):
     
     ###############################################
     # set values from parameters file
@@ -104,7 +102,7 @@ def light_curve(*args):
     return interp1d(x, y, kind='cubic')
 
 
-def light_curve_disk(*args):
+def lc_disk(*args):
     
     ###############################################
     # set values from parameters file
@@ -193,65 +191,5 @@ def light_curve_disk(*args):
     
     x = s[:,0] + 0.5
     y = s[:,1]
-    
+
     return interp1d(x, y, kind='cubic')
-      
-
-
-def residuals(pars, result_disk, zpsi, path_to_data_file):
-
-    z_tilt = zpsi[0]
-    PSI_pr = zpsi[1]
-    
-    Lx = pars[0]
-    y_tilt2 = pars[1]
-    z_tilt2 = pars[2]
-
-    y_tilt = result_disk[0]
-    #R = result_disk[1]
-    T_disk = result_disk[1]
-    
-    with open(path_to_data_file, 'r') as data:
-        x_obs_array, y_obs_array = np.loadtxt(data, dtype=('float'), usecols=(4,1), unpack=True)
-        
-    N = len(x_obs_array)
-
-    f = light_curve(Lx, y_tilt2, z_tilt2, y_tilt, T_disk, z_tilt, PSI_pr)
-    r = (y_obs_array - f(x_obs_array))**2
-    
-    return r.sum()/N
-
-
-
-def residuals_disk(pars, border, zpsi, path_to_data_file):
-
-    z_tilt = zpsi[0]
-    PSI_pr = zpsi[1]
-
-    y_tilt = pars[0]
-    #R = pars[1]
-    T_disk = pars[1]
-
-    with open(path_to_data_file, 'r') as data:
-        x_obs_array, y_obs_array = np.loadtxt(data, dtype=('float'), usecols=(4,1), unpack=True)
-
-    x_obs_list_short = []
-    y_obs_list_short = []
-    
-    for i, x in enumerate(x_obs_array):
-        if (x < border) or (x > 1.0 - border):
-            x_obs_list_short.append(x_obs_array[i])
-            y_obs_list_short.append(y_obs_array[i])
-        
-    N = len(x_obs_list_short)
-
-    f = light_curve_disk(y_tilt, T_disk, z_tilt, PSI_pr)
-    r = (y_obs_list_short - f(x_obs_list_short))**2
-
-    #x = np.arange(0.0, 1.0, 0.01)
-    #y = f(x)
-
-    #plt.plot(x, y, '-', x_obs_list_short, y_obs_list_short, '.')
-    #plt.show()
-    
-    return r.sum()/N

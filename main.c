@@ -67,7 +67,10 @@ int main(int argc, char **argv)
   double drd_theta;
 
   double rho_in;
-  
+
+  double A;
+
+  double uniform_disk;
   /**/
   
   sscanf(argv[1], "%lf", &q);
@@ -108,6 +111,8 @@ int main(int argc, char **argv)
   sscanf(argv[36], "%lf", &Lx_disk_2);
   sscanf(argv[37], "%lf", &Lx_iso);
   sscanf(argv[38], "%lf", &rho_in);
+  sscanf(argv[39], "%lf", &A);
+  sscanf(argv[40], "%lf", &uniform_disk);
 
   /**/
 
@@ -117,7 +122,7 @@ int main(int argc, char **argv)
 
   /* h in the parameters list is the full width of the disk */
   h = h * 0.5; /* here h is the semiwidth of the disk */
-  
+
   /* convert angles to radians */
   y_tilt = y_tilt * (M_PI/180.0);
   z_tilt = z_tilt * (M_PI/180.0);
@@ -242,7 +247,7 @@ int main(int argc, char **argv)
       T_Lagrange_point[i] = star[1];
 
 
-      flx[i] = flux_disk(o, d, rho_in, y_tilt, z_tilt, omega, q, disk_tiles, phi, T_disk, lambda_cm, a_cm, picture, spot_disk, T_spot, spot_beg, spot_end, spot_rho_in, spot_rho_out) + flux_from_the_star;
+      flx[i] = flux_disk(o, d, rho_in, A, uniform_disk, y_tilt, z_tilt, omega, q, disk_tiles, phi, T_disk, lambda_cm, a_cm, picture, spot_disk, T_spot, spot_beg, spot_end, spot_rho_in, spot_rho_out) + flux_from_the_star;
 
     }
   

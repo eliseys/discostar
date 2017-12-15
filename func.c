@@ -610,6 +610,7 @@ double eclipse_by_disk_inside(disk disk, vec3 o, vec3 p)
 }
 
 
+
 double * flux_star(vec3 o, double q, double omega, double beta, double u, disk disk, vec3 d2, double Lx, double Lx_disk, double Lx_iso, double Lx_disk_2, double albedo, int tiles, double T, double lambda, double a, vec3 neutron_star, double PSI_pr, int picture, int isotrope, sp disk_reflection_diagr)
 {
   /* */
@@ -888,7 +889,22 @@ double * flux_star(vec3 o, double q, double omega, double beta, double u, disk d
 }
 
 
-double flux_disk(vec3 o, disk disk, double rho_in, double y_tilt, double z_tilt, double omega, double q, int disk_tiles, double phi_orb, double T, double lambda, double a, int picture, int spot_disk, double T_spot, double spot_beg, double spot_end, double spot_rho_in, double spot_rho_out)
+
+double B(disk disk, double A, double rho_in, double T)
+{
+  /* auxuliary function for determining T(rho)  */
+
+  double R = disk.R;
+  double h = 2.0 * len(disk.h);
+  
+  return (pow(T,4) * (R*R + R*h) - 2.0 * A * (1.0/rho_in - 1.0/R + h/(2.0*R*R)))/(2.0*(log(R) - log(rho_in) + h/(2.0*R)));
+
+}
+
+
+
+  
+double flux_disk(vec3 o, disk disk, double rho_in, double A, double uniform_disk, double y_tilt, double z_tilt, double omega, double q, int disk_tiles, double phi_orb, double T, double lambda, double a, int picture, int spot_disk, double T_spot, double spot_beg, double spot_end, double spot_rho_in, double spot_rho_out)
 {
 
   sp coord = dec2sp(o);
@@ -979,9 +995,17 @@ double flux_disk(vec3 o, disk disk, double rho_in, double y_tilt, double z_tilt,
 
   // 2.0 * h because h is semithickness
   //double T_scale = T * pow((R * R + R * 2.0 * h)/(1.0/(R*R) - 1.0/R + 1.0/rho_in), 1.0/4.0);
-  double T_scale = T * pow((R * R + R * 2.0 * h)/(2.0*h/R + log(R) - log(rho_in)), 1.0/4.0);
+  //double T_scale = T * pow((R * R + R * 2.0 * h)/(2.0*h/R + log(R) - log(rho_in)), 1.0/4.0);
 
-  printf("T_scale\t%f\tlog(R)\t%f\tlog(rho_in)\t%f\n", T_scale, log(R), log(rho_in));
+  double T_scale_A = (A * pow(T,4.0) * (R * R + R * 2.0*h)) / (2.0 * (1.0/rho_in - 1.0/R + 2.0*h/(2.0*R*R)));
+  double T_scale_B = ((1.0 - A) * pow(T,4.0) * (R * R + R * 2.0*h)) / (2.0 * (log(R) - log(rho_in) + 2.0*h/(2.0*R)));
+
+  //printf("T_scale_A %f\nT_scale_B %f\n", T_scale_A, T_scale_B);
+
+  
+  //printf("T_scale_B %f\n", T_scale_B);
+
+  //printf("T_scale\t%f\tlog(R)\t%f\tlog(rho_in)\t%f\n", T_scale, log(R), log(rho_in));
   
   double T_rho;
   double T_color; /* picture color */
@@ -1096,25 +1120,35 @@ double flux_disk(vec3 o, disk disk, double rho_in, double y_tilt, double z_tilt,
 
 	  /* Temperature profile of the disk */
 	  rho = r * sin(theta);
+
+
 	  
 	  if (rho > rho_in)
 	    {
 	      /* T_rho = T_scale * pow(rho, -3./4.); */
-	      T_rho = T_scale * pow(rho, -1./2.);
-
+	      if (uniform_disk == 0.0)
+		{
+		  T_rho = pow(T_scale_A * pow(rho, -3.0) + T_scale_B * pow(rho, -2.0), 1.0/4.0);
+		}
+	      else if (uniform_disk == 1.0)
+		{
+		  T_rho = T;
+		}
 	    }
 	  else
 	    {
 	      T_rho = 0.0;
 	    }
 
-
-	  F_0 = F_lambda(T_rho, lambda);
+	  //printf("%f\t%f\n", uniform_disk, T_rho);
+	  
+	  //F_0 = F_lambda(T_rho, lambda);
 
 	  //printf("T_rho %f \t F_0 %f \n", T_rho, F_0);
 	  
 	  /* flux on on wavelenght lambda */
-	  /* F_0 = F_lambda(T_rho, lambda); */
+	  F_0 = F_lambda(T_rho, lambda);
+	  
 
 	  /* shifted coordinates of the disk */
 	  ps.x = p.x + 1.0;
@@ -1206,7 +1240,8 @@ double flux_disk(vec3 o, disk disk, double rho_in, double y_tilt, double z_tilt,
 	  /* ray = eclipse_by_star(omega, q, o, pt); */
 	  if (o.x < - cos(R + max_r))
 	    {
-	      ray = eclipse_by_star(omega, q, o, pt);
+	      //ray = eclipse_by_star(omega, q, o, pt);
+	      ray = 1.0;
 	    }
 	  else if (o.x > - cos(R + max_r))
 	    {
@@ -1227,8 +1262,8 @@ double flux_disk(vec3 o, disk disk, double rho_in, double y_tilt, double z_tilt,
 	  //cos_on2 = dot(n2,o);
 
 	  
-	  ray_2 = eclipse_by_disk_inside(disk, o, pt_non_shifted);
-	  //ray_2 = 1.0;
+	  //ray_2 = eclipse_by_disk_inside(disk, o, pt_non_shifted);
+	  ray_2 = 1.0;
 	  
 	  if ( j <= N - 1 && ray == 1.0  &&  ray_2 == 1.0  && cos_onut > eps )
 	    {

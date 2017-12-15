@@ -210,7 +210,6 @@ double * x_ray_direction_diagram(double PSI_pr, double Lx)
 
       //printf("%d\t%d\n", arc_n, arc_len_count);
 
-
       for(i = 0; i < N_phi_n; i++)
 	{
 	  sphr = arcgen(theta_n, N_phi_n, i);
@@ -344,12 +343,30 @@ double * x_ray_direction_diagram(double PSI_pr, double Lx)
 	  flux_sum[k] = flux_sum[k] + flux[j][k];
 
 	  full_sum = full_sum + flux[j][k];
+	  
 	  //printf("%.20f\t %.20f\t %.20f\n", sp_sky.phi, sp_sky.theta, flux[j][k]);
 
  	}
 
     }
 
+  
+  /* for (j = 0; j < Nj; j++) */
+  /*   {       */
+
+  /*     printf("%d\t %.20f\n", j, flux[j][86]); */
+
+  /*   } */
+
+
+
+
+
+
+
+
+
+  
   /* for (k = 1; k < Nk; k++) */
   /*   { */
   /*     printf("%.20f\t %.20f\t %.20f\n", (PSI_pr * 180.0)/M_PI, ((double) k * M_PI)/((double) Nk), flux_mean[k]); */
