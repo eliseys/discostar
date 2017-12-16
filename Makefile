@@ -1,6 +1,6 @@
 # Source, Executable, Includes, Library Defines
 INCL   = def.h
-SRC    = main.c func.c intensity.c neutron_star.c
+SRC    = main.c func.c intensity.c neutron_star.c operators.c star_shape.c disk_shape.c
 OBJ    = $(SRC:.c=.o)
 LIBS   = -lm -fopenmp
 EXE    = disco

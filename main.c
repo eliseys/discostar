@@ -183,14 +183,42 @@ int main(int argc, char **argv)
 
   vec3 w;
 
-  double * star;
+  double star;
 
   sp disk_reflection_diagr;
 
   vec3 drd_vec3;
+
+
+
+  int steps = sqrt(star_tiles/2.0);
+  int steps_phi = 2 * steps;
+  int steps_theta = steps;
+
+  /* static double *r_array = NULL; */
+
+  /* if (r_array == NULL) */
+  /*   { */
+  /*     r_array = shape_r(steps_phi, steps_theta, q, omega); */
+  /*   } */
+  /* else */
+  /*   {} */
+
+  double * r_array;
+  double * g_array;
+  double * phi_array;
+  double * theta_array;
+
+  r_array = shape_r(steps_phi, steps_theta, q, omega);
+  g_array = shape_g_abs(steps_phi, steps_theta, q, omega);
+  phi_array = phi_func(steps_phi);
+  theta_array = theta_func(steps_theta);
+
+
   
   omp_set_dynamic(0);
   omp_set_num_threads(threads);
+
 
 
 #pragma omp parallel for private(i, phi, o, d, d2, drd_vec3, disk_reflection_diagr, neutron_star_sp, neutron_star, star, flux_from_the_star)
@@ -242,17 +270,20 @@ int main(int argc, char **argv)
 
       phase[i] = phi;
 
-      star = flux_star(o, q, omega, beta, u, d, d2, Lx, Lx_disk, Lx_disk_2, Lx_iso, albedo, star_tiles, T_star, lambda_cm, a_cm, neutron_star, PSI_pr, picture, isotrope, disk_reflection_diagr);
-      flux_from_the_star = star[0];
-      T_Lagrange_point[i] = star[1];
+      star = flux_star(o, q, omega, beta, u, d, d2, Lx, Lx_disk, Lx_disk_2, Lx_iso, albedo, star_tiles, T_star, lambda_cm, a_cm, neutron_star, PSI_pr, picture, isotrope, disk_reflection_diagr, r_array, g_array, phi_array, theta_array);
+      flux_from_the_star = star;
+      //T_Lagrange_point[i] = star[1];
 
 
       flx[i] = flux_disk(o, d, rho_in, A, uniform_disk, y_tilt, z_tilt, omega, q, disk_tiles, phi, T_disk, lambda_cm, a_cm, picture, spot_disk, T_spot, spot_beg, spot_end, spot_rho_in, spot_rho_out) + flux_from_the_star;
 
     }
   
-  free(star);
-  
+  free(r_array);
+  free(g_array);
+  free(phi_array);
+  free(theta_array);
+
   double min = flx[0]; /* searching minimum of the light curve */
   //double max = T_Lagrange_point[0];
   //printf("FIRST ASSIGMENT %f\n", max);
@@ -271,8 +302,8 @@ int main(int argc, char **argv)
     {
       if (picture == 0)
   	{
-	  /* output is reversed           ---->         \|/    */
-  	  printf("%.20f\t %.20f\t %.20f\n", phase[lc_num - i - 1]/(2.0 * M_PI), flx[i]/min, T_Lagrange_point[i]/8400.0 - 1.0);
+	  /* output is reversed           ---->     \|/    */
+  	  printf("%.20f\t %.20f\n", phase[lc_num - i - 1]/(2.0 * M_PI), flx[i]/min);
   	}
       else if (picture == 1)
   	{}

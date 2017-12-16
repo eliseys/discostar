@@ -95,7 +95,7 @@ a 	    	6.35e11
 # NUMBER OF LIGHT CURVE POINTS
 #---------------------------------------
 
-lc_num		20
+lc_num		100
 
 #---------------------------------------
 # STAR AND DISK TILES NUMBER

@@ -3,283 +3,6 @@
 #include <math.h>
 #include "def.h"
 
-double len(vec3 p)
-{
-  return sqrt(p.x * p.x + p.y * p.y + p.z * p.z);
-}
-
-double dot(vec3 a, vec3 b)
-{
-  return a.x * b.x + a.y * b.y + a.z * b.z;
-}
-
-vec3 sp2dec(sp a)
-{
-  vec3 result;
-
-  result.x = a.r * sin(a.theta) * cos(a.phi);
-  result.y = a.r * sin(a.theta) * sin(a.phi);
-  result.z = a.r * cos(a.theta);
-
-  return result;  
-}
-
-sp dec2sp(vec3 a)
-{
-  /* transforms cartesian coordinates to spherical */
-  
-  sp result;
-  
-  double x = a.x;
-  double y = a.y;
-  double z = a.z;
-
-  double phi, theta;
-
-  /* r [0,inf) */
-  result.r = sqrt(x * x + y * y + z * z);
-
-  /* theta [0, M_PI] */
-  if (x != 0.0 || y != 0.0 || z != 0.0)
-    theta = acos(z/sqrt(x * x + y * y + z * z));
-
-  else if (x == 0.0 && y == 0.0 && z == 0.0)
-    theta = 0.5 * M_PI;
-  
-  /* phi [0, 2*M_PI) */  
-  if (x > 0.0 && y > 0.0)
-    phi = asin((y/x)/sqrt(1 + (y/x)*(y/x)));
-  else if (x > 0.0 && y < 0.0)
-    phi = 2.0 * M_PI - asin(((-y)/x)/sqrt(1 + ((-y)/x)*((-y)/x)));
-  else if (x < 0.0 && y > 0.0)
-    phi = M_PI - asin((y/(-x))/sqrt(1 + (y/(-x))*(y/(-x))));
-  else if (x < 0.0 && y < 0.0)
-    phi = M_PI + asin(((-y)/(-x))/sqrt(1 + ((-y)/(-x))*((-y)/(-x))));
-  else if (x == 0.0 && y > 0.0)
-    phi = 0.5 * M_PI;
-  else if (x == 0.0 && y < 0.0)
-    phi = 1.5 * M_PI;
-  else if (x >= 0.0 && y == 0.0)
-    phi = 0.0;
-  else if (x < 0.0 && y == 0.0)
-    phi = M_PI;
-
-  result.phi = phi;
-  result.theta = theta;
-  
-  return result;
-}
-
-vec3 rotate(vec3 a, double Y, double Z)
-{
-  /* rotates counterclockwise around Y and Z axes */
-  
-  vec3 result;
-
-  result.x = a.x * cos(Y) * cos(Z) + a.y * sin(Z) - a.z * sin(Y) * cos(Z);
-  result.y = - a.x * cos(Y) * sin(Z) + a.y * cos(Z) + a.z * sin(Y) * sin(Z);
-  result.z = a.x * sin(Y) + a.z * cos(Y); 
-
-  return result;
-}
-
-
-vec3 axrot(vec3 a, vec3 u, double theta)
-{
-  /* rotates by an angle of theta about an axis in the direction of u */
-
-  vec3 result;  
-  result.x = a.x * (cos(theta) + u.x * u.x * (1.0 - cos(theta))) + a.y * (u.x * u.y * (1.0 - cos(theta)) - u.z * sin(theta)) + a.z * (u.x * u.z * (1.0 - cos(theta)) + u.y * sin(theta));
-  result.y = a.x * (u.y * u.x * (1.0 - cos(theta)) + u.z * sin(theta)) + a.y * (cos(theta) + u.y * u.y * (1.0 - cos(theta))) + a.z * (u.y * u.z * (1.0 - cos(theta)) - u.x * sin(theta));
-  result.z = a.x * (u.z * u.x * (1.0 - cos(theta)) - u.y * sin(theta)) + a.y * (u.z * u.y * (1.0 - cos(theta)) + u.x * sin(theta)) + a.z * (cos(theta) + u.z * u.z * (1.0 - cos(theta)));
-
-  return result;
-}
-
-
-double fr(double r, double phi, double theta, double q, double omega)
-{
-  double l = sin(theta) * cos(phi);
-  double n = cos(theta);
-  return omega - 1.0/r - q * (1.0/sqrt(1.0 + r * r - 2 * r * l) - r * l) - 0.5 * (1.0 + q) * r * r * (1 - n * n);
-}
-
-
-double dfr(double r, double phi, double theta, double q, double omega)
-{
-  double l = sin(theta) * cos(phi);
-  double n = cos(theta);
-  return q * ((r - l)/((r * r - 2.0 * l * r + 1.0) * sqrt(r * r - 2.0 * l * r + 1.0)) + l) - (1.0 - n * n) * (q + 1.0) * r + 1.0/(r * r);
-}
-
-
-double radius_star(double phi, double theta, double q, double omega)
-{
-  double r0 = 0.001; /* zeroth approximation */
-  double r1 = r0 - fr(r0, phi, theta, q, omega)/dfr(r0, phi, theta, q, omega);
-
-  while (fabs(r1 - r0) > eps)
-    {
-      r0 = r1;
-      r1 = r1 - fr(r1, phi, theta, q, omega)/dfr(r1, phi, theta, q, omega);
-    }
-  return r1;  
-}
-
-
-double * polar(double q, double omega)
-{
-  /* Computes polar_g_abs and polar_r of the star */
-
-  double polar_r = radius_star(0.0, 0.0, q, omega);
-  double max_r = radius_star(0.0, 0.5*M_PI, q, omega);
-  
-  double z = polar_r;
-  
-  double d_omega_polar_x = q/(sqrt(z*z + 1.0)*(z*z + 1.0)) - q;
-
-  double d_omega_polar_y = 0.0;
-  double d_omega_polar_z = - q*z/(sqrt(z*z + 1.0)*(z*z + 1.0)) - 1.0/(z*z);
-
-  double polar_g_abs =
-    sqrt(
-	 d_omega_polar_x * d_omega_polar_x
-	 + d_omega_polar_y * d_omega_polar_y
-	 + d_omega_polar_z * d_omega_polar_z
-	 );
-
-  double *result = (double*) malloc(sizeof(double) * 3);
-
-  result[0] = polar_g_abs;
-  result[1] = polar_r;
-  result[2] = max_r;
-    
-  return result;
-
-}
-
-
-double * gradient(double phi, double theta, double q, double omega)
-{
-
-  double d_omega_x, d_omega_y, d_omega_z;
-  double g_x, g_y, g_z;
-  double g_abs; 
-  double n_x, n_y, n_z;
-  
-  double r = radius_star(phi, theta, q, omega);
-
-  double x = r * sin(theta) * cos(phi);
-  double y = r * sin(theta) * sin(phi);
-  double z = r * cos(theta);
-
-  
-  d_omega_x =
-    q * ((1.0 - x)/(sqrt(x*x + y*y + z*z - 2.0*x + 1.0)*(x*x + y*y + z*z - 2.0*x + 1.0)) - 1.0)
-    - x/(sqrt(x*x + y*y + z*z)*(x*x + y*y + z*z))
-    + (q + 1.0)*x;
-  
-  d_omega_y =
-    - q*y/(sqrt(x*x + y*y + z*z - 2.0*x + 1.0)*(x*x + y*y + z*z - 2.0*x + 1.0))
-    - y/(sqrt(x*x + y*y + z*z)*(x*x + y*y + z*z))
-    + (q + 1.0)*y;
-  
-  d_omega_z =
-    - q*z/(sqrt(x*x + y*y + z*z - 2.0*x + 1.0)*(x*x + y*y + z*z - 2.0*x + 1.0))
-    - z/(sqrt(x*x + y*y + z*z)*(x*x + y*y + z*z));
-    
-  g_x = d_omega_x;
-  g_y = d_omega_y;
-  g_z = d_omega_z;
-  
-  g_abs = sqrt(g_x * g_x + g_y * g_y + g_z * g_z);
-
-  n_x = - d_omega_x/g_abs;
-  n_y = - d_omega_y/g_abs;
-  n_z = - d_omega_z/g_abs;
-  
-  double *result = (double*) malloc(sizeof(double) * 4);
-
-  result[0] = g_abs;
-  result[1] = n_x;
-  result[2] = n_y;
-  result[3] = n_z;
-  
-  return result;
-}
-
-double fx(double x, double q)
-{
-
-  return
-    pow(x,5) * (1 + q)
-    + pow(x,4) * (-3*q - 2)
-    + pow(x,3) * (3*q + 1)
-    - x * x
-    + x * 2.0
-    - 1;
-
-}
-
-double dfx(double x, double q)
-{
-  
-  return
-    5.0 * pow(x,4) * (1 + q)
-    + 4.0 * pow(x,3) * (-3*q - 2)
-    + 3.0 * x * x * (3*q + 1)
-    - 2.0 * x
-    + 2.0;
-    
-}
-
-double fomega(double r, double q, double omega_crit)
-{
-  return 1.0/r + q * (1.0/sqrt(1.0 + r * r)) - omega_crit;
-  
-}
-
-double dfomega(double r, double q)
-{
-  return (-1.0) * q * r /(sqrt(r * r + 1.0) * (r * r + 1.0)) - 1.0 /(r * r);
-}
-
-double omg(double q, double mu)
-{
-  /* Returns dimensionless potential omega on the surface of the star */
-  
-  double x_crit;
-  double r_polar_crit;
-  double x0 = 0.001; /* zeroth approximation */
-  double x1 = x0 - fx(x0, q)/dfx(x0, q);
-
-  while (fabs(x1 - x0) > eps)
-    {
-      x0 = x1;
-      x1 = x1 - fx(x1, q)/dfx(x1, q);
-    }
-  x_crit = x1;
-    
-  double omega_crit = 1.0/x_crit + q * (1.0/(1.0 - x_crit) - x_crit) + x_crit * x_crit * (1.0 + q) * 0.5;
-  
-  double r0 = 0.001; /* zeroth approximation */
-  double r1 = r0 - fomega(r0, q, omega_crit)/dfomega(r0, q);
-  
-  while (fabs(r1 - r0) > eps)
-    {
-      r0 = r1;
-      r1 = r1 - fomega(r1, q, omega_crit)/dfomega(r1, q);
-    }
-  r_polar_crit = r1;
-  
-  double r_polar = r_polar_crit * mu;
-
-  double value = 1.0 / r_polar + q / sqrt(1.0 + r_polar * r_polar);
-
-  return value;
-
-}
-
 double distance_to_star(vec3 p, double omega, double q)
 {
   sp d = dec2sp(p);
@@ -369,23 +92,6 @@ double eclipse_by_star(double omega, double q, vec3 o, vec3 p)
 
   return ray;
 
-}
-
-double radius_disk(disk disk, double phi, double theta)
-{
-  double r_out = disk.R;
-  double h = 2.0 * len(disk.h);
-  
-  double r;
-  
-  if ((theta <= atan(2.0*r_out/h)) || (theta >= (M_PI - atan(2.0*r_out/h))))
-    r = 0.5 * h/(sqrt(cos(theta) * cos(theta)));
-  if ((theta > atan(2.0*r_out/h)) && (theta < (M_PI - atan(2.0*r_out/h))))
-    {
-      r = r_out / sin(theta);
-    }
-  
-  return r;
 }
 
 
@@ -611,7 +317,7 @@ double eclipse_by_disk_inside(disk disk, vec3 o, vec3 p)
 
 
 
-double * flux_star(vec3 o, double q, double omega, double beta, double u, disk disk, vec3 d2, double Lx, double Lx_disk, double Lx_iso, double Lx_disk_2, double albedo, int tiles, double T, double lambda, double a, vec3 neutron_star, double PSI_pr, int picture, int isotrope, sp disk_reflection_diagr)
+double flux_star(vec3 o, double q, double omega, double beta, double u, disk disk, vec3 d2, double Lx, double Lx_disk, double Lx_iso, double Lx_disk_2, double albedo, int tiles, double T, double lambda, double a, vec3 neutron_star, double PSI_pr, int picture, int isotrope, sp disk_reflection_diagr, double * r_array, double * g_array, double * phi_array, double * theta_array)
 {
   /* */
   int steps = sqrt(tiles/2.0);
@@ -671,7 +377,7 @@ double * flux_star(vec3 o, double q, double omega, double beta, double u, disk d
   double T_irr_4;
   double T_sum;
   double F_0;
-  double T_Lagrange_point;
+  double T_Lagrange_point = 0.0;
   
   double color;
   
@@ -723,28 +429,77 @@ double * flux_star(vec3 o, double q, double omega, double beta, double u, disk d
   /* */
   /* double F_0 = F_lambda(T,lambda); */
 
+
+  
+  int true_n_tiles = steps_theta * steps_phi;
+
+  
+  /* static double *phi_array = NULL; */
+
+  /* if (phi_array == NULL) */
+  /*   { */
+  /*     phi_array = phi_func(steps_phi); */
+  /*   } */
+  /* else */
+  /*   {} */
+
+  
+  /* static double *theta_array = NULL; */
+
+  /* if (theta_array == NULL) */
+  /*   { */
+  /*     theta_array = theta_func(steps_theta); */
+  /*   } */
+  /* else */
+  /*   {} */
+
+
+  /* static double *r_array = NULL; */
+
+  /* if (r_array == NULL) */
+  /*   { */
+  /*     r_array = shape_r(steps_phi, steps_theta, q, omega); */
+  /*   } */
+  /* else */
+  /*   {} */
+
+  
+  /* static double *g_array = NULL; */
+
+  /* if (g_array == NULL) */
+  /*   { */
+  /*     g_array = shape_g_abs(steps_phi, steps_theta, q, omega); */
+  /*   } */
+  /* else */
+  /*   {} */
+
+  
   int i, j;
   
   for (i = 0; i < steps_phi; i++)
     {
 
-      phi = (double) i * 2.0 * M_PI/steps_phi + 0.5 * 2.0 * M_PI/steps_phi;
-
+      //phi = (double) i * 2.0 * M_PI/steps_phi + 0.5 * 2.0 * M_PI/steps_phi;
+      phi = phi_array[i];
+      
       for (j = 0; j < steps_theta; j++)
 	{
 
-	  theta = (double) j * M_PI/steps_theta + 0.5 * M_PI/steps_theta;
-	    
+	  //theta = (double) j * M_PI/steps_theta + 0.5 * M_PI/steps_theta;
+	  theta = theta_array[j];
+
 	  /* gradient omega */
-	  double *grd;
-	  grd = gradient(phi, theta, q, omega);
-	  g_abs = grd[0];
-	  g = g_abs/polar_g_abs;
+	  //double *grd;
+	  //grd = gradient(phi, theta, q, omega);
+	  //g_abs = grd[0];
+	  //g = g_abs/polar_g_abs;
+
 	  /* surface normal vector */	  
-	  n.x = grd[1];
-	  n.y = grd[2];
-	  n.z = grd[3];
-	  free(grd);
+	  g   = g_array[(steps_phi * j + i)*4 + 0];
+	  n.x = g_array[(steps_phi * j + i)*4 + 1];
+	  n.y = g_array[(steps_phi * j + i)*4 + 2];
+	  n.z = g_array[(steps_phi * j + i)*4 + 3];
+	  //free(grd);
 
 	  /* star`s dot products */
 	  cos_on = dot(o,n);
@@ -755,7 +510,10 @@ double * flux_star(vec3 o, double q, double omega, double beta, double u, disk d
 	    }
 
 	  /* star */
-	  r = radius_star(phi, theta, q, omega);
+	  //r = radius_star(phi, theta, q, omega);
+
+	  r = r_array[steps_phi * j + i];
+	    
 	  p.x = r * sin(theta) * cos(phi);
 	  p.y = r * sin(theta) * sin(phi);
 	  p.z = r * cos(theta);
@@ -879,12 +637,12 @@ double * flux_star(vec3 o, double q, double omega, double beta, double u, disk d
 
   
   //free(Ix_dd);
-  double *output = (double*) malloc(sizeof(double) * 2);
+  //double *output = (double*) malloc(sizeof(double) * 2);
+ 
+  //output[0] = result; 
+  //output[1] = T_Lagrange_point; 
 
-  output[0] = result; 
-  output[1] = T_Lagrange_point; 
-
-  return output;
+  return result;
   
 }
 
@@ -1041,12 +799,28 @@ double flux_disk(vec3 o, disk disk, double rho_in, double A, double uniform_disk
   double max_r = plr[2]; 
   free(plr);
 
+
+  static double *phi_array_disk = NULL;
+
+  if (phi_array_disk == NULL)
+    {
+      phi_array_disk = phi_func_disk(steps_phi);
+    }
+  else
+    {}
+
+
+
+
+  
   int i, j;
 
   for (i = 0; i < steps_phi; i++)
     {
-      phi = (double) i * 2.0 * M_PI/steps_phi + 0.5 * 2.0 * M_PI/steps_phi;
+      //phi = (double) i * 2.0 * M_PI/steps_phi + 0.5 * 2.0 * M_PI/steps_phi;
 
+      phi = phi_array_disk[i];
+      
       for (j = 0; j <= steps_theta; j++)
 	{	  
 
@@ -1240,8 +1014,8 @@ double flux_disk(vec3 o, disk disk, double rho_in, double A, double uniform_disk
 	  /* ray = eclipse_by_star(omega, q, o, pt); */
 	  if (o.x < - cos(R + max_r))
 	    {
-	      //ray = eclipse_by_star(omega, q, o, pt);
-	      ray = 1.0;
+	      ray = eclipse_by_star(omega, q, o, pt);
+	      //ray = 1.0;
 	    }
 	  else if (o.x > - cos(R + max_r))
 	    {
@@ -1262,8 +1036,8 @@ double flux_disk(vec3 o, disk disk, double rho_in, double A, double uniform_disk
 	  //cos_on2 = dot(n2,o);
 
 	  
-	  //ray_2 = eclipse_by_disk_inside(disk, o, pt_non_shifted);
-	  ray_2 = 1.0;
+	  ray_2 = eclipse_by_disk_inside(disk, o, pt_non_shifted);
+	  //ray_2 = 1.0;
 	  
 	  if ( j <= N - 1 && ray == 1.0  &&  ray_2 == 1.0  && cos_onut > eps )
 	    {
