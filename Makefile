@@ -8,7 +8,7 @@ EXE    = disco
 # Compiler, Linker Defines
 CC      = gcc
 #CFLAGS  = -ansi -pedantic -Wall -O2
-CFLAGS  = -fopenmp
+CFLAGS  = -fopenmp -g
 LIBPATH =
 LDFLAGS = -o $(EXE) $(LIBPATH) $(LIBS)
 #CFDEBUG = -ansi -pedantic -Wall -g -DDEBUG $(LDFLAGS)
@@ -33,3 +33,4 @@ $(OBJ): $(INCL)
 # Clean Up Objects, Dumps out of source directory
 clean:
 	$(RM) $(OBJ) core a.out
+

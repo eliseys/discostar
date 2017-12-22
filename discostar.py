@@ -63,6 +63,8 @@ A = p['A']
 
 uniform_disk = p['uniform_disk']
 
+disk_flux = p['disk_flux']
+
 
 if picture == 0:
     #output = 'LC.data'
@@ -120,7 +122,8 @@ arg = ('./disco' + ' ' +
        str(p['Lx_iso']) + ' ' +
        str(p['rho_in']) + ' ' +
        str(p['A']) + ' ' +
-       str(p['uniform_disk'])
+       str(p['uniform_disk']) + ' ' +
+       str(p['disk_flux'])
 )
 
 
@@ -131,14 +134,14 @@ elif picture == 1:
     
 
 f = open('./'+direct+'/'+output_filename, "w")    
-subprocess.call(arg, stdout=f, shell=True)
-#subprocess.call(arg, shell=True)
+#subprocess.call(arg, stdout=f, shell=True)
+subprocess.call(arg, shell=True)
 
 f.close
 
 print 'done'
 
-if picture == 0:
+if picture == 0 and False:
     print 'lightcurve written to', output_filename
     print '\n'
     print '\n'

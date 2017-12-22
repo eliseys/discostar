@@ -42,15 +42,36 @@ double * phi_func_disk(int steps_phi_disk)
 }
 
 
-double * theta_func_disk(int steps_theta_disk)
+double * theta_func_disk(int disk_tiles)
 {
+
+  //int * result = (int *) malloc(sizeof(int));
+  
+  //result = 0;
+  
+  return 0;
+  
+  /* double h = len(disk.h); */
+  /* double R = disk.R; */
+
+  /* int steps = sqrt(disk_tiles/2.0); */
+  
+  /* int N = steps * R / (2.0 * (R + h)); */
+  /* int M = steps * (R + 2.0 * h) / (2.0 * (R + h)); */
+  /* int steps_theta = N + M - 1; */
+
+
+  /* double delta_N = R/N; */
+  /* double delta_M = 2.0 * h/(M - N); */
+
+  /* double phi; */
+
   /* int j; */
-  /* int steps_theta = steps_theta_disk; */
+
   
   /* for (j = 0; j <= steps_theta; j++) */
-  /*   {	   */
+  /*   { */
 
-  /* 	  /\* theta = (double) j * M_PI / steps_theta + 0.5 * M_PI/steps_theta; *\/ */
 	  
   /* 	  if (j <= N - 1) */
   /* 	    { */
@@ -90,10 +111,8 @@ double * theta_func_disk(int steps_theta_disk)
   /* 	      theta_1 = 0.5 * M_PI + atan(h/R) + acos((h * h + R * R - R * delta_1)/sqrt((h * h + R * R)*(h * h + (R - delta_1)*(R - delta_1)))); */
   /* 	      delta_theta = theta_1 - theta_0; */
   /* 	      /\**\/ */
-  /* 	      //cos_on = dot(o,n2);   */
+  /* 	      //cos_on = dot(o,n2); */
   /* 	    } */
-
-
 
 
 }

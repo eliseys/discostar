@@ -71,6 +71,9 @@ int main(int argc, char **argv)
   double A;
 
   double uniform_disk;
+
+  double disk_flux;
+
   /**/
   
   sscanf(argv[1], "%lf", &q);
@@ -113,6 +116,7 @@ int main(int argc, char **argv)
   sscanf(argv[38], "%lf", &rho_in);
   sscanf(argv[39], "%lf", &A);
   sscanf(argv[40], "%lf", &uniform_disk);
+  sscanf(argv[41], "%lf", &disk_flux);
 
   /**/
 
@@ -169,6 +173,7 @@ int main(int argc, char **argv)
   /* d2.z = h * cos(y_tilt2); */
   
   double phase[lc_num];
+  double phase_array[lc_num];
   double flx[lc_num];
   double T_Lagrange_point[lc_num];
 
@@ -204,32 +209,94 @@ int main(int argc, char **argv)
   /* else */
   /*   {} */
 
-  double * r_array;
-  double * g_array;
+  double F_disk;
+
+
+  /**************************************************************************/
+
+  double *plr;
+  plr = polar(q, omega);
+  double max_r = plr[2]; 
+  free(plr);
+
+  /* phi = 0.0 * M_PI/180.0; */
+  /* o.x = sin(inclination) * cos(phi); */
+  /* o.y = sin(inclination) * sin(phi); */
+  /* o.z = cos(inclination); */
+
+  /* d.h.x = - h * sin(y_tilt) * cos(z_tilt - phi + M_PI); */
+  /* d.h.y = h * sin(y_tilt) * sin(z_tilt - phi + M_PI); */
+  /* d.h.z = h * cos(y_tilt); */
+  /* d.R = R; */
+
+  /* d2.x = - h * sin(y_tilt2) * cos(z_tilt + z_tilt2 - phi + M_PI); */
+  /* d2.y = h * sin(y_tilt2) * sin(z_tilt + z_tilt2 - phi + M_PI); */
+  /* d2.z = h * cos(y_tilt2); */
+
+  /* disk_reflection_diagr.phi = drd_phi; */
+  /* disk_reflection_diagr.theta = drd_theta; */
+  /* disk_reflection_diagr.r = 1.0; */
+
+  //double F_disk_const = flux_disk(o, d, rho_in, A, uniform_disk, y_tilt, z_tilt, omega, q, disk_tiles, phi, T_disk, lambda_cm, a_cm, picture, spot_disk, T_spot, spot_beg, spot_end, spot_rho_in, spot_rho_out);
+
+  //double F_disk_const = 0.0;
+  //printf("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
+
+  //printf("F_disk_const %f\n", F_disk_const);
+
+
+  /**************************************************************************/
+
+
+
+  double F_disk_const = disk_flux;
+
+
   double * phi_array;
   double * theta_array;
 
-  r_array = shape_r(steps_phi, steps_theta, q, omega);
-  g_array = shape_g_abs(steps_phi, steps_theta, q, omega);
-  phi_array = phi_func(steps_phi);
-  theta_array = theta_func(steps_theta);
+  double * r_array;
+  double * g_array;
 
+  double * Ix_dd;
+
+
+  phi_array = phi_func(steps_phi, threads);
+  theta_array = theta_func(steps_theta, threads);
+  
+  r_array = shape_r(steps_phi, steps_theta, phi_array, theta_array, q, omega, threads);
+  g_array = shape_g_abs(steps_phi, steps_theta, phi_array, theta_array, q, omega, threads);
+
+  //Ix_dd = x_ray_direction_diagram(PSI_pr, Lx);
+  //Ix_dd = NULL;
+  
+  int diagram_size = 180*lc_num;
+  double diagram[diagram_size];
+
+  FILE *table;
+  table = fopen("DIAGRAM", "r");
+  fread(&diagram, sizeof(double), diagram_size, table);  
+  fclose(table);
+
+  /* for (j = 0; j < 180; j++) */
+  /*   { */
+  /*     printf("%f\t", test[180*30 + j]); */
+  /*   } */
 
   
   omp_set_dynamic(0);
   omp_set_num_threads(threads);
 
-
-
 #pragma omp parallel for private(i, phi, o, d, d2, drd_vec3, disk_reflection_diagr, neutron_star_sp, neutron_star, star, flux_from_the_star)
   for(i = 0; i < lc_num; i++)
     {
       phi = (double) i * 2.0 * M_PI/(lc_num - 1) - M_PI;
-
+      //phi = phase_array[i];
+      
       o.x = sin(inclination) * cos(phi);
       o.y = sin(inclination) * sin(phi);
       o.z = cos(inclination);
-
+      
       /* "z_tilt - phi" because disk doesn`t rotatate with respect to observer */
       d.h.x = - h * sin(y_tilt) * cos(z_tilt - phi + M_PI);
       d.h.y = h * sin(y_tilt) * sin(z_tilt - phi + M_PI);
@@ -263,19 +330,36 @@ int main(int argc, char **argv)
       
       neutron_star_sp.r = 1.0;
 
-      neutron_star = sp2dec(neutron_star_sp);      
-      neutron_star = rotate(neutron_star, 0.0, -phi);
+      neutron_star = sp2dec(neutron_star_sp);
 
+      neutron_star = rotate(neutron_star, 0.0, -phi);
       neutron_star = axrot(neutron_star, o, kappa);
+
+      //Ix_dd = & diagram[180*i];
+      
+      star = flux_star(o, q, omega, beta, u, d, d2, Lx, Lx_disk, Lx_disk_2, Lx_iso, albedo, star_tiles, T_star, lambda_cm, a_cm, neutron_star, PSI_pr, picture, isotrope, disk_reflection_diagr, r_array, g_array, phi_array, theta_array, Ix_dd);
+
+      flux_from_the_star = star;
+      //flux_from_the_star = 1.0;
+
+      //T_Lagrange_point[i] = star[1];
+
+      
+      if (o.x < - cos(R + max_r))
+      	{
+      	  //F_disk = flux_disk(o, d, rho_in, A, uniform_disk, y_tilt, z_tilt, omega, q, disk_tiles, phi, T_disk, lambda_cm, a_cm, picture, spot_disk, T_spot, spot_beg, spot_end, spot_rho_in, spot_rho_out) ;
+      	  F_disk = 0.0;
+      	}
+      else if (o.x > - cos(R + max_r))
+      	{
+      	  F_disk = F_disk_const;
+      	}
+
+
+      flx[i] = F_disk + flux_from_the_star;
 
       phase[i] = phi;
 
-      star = flux_star(o, q, omega, beta, u, d, d2, Lx, Lx_disk, Lx_disk_2, Lx_iso, albedo, star_tiles, T_star, lambda_cm, a_cm, neutron_star, PSI_pr, picture, isotrope, disk_reflection_diagr, r_array, g_array, phi_array, theta_array);
-      flux_from_the_star = star;
-      //T_Lagrange_point[i] = star[1];
-
-
-      flx[i] = flux_disk(o, d, rho_in, A, uniform_disk, y_tilt, z_tilt, omega, q, disk_tiles, phi, T_disk, lambda_cm, a_cm, picture, spot_disk, T_spot, spot_beg, spot_end, spot_rho_in, spot_rho_out) + flux_from_the_star;
 
     }
   
@@ -283,6 +367,7 @@ int main(int argc, char **argv)
   free(g_array);
   free(phi_array);
   free(theta_array);
+  free(Ix_dd);
 
   double min = flx[0]; /* searching minimum of the light curve */
   //double max = T_Lagrange_point[0];
@@ -302,13 +387,69 @@ int main(int argc, char **argv)
     {
       if (picture == 0)
   	{
-	  /* output is reversed           ---->     \|/    */
+  	  /* output is reversed           ---->     \|/    */
   	  printf("%.20f\t %.20f\n", phase[lc_num - i - 1]/(2.0 * M_PI), flx[i]/min);
   	}
       else if (picture == 1)
   	{}
     }
 
+
+  /* directiondal diagram */
+
+  
+  /* FILE *diagram; */
+  /* diagram = fopen("DIAGRAM", "a"); */
+
+  /* int size_diagram = 180*lc_num; */
+  /* int k, j; */
+  
+  /* for (i = 0; i < lc_num; i++) */
+  /*   { */
+  /*     PSI_pr = (double) i * M_PI/180.0; */
+
+  /*     double * Ix_dd2; */
+
+  /*     Ix_dd2 = x_ray_direction_diagram(PSI_pr, Lx); */
+
+  /*     /\* for (j = 0; j < 180; j++) *\/ */
+  /*     /\* 	{ *\/ */
+  /*     /\* 	  printf("%f\n", Ix_dd2[j]); *\/ */
+  /*     /\* 	} *\/ */
+      
+  /*     fwrite(Ix_dd2, sizeof(double), 180, diagram); */
+
+  /*     /\* for (k = 0; k < 180; k++) *\/ */
+  /*     /\* 	{ *\/ */
+  /*     /\* 	  fprintf(diagram, "%.20f\t", Ix_dd2[k]); *\/ */
+
+  /*     /\* 	} *\/ */
+      
+  /*     free(Ix_dd2); */
+
+  /*     printf("PROGRESS %d\n", i); */
+  /*   } */
+
+  /* fclose(diagram); */
+  
+  /* double test[size_diagram]; */
+
+  /* FILE *data; */
+  /* data = fopen("DIAGRAM", "r"); */
+  
+  /* fread(&test, sizeof(double), size_diagram, data);   */
+
+  /* for (j = 0; j < 180; j++) */
+  /*   { */
+  /*     printf("%f\t", test[180*30 + j]); */
+  /*   } */
+  
+  
+  //free(Ix_dd);
+
+  /* fclose(diagram); */
+
+  
   /* for(i = 0; i < lc_num; i++) */
   /*   { */
   /*     /\* 2nd phase just copy of the first one *\/ */

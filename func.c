@@ -317,7 +317,7 @@ double eclipse_by_disk_inside(disk disk, vec3 o, vec3 p)
 
 
 
-double flux_star(vec3 o, double q, double omega, double beta, double u, disk disk, vec3 d2, double Lx, double Lx_disk, double Lx_iso, double Lx_disk_2, double albedo, int tiles, double T, double lambda, double a, vec3 neutron_star, double PSI_pr, int picture, int isotrope, sp disk_reflection_diagr, double * r_array, double * g_array, double * phi_array, double * theta_array)
+double flux_star(vec3 o, double q, double omega, double beta, double u, disk disk, vec3 d2, double Lx, double Lx_disk, double Lx_iso, double Lx_disk_2, double albedo, int tiles, double T, double lambda, double a, vec3 neutron_star, double PSI_pr, int picture, int isotrope, sp disk_reflection_diagr, double * r_array, double * g_array, double * phi_array, double * theta_array, double * Ix_dd)
 {
   /* */
   int steps = sqrt(tiles/2.0);
@@ -402,14 +402,14 @@ double flux_star(vec3 o, double q, double omega, double beta, double u, disk dis
   hn2_min.y = -hn2.y;
   hn2_min.z = -hn2.z;
 
-  static double *Ix_dd = NULL;
+  /* static double *Ix_dd = NULL; */
 
-  if (Ix_dd == NULL)
-    {
-      Ix_dd = x_ray_direction_diagram(PSI_pr, Lx);
-    }
-  else
-    {}
+  /* if (Ix_dd == NULL) */
+  /*   { */
+  /*     Ix_dd = x_ray_direction_diagram(PSI_pr, Lx); */
+  /*   } */
+  /* else */
+  /*   {} */
   
   /* double *Fx_dd; */
   /* Fx_dd = x_ray_direction_diagram(PSI_pr); */
@@ -524,6 +524,7 @@ double flux_star(vec3 o, double q, double omega, double beta, double u, disk dis
 	  ps.z = p.z;
 
 	  /* ray = eclipse_by_disk(disk, o, ps); */
+
 	  if (o.x < cos(R + max_r))
 	    {
 	      ray = 1.0;
@@ -531,7 +532,10 @@ double flux_star(vec3 o, double q, double omega, double beta, double u, disk dis
 	  else if (o.x > cos(R + max_r))
 	    {
 	      ray = eclipse_by_disk(disk, o, ps);
+	      //ray = 1.0;
 	    }
+
+	  //ray = 1.0;
 	  
 	  /* normalized vector */
 	  pl = len(p);
@@ -589,6 +593,8 @@ double flux_star(vec3 o, double q, double omega, double beta, double u, disk dis
 	      if (isotrope == 0)
 		{
 		  Fx = Ix_dd[diagr_index] * (1.0 - albedo) * fabs(cos_in) / (lps * lps * a * a) + (1.0 - albedo) * fabs(cos_drd) * Lx_disk_2 * fabs(cos_in) / (2.0 * M_PI * lps * lps * a * a) + (1.0 - albedo) * fabs(cos_irr2) * Lx_disk * fabs(cos_in) / (2.0 * M_PI * lps * lps * a * a) + (1.0 - albedo) * Lx_iso * fabs(cos_in) / (4.0 * M_PI * lps * lps * a * a);
+		  //Fx = (1.0 - albedo) * fabs(cos_drd) * Lx_disk_2 * fabs(cos_in) / (2.0 * M_PI * lps * lps * a * a) + (1.0 - albedo) * fabs(cos_irr2) * Lx_disk * fabs(cos_in) / (2.0 * M_PI * lps * lps * a * a) + (1.0 - albedo) * Lx_iso * fabs(cos_in) / (4.0 * M_PI * lps * lps * a * a);
+		  
 		}
 	      else if (isotrope == 1)
 		{
@@ -817,9 +823,9 @@ double flux_disk(vec3 o, disk disk, double rho_in, double A, double uniform_disk
 
   for (i = 0; i < steps_phi; i++)
     {
-      //phi = (double) i * 2.0 * M_PI/steps_phi + 0.5 * 2.0 * M_PI/steps_phi;
+      phi = (double) i * 2.0 * M_PI/steps_phi + 0.5 * 2.0 * M_PI/steps_phi;
 
-      phi = phi_array_disk[i];
+      //phi = phi_array_disk[i];
       
       for (j = 0; j <= steps_theta; j++)
 	{	  
@@ -975,13 +981,6 @@ double flux_disk(vec3 o, disk disk, double rho_in, double A, double uniform_disk
 	  cos_rn_d = dot(z_d,nd);
 	  cos_rn_s = dot(pn,ns);
 
-	  /* printf("%f %f %f\n", len(n1), len(n2), len(n3)); */
-	  
-	  /* cos_on_u = dot(o,n1); */
-	  /* cos_on_d = dot(o,n2);  */
-	  /* cos_on_s = dot(o,n3); */
-
-	  /* printf("%f %f %f\n", o.x, o.y, o.z); */
 
 	  /* sphere surface element */
 	  S_sp = a * a * r * r * sin(theta) * delta_phi * delta_theta;

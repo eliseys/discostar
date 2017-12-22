@@ -411,13 +411,20 @@ double * x_ray_direction_diagram(double PSI_pr, double Lx)
 
   
 
+  //FILE *diagram;
 
+  //diagram = fopen("DIAGRAM", "w");
 
   for (k = 1; k < 180; k++)
     {
 
-      result[k] = Lx * 4.0 * M_PI * flux_sum[k]/full_sum;
+      //result[k] = Lx * 4.0 * M_PI * flux_sum[k]/full_sum;
+      
+      result[k] = 4.0 * M_PI * flux_sum[k]/full_sum;
 
+
+      //fprintf(diagram, "%.20f\t", result[k]);
+      
       //test for directions
       /* if (k <= 90) */
       /* 	{ */
@@ -432,8 +439,12 @@ double * x_ray_direction_diagram(double PSI_pr, double Lx)
       
     }
 
+  //fclose(diagram);
+  
   result[0] = 0.0;
 
+
+  
   //result[0] = 1.0/90.0;
   
   return result;

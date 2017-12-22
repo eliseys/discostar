@@ -193,3 +193,4 @@ def lc_disk(*args):
     y = s[:,1]
 
     return interp1d(x, y, kind='cubic')
+

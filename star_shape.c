@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
+#include <omp.h>
 #include "def.h"
 
 double fr(double r, double phi, double theta, double q, double omega)
@@ -113,6 +114,7 @@ double * gradient(double phi, double theta, double q, double omega)
   return result;
 }
 
+
 double fx(double x, double q)
 {
 
@@ -187,12 +189,17 @@ double omg(double q, double mu)
 
 
 
-double * phi_func(int steps_phi)
+double * phi_func(int steps_phi, int threads)
 {
   int i;
 
   double * result = (double*) malloc(sizeof(double) * steps_phi);
- 
+
+
+  omp_set_dynamic(0);
+  omp_set_num_threads(threads);
+
+#pragma omp parallel for private(i)
   for (i = 0; i < steps_phi; i++)
     {
       result[i] = (double) i * 2.0 * M_PI/steps_phi + 0.5 * 2.0 * M_PI/steps_phi;
@@ -202,12 +209,16 @@ double * phi_func(int steps_phi)
 }
 
 
-double * theta_func(int steps_theta)
+double * theta_func(int steps_theta, int threads)
 {
   int j;
 
   double * result = (double*) malloc(sizeof(double) * steps_theta);
 
+  omp_set_dynamic(0);
+  omp_set_num_threads(threads);
+
+#pragma omp parallel for private(j)
   for (j = 0; j < steps_theta; j++)
     {
       result[j] = (double) j * M_PI/steps_theta + 0.5 * M_PI/steps_theta;
@@ -218,19 +229,19 @@ double * theta_func(int steps_theta)
 
 
 
-double * shape_g_abs(int steps_phi, int steps_theta, double q, double omega)
+double * shape_g_abs(int steps_phi, int steps_theta, double * phi_array, double * theta_array, double q, double omega, int threads)
 {
   
   int N = steps_theta * steps_phi;
   double * result = (double*) malloc(sizeof(double) * N * 4);
 
-  double * grd;
-  double * phi_array;
-  double * theta_array;
+  //double * grd;
+  //double * phi_array;
+  //double * theta_array;
   double * polar_array;
 
-  phi_array = phi_func(steps_phi);
-  theta_array = theta_func(steps_theta);
+  //phi_array = phi_func(steps_phi, threads);
+  //theta_array = theta_func(steps_theta, threads);
 
   polar_array = polar(q, omega);
 
@@ -240,12 +251,17 @@ double * shape_g_abs(int steps_phi, int steps_theta, double q, double omega)
 
 
   int i, j;
-  
+
+  omp_set_dynamic(0);
+  omp_set_num_threads(threads);
+
+#pragma omp parallel for private(j, g_abs, g)
   for (i = 0; i < steps_phi; i++)
     {
+
       for (j = 0; j < steps_theta; j++)
 	{ 
-	  grd = gradient(phi_array[i], theta_array[j], q, omega);
+	  double * grd = gradient(phi_array[i], theta_array[j], q, omega);
 
 	  g_abs = grd[0];
 
@@ -255,13 +271,15 @@ double * shape_g_abs(int steps_phi, int steps_theta, double q, double omega)
 	  result[(steps_phi * j + i)*4 + 1] = grd[1];
 	  result[(steps_phi * j + i)*4 + 2] = grd[2];
 	  result[(steps_phi * j + i)*4 + 3] = grd[3];
-
+	  free(grd);
 	}
+
+      
     }
 
-  free(grd);
-  free(phi_array);
-  free(theta_array);
+  //free(grd);
+  //free(phi_array);
+  //free(theta_array);
   free(polar_array);
   
   return result;
@@ -270,7 +288,7 @@ double * shape_g_abs(int steps_phi, int steps_theta, double q, double omega)
 
 
 
-double * shape_r(int steps_phi, int steps_theta, double q, double omega)
+double * shape_r(int steps_phi, int steps_theta, double * phi_array, double * theta_array, double q, double omega, int threads)
 {
   /* star */
 
@@ -278,14 +296,19 @@ double * shape_r(int steps_phi, int steps_theta, double q, double omega)
 
   double * result = (double*) malloc(sizeof(double) * N);
 
-  double * phi_array;
-  double * theta_array;
+  /* double * phi_array; */
+  /* double * theta_array; */
   
-  phi_array = phi_func(steps_phi);
-  theta_array = theta_func(steps_theta);
+  /* phi_array = phi_func(steps_phi, threads); */
+  /* theta_array = theta_func(steps_theta, threads); */
 
   int i, j;
-  
+ 
+  omp_set_dynamic(0);
+  omp_set_num_threads(threads);
+
+
+#pragma omp parallel for private(j)  
   for (i = 0; i < steps_phi; i++)
     {
       for (j = 0; j < steps_theta; j++)
@@ -294,8 +317,10 @@ double * shape_r(int steps_phi, int steps_theta, double q, double omega)
 	}
     }
 
-  free(phi_array);
-  free(theta_array);
+
+  
+  //free(phi_array);
+  //free(theta_array);
 
   return result;
     

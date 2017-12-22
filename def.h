@@ -76,10 +76,10 @@ double dfomega(double r, double q);
 double omg(double q, double mu);
 double distance_to_star(vec3 p, double omega, double q);
 
-double * phi_func(int steps_phi);
-double * theta_func(int steps_theta);
-double * shape_r(int steps_phi, int steps_theta, double q, double omega);
-double * shape_g_abs(int steps_phi, int steps_theta, double q, double omega);
+double * phi_func(int steps_phi, int threads);
+double * theta_func(int steps_theta, int threads);
+double * shape_r(int steps_phi, int steps_theta, double * phi_array, double * theta_array, double q, double omega, int threads);
+double * shape_g_abs(int steps_phi, int steps_theta, double * phi_array, double * theta_array, double q, double omega, int threads);
 
 double * phi_func_disk(int steps_phi_disk);
 double * theta_func_disk(int steps_theta_disk);
@@ -93,7 +93,7 @@ double distance_to_disk_inside(vec3 p, disk disk);
 double eclipse_by_disk(disk disk, vec3 o, vec3 p);
 double eclipse_by_disk_inside(disk disk, vec3 o, vec3 p);
 
-double flux_star(vec3 o, double q, double omega, double beta, double u, disk disk, vec3 d2, double Lx, double Lx_disk, double Lx_iso, double Lx_disk_2, double albedo, int star_tiles, double T_star, double lambda, double a, vec3 neutron_star, double PSI_pr, int picture, int isotrope, sp disk_reflection_diagr, double * r_array, double * g_array, double * phi_array, double * theta_array);
+double flux_star(vec3 o, double q, double omega, double beta, double u, disk disk, vec3 d2, double Lx, double Lx_disk, double Lx_iso, double Lx_disk_2, double albedo, int star_tiles, double T_star, double lambda, double a, vec3 neutron_star, double PSI_pr, int picture, int isotrope, sp disk_reflection_diagr, double * r_array, double * g_array, double * phi_array, double * theta_array, double * Ix_dd);
 
 double B(disk disk, double A, double rho_in, double T);
 
