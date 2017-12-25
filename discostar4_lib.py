@@ -94,7 +94,7 @@ def lc(*args):
 
     output = subprocess.check_output(arg, shell=True)
     
-    s = np.array(output.split(), dtype='float').reshape([-1,3])
+    s = np.array(output.split(), dtype='float').reshape([-1,2])
     
     x = s[:,0] + 0.5
     y = s[:,1]
@@ -124,21 +124,26 @@ def lc_disk(*args):
     #print 'ARGS', args
     
     y_tilt = args[0]
-    #R = args[1]
-    T_disk = args[1]
+    y_tilt2 = args[1]
 
-    z_tilt = args[2]
-    PSI_pr = args[3]
+    disk_flux = args[2]
+
+    z_tilt = args[3]
+    z_tilt2 = args[4]
+
+    PSI_pr = args[5]
 
     ###
     
     p['z_tilt'] = z_tilt
+    p['z_tilt2'] = z_tilt2
+    
     p['PSI_pr'] = PSI_pr
     
     p['y_tilt'] = y_tilt
-    #p['R'] = R
-    p['T_disk'] = T_disk
-    #p['h'] = 0.2 * R
+    p['y_tilt2'] = y_tilt2
+
+    p['disk_flux'] = disk_flux
     
     ###############################################
 
@@ -182,12 +187,13 @@ def lc_disk(*args):
            str(p['Lx_iso']) + ' ' +
            str(p['rho_in']) + ' ' +           
            str(p['A']) + ' ' +
-           str(p['uniform_disk'])
+           str(p['uniform_disk']) + ' ' +
+           str(p['disk_flux'])
     )
 
     output = subprocess.check_output(arg, shell=True)
     
-    s = np.array(output.split(), dtype='float').reshape([-1,3])
+    s = np.array(output.split(), dtype='float').reshape([-1,2])
     
     x = s[:,0] + 0.5
     y = s[:,1]

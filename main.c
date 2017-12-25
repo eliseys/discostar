@@ -258,7 +258,7 @@ int main(int argc, char **argv)
   double * r_array;
   double * g_array;
 
-  double * Ix_dd;
+  //double * Ix_dd;
 
 
   phi_array = phi_func(steps_phi, threads);
@@ -270,14 +270,37 @@ int main(int argc, char **argv)
   //Ix_dd = x_ray_direction_diagram(PSI_pr, Lx);
   //Ix_dd = NULL;
   
-  int diagram_size = 180*lc_num;
+  int diagram_size = 180*100;
+  //double diagram[diagram_size];
+
   double diagram[diagram_size];
 
-  FILE *table;
-  table = fopen("DIAGRAM", "r");
-  fread(&diagram, sizeof(double), diagram_size, table);  
-  fclose(table);
 
+  
+  FILE *file;
+  file = fopen("DIAGRAM", "r");
+  //fread(&diagram, sizeof(double), diagram_size, file);  
+
+  fread(&diagram, sizeof(double), diagram_size, file);
+  //printf("DONE %d\t %f\n", i, diagram[i][5]);
+
+  fclose(file);
+
+
+  
+  int PSI_pr_i = (int) (100.0 * 180.0 * PSI_pr)/(360 * M_PI);
+
+  double *Ix_dd;
+  Ix_dd = &diagram[180 * PSI_pr_i + 0];
+
+  
+
+  
+  /* for (i = 0; i < lc_num; i++) */
+  /*   {      */
+  /*     printf("%f\t", diagram[i][0]); */
+  /*   } */
+  
   /* for (j = 0; j < 180; j++) */
   /*   { */
   /*     printf("%f\t", test[180*30 + j]); */
@@ -334,9 +357,11 @@ int main(int argc, char **argv)
 
       neutron_star = rotate(neutron_star, 0.0, -phi);
       neutron_star = axrot(neutron_star, o, kappa);
-
-      //Ix_dd = & diagram[180*i];
       
+      //double * Ix_dd;
+      //Ix_dd = &diagram[PSI_pr_i][0];
+      //free(Ix_dd);
+
       star = flux_star(o, q, omega, beta, u, d, d2, Lx, Lx_disk, Lx_disk_2, Lx_iso, albedo, star_tiles, T_star, lambda_cm, a_cm, neutron_star, PSI_pr, picture, isotrope, disk_reflection_diagr, r_array, g_array, phi_array, theta_array, Ix_dd);
 
       flux_from_the_star = star;
@@ -359,6 +384,7 @@ int main(int argc, char **argv)
       flx[i] = F_disk + flux_from_the_star;
 
       phase[i] = phi;
+      //free(Ix_dd);
 
 
     }
@@ -367,7 +393,7 @@ int main(int argc, char **argv)
   free(g_array);
   free(phi_array);
   free(theta_array);
-  free(Ix_dd);
+  //free(Ix_dd);
 
   double min = flx[0]; /* searching minimum of the light curve */
   //double max = T_Lagrange_point[0];

@@ -134,14 +134,14 @@ elif picture == 1:
     
 
 f = open('./'+direct+'/'+output_filename, "w")    
-#subprocess.call(arg, stdout=f, shell=True)
-subprocess.call(arg, shell=True)
+subprocess.call(arg, stdout=f, shell=True)
+#subprocess.call(arg, shell=True)
 
 f.close
 
 print 'done'
 
-if picture == 0 and False:
+if picture == 0:
     print 'lightcurve written to', output_filename
     print '\n'
     print '\n'
