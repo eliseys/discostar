@@ -25,8 +25,8 @@ int main(int argc, char **argv)
   double y_tilt2; 
   double z_tilt2;  
 
-  int picture;      /* print 3D picture */ 
-
+  int picture;      /* print 3D picture */
+  
   /* observer */
   double inclination;
 
@@ -177,7 +177,8 @@ int main(int argc, char **argv)
   double flx[lc_num];
   double T_Lagrange_point[lc_num];
 
-  /* double disk_flx = flux_disk(o, d, y_tilt, z_tilt, omega, q, b, disk_tiles, phi, T_disk, lambda_cm, a_cm); */
+  //double disk_flx = flux_disk(o, d, y_tilt, z_tilt, omega, q, b, disk_tiles, phi, T_disk, lambda_cm, a_cm);
+  //printf ("disk_flx %f", disk_flx);
   /* double star_flx = flux_star(o, q, omega, beta, u, d, d2, Lx, albedo, star_tiles, T_star, lambda_cm, a_cm); */
 
   sp neutron_star_sp;
@@ -219,15 +220,27 @@ int main(int argc, char **argv)
   double max_r = plr[2]; 
   free(plr);
 
-  /* phi = 0.0 * M_PI/180.0; */
+  /* phi = 90.0 * M_PI/180.0; */
   /* o.x = sin(inclination) * cos(phi); */
   /* o.y = sin(inclination) * sin(phi); */
   /* o.z = cos(inclination); */
 
+  /* vec3 DN; */
+  
   /* d.h.x = - h * sin(y_tilt) * cos(z_tilt - phi + M_PI); */
   /* d.h.y = h * sin(y_tilt) * sin(z_tilt - phi + M_PI); */
   /* d.h.z = h * cos(y_tilt); */
   /* d.R = R; */
+  
+  /* DN.x = d.h.x; */
+  /* DN.y = d.h.y; */
+  /* DN.z = d.h.z; */
+
+  /* double DNL = len(DN); */
+
+  /* DN.x = d.h.x/DNL; */
+  /* DN.y = d.h.y/DNL; */
+  /* DN.z = d.h.z/DNL; */
 
   /* d2.x = - h * sin(y_tilt2) * cos(z_tilt + z_tilt2 - phi + M_PI); */
   /* d2.y = h * sin(y_tilt2) * sin(z_tilt + z_tilt2 - phi + M_PI); */
@@ -237,12 +250,15 @@ int main(int argc, char **argv)
   /* disk_reflection_diagr.theta = drd_theta; */
   /* disk_reflection_diagr.r = 1.0; */
 
-  //double F_disk_const = flux_disk(o, d, rho_in, A, uniform_disk, y_tilt, z_tilt, omega, q, disk_tiles, phi, T_disk, lambda_cm, a_cm, picture, spot_disk, T_spot, spot_beg, spot_end, spot_rho_in, spot_rho_out);
+  /* double F_disk_const = flux_disk(o, d, rho_in, A, uniform_disk, y_tilt, z_tilt, omega, q, disk_tiles, phi, T_disk, lambda_cm, a_cm, picture, spot_disk, T_spot, spot_beg, spot_end, spot_rho_in, spot_rho_out); */
 
   //double F_disk_const = 0.0;
+
   //printf("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
 
-  //printf("F_disk_const %f\n", F_disk_const);
+  //printf("%.10f\t %f\n", dot(o,DN), F_disk_const);
+
+  //printf("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
 
 
   /**************************************************************************/
@@ -267,34 +283,22 @@ int main(int argc, char **argv)
   r_array = shape_r(steps_phi, steps_theta, phi_array, theta_array, q, omega, threads);
   g_array = shape_g_abs(steps_phi, steps_theta, phi_array, theta_array, q, omega, threads);
 
-  //Ix_dd = x_ray_direction_diagram(PSI_pr, Lx);
-  //Ix_dd = NULL;
+  /* Ix_dd = x_ray_direction_diagram(PSI_pr, Lx); */
+  /* Ix_dd = NULL; */
   
   int diagram_size = 180*100;
-  //double diagram[diagram_size];
-
   double diagram[diagram_size];
 
 
-  
   FILE *file;
   file = fopen("DIAGRAM", "r");
-  //fread(&diagram, sizeof(double), diagram_size, file);  
-
   fread(&diagram, sizeof(double), diagram_size, file);
-  //printf("DONE %d\t %f\n", i, diagram[i][5]);
-
   fclose(file);
-
-
   
   int PSI_pr_i = (int) (100.0 * 180.0 * PSI_pr)/(360 * M_PI);
 
   double *Ix_dd;
   Ix_dd = &diagram[180 * PSI_pr_i + 0];
-
-  
-
   
   /* for (i = 0; i < lc_num; i++) */
   /*   {      */
@@ -396,8 +400,6 @@ int main(int argc, char **argv)
   //free(Ix_dd);
 
   double min = flx[0]; /* searching minimum of the light curve */
-  //double max = T_Lagrange_point[0];
-  //printf("FIRST ASSIGMENT %f\n", max);
 
   
   for(i = 1; i < lc_num; i++)
@@ -421,11 +423,13 @@ int main(int argc, char **argv)
     }
 
 
+  
+
   /* directiondal diagram */
 
   
   /* FILE *diagram; */
-  /* diagram = fopen("DIAGRAM", "a"); */
+  /* diagram = fopen("DIAGRAM_kappa_-3", "a"); */
 
   /* int size_diagram = 180*lc_num; */
   /* int k, j; */
@@ -461,9 +465,9 @@ int main(int argc, char **argv)
   /* double test[size_diagram]; */
 
   /* FILE *data; */
-  /* data = fopen("DIAGRAM", "r"); */
+  /* data = fopen("DIAGRAM_kappa_-3", "r"); */
   
-  /* fread(&test, sizeof(double), size_diagram, data);   */
+  /* fread(&test, sizeof(double), size_diagram, data); */
 
   /* for (j = 0; j < 180; j++) */
   /*   { */
@@ -473,14 +477,7 @@ int main(int argc, char **argv)
   
   //free(Ix_dd);
 
-  /* fclose(diagram); */
-
-  
-  /* for(i = 0; i < lc_num; i++) */
-  /*   { */
-  /*     /\* 2nd phase just copy of the first one *\/ */
-  /*     printf("%.20f\t %.20f\n", phase[i]/(2.0 * M_PI) + 1.0, flx[i]/min); */
-  /*   } */
+  //fclose(diagram);
 
   return 0;
 }

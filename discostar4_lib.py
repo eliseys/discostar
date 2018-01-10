@@ -122,19 +122,22 @@ def lc_disk(*args):
     p['picture'] = 0.0
 
     #print 'ARGS', args
-    
-    y_tilt = args[0]
-    y_tilt2 = args[1]
 
-    disk_flux = args[2]
+    z_tilt = args[0]
+    PSI_pr = args[1]
 
-    z_tilt = args[3]
-    z_tilt2 = args[4]
+    Lx = args[2]
+    y_tilt = args[3]
+    y_tilt2 = args[4]
+    z_tilt2 = args[5]
+    disk_flux = args[6]
 
-    PSI_pr = args[5]
 
     ###
-    
+
+
+    p['Lx'] = Lx
+
     p['z_tilt'] = z_tilt
     p['z_tilt2'] = z_tilt2
     
