@@ -12,13 +12,9 @@ albedo	     0.5
 # NS X-RAY LUMINOSITY, ERG/S; ORIENTATON
 #---------------------------------------
 
-Lx		5.5e+37
 Lx_disk		0.0e+37
 Lx_disk_2	0.0e+37
 Lx_iso		0.0e+37
-#PSI_pr		144.0
-kappa		-15.0
-ns_theta	0.0
 isotrope	0
 
 #---------------------------------------
@@ -28,30 +24,19 @@ isotrope	0
 h		0.046
 R		0.23
 rho_in		0.000236
-#y_tilt		10.0
-#z_tilt		126.0
-#y_tilt2		19.0
-#z_tilt2	       	60.0
 
 #########################################
-
-#Lx          2.9345e+37
-#PSI_pr      0
-#z_tilt      270
-#y_tilt      22.1563437
-#y_tilt2     16.6870622
-#z_tilt2     53.3572307
-#T_disk      12794.2247
-#disk_flux   8.7429e+38
-
-Lx          3.6029e+37
-PSI_pr      72
-z_tilt      198
-y_tilt      19.7117254
-y_tilt2     8.12772819
-z_tilt2     89.7942076
-T_disk      13332.7143
-disk_flux   8.1188e+38
+ 
+Lx		2.0e+37
+PSI_pr      	324.0
+z_tilt      	306.0
+y_tilt2     	10.018987
+z_tilt2    	31.021851
+T_disk      	19000.0
+y_tilt      	10.0
+disk_flux   	0
+kappa	   	-15.0
+ns_theta    	0
 
 #########################################
 
@@ -75,7 +60,6 @@ drd_theta	30.0
 # TEMPERATURES, KELVINS
 #---------------------------------------
 
-#T_disk		16000.0
 A		1.0
 T_star	  	8400.0
 

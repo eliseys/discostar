@@ -886,7 +886,7 @@ double flux_disk(vec3 o, disk disk, double rho_in, double A, double uniform_disk
 	  p.y = r * sin(theta) * sin(phi);
 	  p.z = r * cos(theta);
 
-
+	  
 	  /* disk with complex profile h = h(rho) */
 
 	  if (j <= N - 1)
@@ -920,6 +920,7 @@ double flux_disk(vec3 o, disk disk, double rho_in, double A, double uniform_disk
 	      T_rho = 0.0;
 	    }
 
+
 	  //printf("%f\t%f\n", uniform_disk, T_rho);
 	  
 	  //F_0 = F_lambda(T_rho, lambda);
@@ -928,7 +929,7 @@ double flux_disk(vec3 o, disk disk, double rho_in, double A, double uniform_disk
 	  
 	  /* flux on on wavelenght lambda */
 	  F_0 = F_lambda(T_rho, lambda);
-	  
+
 
 	  /* shifted coordinates of the disk */
 	  ps.x = p.x + 1.0;
@@ -1068,7 +1069,7 @@ double flux_disk(vec3 o, disk disk, double rho_in, double A, double uniform_disk
 	      
 	      //result_1 = result_1 + (F_0 * cos_on * S)/cos_rn_u;
 	      /* result_1 = result_1 + cos_rn_u; */
-
+	      
 	      //color = (F_0 * cos_on * S)/cos_rn_u;
 	      if (picture == 1)
 		{
@@ -1106,7 +1107,7 @@ double flux_disk(vec3 o, disk disk, double rho_in, double A, double uniform_disk
 	      //result_2 = result_2 + (F_0 * cos_on * S)/cos_rn_d;
 	      
 	      /* result_2 = result_2 + cos_rn_d; */
-	      
+
 	      if (picture == 1)
 		{
 		  printf("%f\t %f\t %f\t %f\t %f\n", phase_orb*180.0/M_PI, pt.x, pt.y, pt.z, T_color);
@@ -1163,7 +1164,6 @@ double flux_disk(vec3 o, disk disk, double rho_in, double A, double uniform_disk
       
     }
 
-  
   return result_1 + result_2 + result_3;
 }
 

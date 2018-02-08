@@ -131,8 +131,11 @@ def lc_disk(*args):
     y_tilt2 = args[4]
     z_tilt2 = args[5]
     disk_flux = args[6]
-
-
+    T_disk = args[7]
+    
+    ns_theta = args[8]
+    kappa = args[9]
+    
     ###
 
 
@@ -148,6 +151,12 @@ def lc_disk(*args):
 
     p['disk_flux'] = disk_flux
     
+    p['T_disk'] = T_disk
+    
+    p['ns_theta'] = ns_theta
+    p['kappa'] = kappa
+
+
     ###############################################
 
     arg = ('./disco' + ' ' + 

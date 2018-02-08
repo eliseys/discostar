@@ -30,10 +30,22 @@ y_tilt_in = 19.7117254
 y_tilt2_in = 8.12772819
 z_tilt2_in = 89.7942076
 T_disk_in = 13332.7143
+ 
+delta = 0.10
 
-delta = 0.3
 
-for i in range(1,21):
+aindexes = np.array(range(1,21))
+bindexes = aindexes
+
+N = 5 # number of repeats
+
+k = 1
+
+while k < N:
+    bindexes = np.append(bindexes, aindexes)
+    k = k + 1
+
+for i in bindexes:
 
     data_file = phase[i][0]
     z_tilt = phase[i][1]
@@ -140,3 +152,4 @@ for i in range(1,21):
     y_tilt2_in = result.params['y_tilt2'].value
     z_tilt2_in = result.params['z_tilt2'].value
     T_disk_in = result.params['T_disk'].value
+    
