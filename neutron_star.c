@@ -32,7 +32,7 @@ sp arcgen(double theta, double N_phi, int i)
 
 
 
-double * x_ray_direction_diagram(double PSI_pr, double Lx)
+double * x_ray_direction_diagram(double PSI_pr)
 {
 
   //double PSI_pr = 330.0 * M_PI/180.0 ; /* NS precession angle */

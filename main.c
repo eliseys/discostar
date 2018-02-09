@@ -417,7 +417,9 @@ int main(int argc, char **argv)
     }
 
 
-  
+  int dia = 0;
+  //int test_dia;
+  make_diagram(dia);
 
   /* directiondal diagram */
 

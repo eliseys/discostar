@@ -60,7 +60,7 @@ vec3 axrot(vec3 a, vec3 u, double theta);
 double F_lambda(double T, double lambda);
 
 sp arcgen(double theta, double N_phi, int i);
-double * x_ray_direction_diagram(double PSI_pr, double Lx);
+double * x_ray_direction_diagram(double PSI_pr);
 
 double fr(double r, double phi, double theta, double q, double omega);
 double dfr(double r, double phi, double theta, double q, double omega);
@@ -99,6 +99,6 @@ double B(disk disk, double A, double rho_in, double T);
 
 double flux_disk(vec3 o, disk disk, double rho_in, double A, double uniform_disk, double y_tilt, double z_tilt, double omega, double q, int disk_tiles, double phi_orb, double T_disk, double lambda, double a, int picture, int spot_disk, double T_spot, double spot_beg, double spot_end, double spot_rho_in, double spot_rho_out);
 
-
+int make_diagram(int dia);
 
 #endif //DEF_H
