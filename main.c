@@ -123,7 +123,8 @@ int main(int argc, char **argv)
   double A_cm = 1E-8;
   double lambda_cm = lambda_A * A_cm;
 
-
+  z_tilt = - z_tilt; /* Disk precession is opposite to the orbital movement */
+  
   /* h in the parameters list is the full width of the disk */
   h = h * 0.5; /* here h is the semiwidth of the disk */
 
@@ -135,7 +136,7 @@ int main(int argc, char **argv)
   y_tilt2 = y_tilt2 * (M_PI/180.0);
   z_tilt2 = z_tilt2 * (M_PI/180.0);
 
-  PSI_pr = PSI_pr * (M_PI/180.0);
+  PSI_pr = 2.0 * M_PI - PSI_pr * (M_PI/180.0);
   kappa = kappa * (M_PI/180.0);
 
   spot_beg = spot_beg * (M_PI/180.0);
@@ -184,7 +185,10 @@ int main(int argc, char **argv)
   sp neutron_star_sp;
   
   vec3 neutron_star;
-  
+
+  sp neutron_star_sp_greenwich;
+  vec3 neutron_star_greenwich;
+
   int i; /* light curve step */
 
   vec3 w;
@@ -282,25 +286,32 @@ int main(int argc, char **argv)
   g_array = shape_g_abs(steps_phi, steps_theta, phi_array, theta_array, q, omega, threads);
 
 
+  //int diagram_size = 180*360;
+  int diagram_size = 180*20;
 
-  /* double * Ix_dd; */
-  /* Ix_dd = x_ray_direction_diagram(PSI_pr, Lx); */
-  /* Ix_dd = NULL; */
-  
-  int diagram_size = 180*360;
   double diagram[diagram_size];
 
 
   FILE *file;
-  file = fopen("DIAGRAM", "r");
+  file = fopen("DIAGRAM_JI_70", "r");
   fread(&diagram, sizeof(double), diagram_size, file);
   fclose(file);
   
-  int PSI_pr_i = (int) (360.0 * 180.0 * PSI_pr)/(360 * M_PI);
+  //int PSI_pr_i = (int) (360.0 * 180.0 * PSI_pr)/(360 * M_PI);
+  int PSI_pr_i = (int) (20.0 * 180.0 * PSI_pr)/(360 * M_PI);
 
+  /* printf("PSI_pr_i\t%d\n", PSI_pr_i); */
+  
   double *Ix_dd;
   Ix_dd = &diagram[180 * PSI_pr_i + 0];
-  
+
+
+  /* for (i = 0; i < 180; i++) */
+  /*   { */
+  /*     printf("%d\t%f\n", i, Ix_dd[i]); */
+  /*   } */
+
+
   
   omp_set_dynamic(0);
   omp_set_num_threads(threads);
@@ -341,7 +352,12 @@ int main(int argc, char **argv)
 
       //printf("%f %f %f\n", disk_reflection_diagr.phi, disk_reflection_diagr.theta, disk_reflection_diagr.r);
 
+      neutron_star_sp_greenwich.phi = 0.0 * M_PI/180.0;
+      neutron_star_sp_greenwich.theta = ns_theta * M_PI/180.0;
+
+      
       neutron_star_sp.phi = 0.0 * M_PI/180.0;
+      
       //neutron_star_sp.theta = 3.0 * M_PI/180.0;
 
       /* new angle !!! */
@@ -367,16 +383,16 @@ int main(int argc, char **argv)
 
       
       if (o.x < - cos(R + max_r))
-      	{
-      	  //F_disk = flux_disk(o, d, rho_in, A, uniform_disk, y_tilt, z_tilt, omega, q, disk_tiles, phi, T_disk, lambda_cm, a_cm, picture, spot_disk, T_spot, spot_beg, spot_end, spot_rho_in, spot_rho_out) ;
-      	  F_disk = 0.0;
-      	}
+	{
+	  //F_disk = flux_disk(o, d, rho_in, A, uniform_disk, y_tilt, z_tilt, omega, q, disk_tiles, phi, T_disk, lambda_cm, a_cm, picture, spot_disk, T_spot, spot_beg, spot_end, spot_rho_in, spot_rho_out) ;
+	  F_disk = 0.0;
+	}
       else if (o.x > - cos(R + max_r))
-      	{
-      	  F_disk = F_disk_const;
+	{
+	  F_disk = F_disk_const;
 	  //F_disk = flux_disk(o, d, rho_in, A, uniform_disk, y_tilt, z_tilt, omega, q, disk_tiles, phi, T_disk, lambda_cm, a_cm, picture, spot_disk, T_spot, spot_beg, spot_end, spot_rho_in, spot_rho_out) ;
 
-      	}
+	}
 
 
       flx[i] = F_disk + flux_from_the_star;
@@ -391,7 +407,6 @@ int main(int argc, char **argv)
   free(g_array);
   free(phi_array);
   free(theta_array);
-  //free(Ix_dd);
 
   double min = flx[0]; /* searching minimum of the light curve */
 
@@ -418,7 +433,6 @@ int main(int argc, char **argv)
 
 
   int dia = 0;
-  //int test_dia;
   make_diagram(dia);
 
   /* directiondal diagram */
@@ -433,11 +447,9 @@ int main(int argc, char **argv)
   /* for (i = 0; i < 360; i++) */
   /*   { */
   /*     PSI_pr = (double) i * M_PI/180.0; */
-
   /*     double * Ix_dd2; */
 
   /*     Ix_dd2 = x_ray_direction_diagram(PSI_pr, Lx); */
-
   /*     /\* for (j = 0; j < 180; j++) *\/ */
   /*     /\* 	{ *\/ */
   /*     /\* 	  printf("%f\n", Ix_dd2[j]); *\/ */

@@ -9,20 +9,48 @@ int make_diagram(int dia)
   if (dia == 1)
     {
       FILE *diagram;
-      diagram = fopen("DIAGRAM", "a");
+      diagram = fopen("DIAGRAM_JI_70", "a");
 
-      int size_diagram = 180*360;
+      int size_diagram = 180*20;
       int i, k, j;
 
-      double PSI_pr;
+      double PSI_pr = 0.0 * (M_PI/180.0);
+
+      /* double * test_diagram = (double *) malloc(sizeof(double) * 180); */
       
-      for (i = 0; i < 360; i++)
+      /* for (i = 0; i <180; i++) */
+      /* 	{ */
+      /* 	  if (i == 10 || i == 45 || i == 80 || i == 90 || i == 100 || i == 135 || i == 170) */
+      /* 	    { */
+      /* 	      test_diagram[i] = 1.0; */
+      /* 	    } */
+      /* 	  else */
+      /* 	    { */
+      /* 	      test_diagram[i] = 0.0; */
+      /* 	    } */
+      /* 	} */
+
+      // i here is steps in PSI_pr 
+
+
+
+      /* double * Ix_dd2; */
+
+      /* printf("PSI_pr %f\n", PSI_pr); */
+      
+      /* Ix_dd2 = x_ray_direction_diagram(PSI_pr); */
+	
+      
+      for (i = 0; i < 20; i++)
       	{
-      	  PSI_pr = (double) i * M_PI/180.0;
+      	  PSI_pr = (double) i * (360.0/20.0) * (M_PI/180.0);
 
       	  double * Ix_dd2;
 
+
       	  Ix_dd2 = x_ray_direction_diagram(PSI_pr);
+      	  //Ix_dd2 = test_diagram;
+
 
       	  /* for (j = 0; j < 180; j++) */
       	  /* 	{ */
@@ -37,9 +65,9 @@ int make_diagram(int dia)
 
       	  /* 	} */
       
-      	  free(Ix_dd2);
+      	  //free(Ix_dd2);
 
-      	  printf("PROGRESS %d\n", i);
+      	  printf("PROGRESS %d\t %f\t %f\n", i, PSI_pr*(180.0/M_PI), Ix_dd2[1]);
       	}
 
       fclose(diagram);
@@ -47,19 +75,22 @@ int make_diagram(int dia)
       double test[size_diagram];
 
       FILE *data;
-      data = fopen("DIAGRAM", "r");
+      data = fopen("DIAGRAM_JI_70", "r");
   
       fread(&test, sizeof(double), size_diagram, data);
 
-      for (j = 0; j < 180*360; j++)
+      for (j = 0; j < 180*20; j++)
       	{
-      	  printf("%f\t", test[j]);
+	  if (isnan(test[j]))
+	    {
+	      printf("BAD DIAGRAM");
+	    }
+	  
       	}
   
+      fclose(data);
 
-      fclose(diagram);
-
-      printf("Hello from dia!\n");
+      
     }
 
   return 0;

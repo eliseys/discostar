@@ -37,9 +37,19 @@ double * x_ray_direction_diagram(double PSI_pr)
 
   //double PSI_pr = 330.0 * M_PI/180.0 ; /* NS precession angle */
   //double angle_JI = 50.0 * M_PI/180.0; /* angle between J and I_3 vectors */
-  double angle_JI = 50.0 * M_PI/180.0; /* angle between J and I_3 vectors */
+  double angle_JI = 70.0 * M_PI/180.0; /* angle between J and I_3 vectors */
 
 
+  /* vec3 test; */
+  /* test.x = 1; */
+  /* test.y = 1; */
+  /* test.z = 1; */
+
+  /* vec3 test_2 = rotate(test, 0, -0); */
+
+  /* printf("TEST %f\t %f\t %f\n", test_2.x, test_2.y, test_2.z); */
+
+    
   /* sky pixelization */
   double n_theta;
   double n_phi;
@@ -232,6 +242,8 @@ double * x_ray_direction_diagram(double PSI_pr)
 	      	      
 	      decrt = sp2dec(sphr);
 	      decrt = rotate(decrt, 0.0, -PSI_pr);
+	      /* printf("%f\t%f\t%f\n", decrt.x, decrt.y, decrt.z); */
+	      
 	      decrt = rotate(decrt, angle_JI, 0.0);
 
 	      for (j = 0; j < Nj; j++)
@@ -340,13 +352,23 @@ double * x_ray_direction_diagram(double PSI_pr)
 	  //sp_sky.phi = alpha[j][k];
 	  //sp_sky.r = 1.0;
 	  
-	  flux_sum[k] = flux_sum[k] + flux[j][k];
+	  //flux_sum[k] = flux_sum[k] + flux[j][k];
+	  
+	  if (isnan(flux[j][k]))
+	    {
+	      flux[j][k] = 0.0;
+	    }
 
+	  flux_sum[k] = flux_sum[k] + flux[j][k];
+	  
 	  full_sum = full_sum + flux[j][k];
 	  
-	  //printf("%.20f\t %.20f\t %.20f\n", sp_sky.phi, sp_sky.theta, flux[j][k]);
-
- 	}
+	  /* printf("PHI THETA FLUX(j,k) full_sum \t%.20f\t %.20f\t %.20f\t %.20f\n", sp_sky.phi, sp_sky.theta, flux[j][k], full_sum); */
+	  /* if (flux[j][k] == NAN) */
+	  /*   { */
+	  /*     printf("%.20f\t %d\t %d\n", flux[j][k], j, k); */
+	  /*   } */
+	}
 
     }
 
@@ -421,10 +443,10 @@ double * x_ray_direction_diagram(double PSI_pr)
       //result[k] = Lx * 4.0 * M_PI * flux_sum[k]/full_sum;
       
       result[k] = 4.0 * M_PI * flux_sum[k]/full_sum;
-
-
-      //fprintf(diagram, "%.20f\t", result[k]);
       
+      /* printf("%.20f\t", result[k]); */
+      
+            
       //test for directions
       /* if (k <= 90) */
       /* 	{ */
@@ -440,11 +462,13 @@ double * x_ray_direction_diagram(double PSI_pr)
     }
 
   //fclose(diagram);
+
+  /* printf("full_sum %.20f\t", full_sum); */
+
   
   result[0] = 0.0;
-
-
   
+
   //result[0] = 1.0/90.0;
   
   return result;

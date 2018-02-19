@@ -581,7 +581,8 @@ double flux_star(vec3 o, double q, double omega, double beta, double u, disk dis
 	  /* Surface element */
 	  
 	  S = a * a * r * r * sin(theta) * delta_phi * delta_theta / cos_rn;
-
+	  
+	  
 	  /* printf("%f\n", cos_rn); */
 
 	  /* X-ray flux incident of the surface element */
@@ -593,6 +594,7 @@ double flux_star(vec3 o, double q, double omega, double beta, double u, disk dis
 	      if (isotrope == 0)
 		{
 		  Fx = Lx * Ix_dd[diagr_index] * (1.0 - albedo) * fabs(cos_in) / (lps * lps * a * a) + (1.0 - albedo) * fabs(cos_drd) * Lx_disk_2 * fabs(cos_in) / (2.0 * M_PI * lps * lps * a * a) + (1.0 - albedo) * fabs(cos_irr2) * Lx_disk * fabs(cos_in) / (2.0 * M_PI * lps * lps * a * a) + (1.0 - albedo) * Lx_iso * fabs(cos_in) / (4.0 * M_PI * lps * lps * a * a);
+		    ;
 		  //Fx = (1.0 - albedo) * fabs(cos_drd) * Lx_disk_2 * fabs(cos_in) / (2.0 * M_PI * lps * lps * a * a) + (1.0 - albedo) * fabs(cos_irr2) * Lx_disk * fabs(cos_in) / (2.0 * M_PI * lps * lps * a * a) + (1.0 - albedo) * Lx_iso * fabs(cos_in) / (4.0 * M_PI * lps * lps * a * a);
 		  
 		}

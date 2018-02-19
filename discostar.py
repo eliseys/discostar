@@ -70,6 +70,7 @@ uniform_disk = p['uniform_disk']
 disk_flux = p['disk_flux']
 
 
+
 if picture == 0:
 
     output_filename = datetime.datetime.now().strftime("%Y%m%d%H%M%S%f")+".data"

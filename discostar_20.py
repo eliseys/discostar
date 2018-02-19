@@ -81,31 +81,34 @@ disk_flux = p['disk_flux']
 #ns_theta_list
 
 
-with open("./temp/phases_new_algorithm/parameters_new_data", 'r') as f:
-    Lx_list, PSI_pr_list, z_tilt_list, y_tilt2_list, z_tilt2_list, T_disk_list, y_tilt_list, disk_flux_list, kappa_list, ns_theta_list = np.loadtxt(f, dtype=('float'), usecols=(0,1,2,3,4,5,6,7,8,9), unpack=True)
+with open("./temp/phases_new_algorithm/discostar4_10_15", 'r') as f:
+    Lx_list, PSI_pr_list, z_tilt_list, y_tilt_list, y_tilt2_list, z_tilt2_list, T_disk_list, disk_flux_list, ns_theta_list, kappa_list, inclination_list = np.loadtxt(f, dtype=('float'), usecols=(0,1,2,3,4,5,6,7,8,9,10), unpack=True)
+
+
+    #    Lx_list, PSI_pr_list, z_tilt_list, y_tilt2_list, z_tilt2_list, T_disk_list, y_tilt_list, disk_flux_list, ns_theta_list, kappa_list, inclination_list = np.loadtxt(f, dtype=('float'), usecols=(0,1,2,3,4,5,6,7,8,9,10), unpack=True)
 
 
 phase = {
-    0:   '25_30.dat',
-    342: '20_25.dat',
-    324: '15_20.dat',
+#    0:   '25_30.dat',
+#    342: '20_25.dat',
+#    324: '15_20.dat',
     306: '10_15.dat',
-    288: '05_10.dat',
-    270: '00_05.dat',
-    252: '95_00.dat',
-    234: '90_95.dat',
-    216: '85_90.dat',
-    198: '80_85.dat',
-    180: '75_80.dat',
-    162: '70_75.dat',
-    144: '65_70.dat',
-    126: '60_65.dat',
-    108: '55_60.dat',
-    90:  '50_55.dat',
-    72:  '45_50.dat',
-    54:  '40_45.dat',
-    36:  '35_40.dat',
-    18:  '30_35.dat',
+#    288: '05_10.dat',
+#    270: '00_05.dat',
+#    252: '95_00.dat',
+#    234: '90_95.dat',
+#    216: '85_90.dat',
+#    198: '80_85.dat',
+#    180: '75_80.dat',
+#    162: '70_75.dat',
+#    144: '65_70.dat',
+#    126: '60_65.dat',
+#    108: '55_60.dat',
+#    90:  '50_55.dat',
+#    72:  '45_50.dat',
+#    54:  '40_45.dat',
+#    36:  '35_40.dat',
+#    18:  '30_35.dat',
 }
  
 
@@ -114,9 +117,7 @@ chisq_n = 1
 chisq_sum = 0
 
 
-
-
-for i in range(241):
+for i in range(120):
 
     p['Lx'] = Lx_list[i] 
     p['PSI_pr'] = PSI_pr_list[i] 
@@ -128,6 +129,7 @@ for i in range(241):
     p['disk_flux'] = disk_flux_list[i] 
     p['kappa'] = kappa_list[i] 
     p['ns_theta'] = ns_theta_list[i] 
+    p['inclination'] = inclination_list[i] 
 
     data_file = phase[p['z_tilt']]
 
@@ -216,13 +218,13 @@ for i in range(241):
     f.close
     f_logs.close
 
-    print 'z_tilt', '\t', z_tilt_list[i], '\t', 'kappa', '\t', kappa_list[i], '\t', 'ns_theta', '\t', ns_theta_list[i], '\t', 'FILE', '\t', output_filename, '\t', 'chisq', '\t', chisq
+    print 'z_tilt', '\t', z_tilt_list[i], '\t', 'kappa', '\t', kappa_list[i], '\t', 'ns_theta', '\t', ns_theta_list[i], '\t', "i", '\t', inclination_list[i], '\t', 'FILE', '\t', output_filename, '\t', 'chisq', '\t', chisq
         
-    if chisq_n < 20:
-        chisq_n = chisq_n + 1
-        chisq_sum = chisq_sum + chisq
-    elif chisq_n == 20:
-        print 'CHISQ SUM', '\t', chisq_n, '\t', chisq_sum, '\n'
-        print '\n'
-        chisq_n = 1
-        chisq_sum = 0
+#    if chisq_n < 20:
+#        chisq_n = chisq_n + 1
+#        chisq_sum = chisq_sum + chisq
+#    elif chisq_n == 20:
+#        print 'CHISQ SUM', '\t', chisq_n, '\t', chisq_sum, '\n'
+#        print '\n'
+#        chisq_n = 1
+#        chisq_sum = 0

@@ -3,30 +3,32 @@ import numpy as np
 import discostar4_lib as d4l
 
 phase = {
-#    '25_30.dat':[0,	270],
-#    '20_25.dat':[342,	288],
-#    '15_20.dat':[324,	306],
-    '10_15.dat':[306,	324],
-#    '05_10.dat':[288,	342],
-#    '00_05.dat':[270,	0],
-#    '95_00.dat':[252,	18],
-#    '90_95.dat':[234,	36],
-#    '85_90.dat':[216,	54],
-#    '80_85.dat':[198,	72],
-#    '75_80.dat':[180,	90],
-#    '70_75.dat':[162,	108],
-#    '65_70.dat':[144,	126],
-#    '60_65.dat':[126,	144],
-#    '55_60.dat':[108,	162],
-#    '50_55.dat':[90,	180],
-#    '45_50.dat':[72,    198],
-#    '40_45.dat':[54,	216],
-#    '35_40.dat':[36,	234],
-#    '30_35.dat':[18,	252]
+    '00_05.dat':[270,	0],
+    '05_10.dat':[288,	18],
+    '10_15.dat':[306,	36],
+    '15_20.dat':[324,   54],
+    '20_25.dat':[342,	72],
+    '25_30.dat':[0,	90],
+    '30_35.dat':[18,	108],
+    '35_40.dat':[36,	126],
+    '40_45.dat':[54,	144],
+    '45_50.dat':[72,	162],
+    '50_55.dat':[90,	180],
+    '55_60.dat':[108,	198],
+    '60_65.dat':[126,	216],
+    '65_70.dat':[144,	234],
+    '70_75.dat':[162,	252],
+    '75_80.dat':[180,	270],
+    '80_85.dat':[198,	288],
+    '85_90.dat':[216,	306],
+    '90_95.dat':[234,	324],
+#    '95_00.dat':[252,	342],
 }
 
-theta_list = [0,]
-kappa_list = [-15,]
+theta_list = [-5.0,]
+kappa_list = [10.0,]
+inclination_list = [82.0,] 
+
 
 for theta in theta_list:
     for kappa in kappa_list:
@@ -46,17 +48,17 @@ for theta in theta_list:
                 x, data = np.loadtxt(data, dtype=('float'), usecols=(4,1), unpack=True)
                 
                 pars.add_many(
-                    ('border', 0.25, False),
+                    ('border', 0.13, False),
                     ('Lx', 2.0e+37, True, 1.0e+37, 9.0e+37, None, 1.0e+37),
-                    ('PSI_pr', PSI_pr, False),
+                    ('PSI_pr', PSI_pr, False, 0, 360, None),
                     ('z_tilt', z_tilt, False),
-                    #('y_tilt', 4.27259339, True, 0.0, 25.0, None, 2.5),
-                    ('y_tilt2', 4.27259339, True, 0.0, 25.0, None, 2.5),
-                    ('z_tilt2', 0.0, True, -90.0, 90.0, None, 5.0),
-                    ('T_disk', 28175.4064, True, 10000.0, 80000.0, None)
+                    ('y_tilt', 20.0, True, 0.0, 27.0, None, 2.5),
+                    ('y_tilt2', 20.0, True, 0.0, 27.0, None, 2.5),
+                    ('z_tilt2', 0.0, True, 0.0, 100.0, None, 5.0),
+                    ('T_disk', 16000, True, 10000.0, 80000.0, None)
                 )
 
-                pars.add('y_tilt', expr='20.0 * (0.6+0.4*cos(((z_tilt - 270.0)/360.0) * 2.0 * pi + 15.0 * pi/180.0 - 0.25 * 2.0 * pi))')
+                #pars.add('y_tilt', expr='20.0 * (0.6+0.4*cos(((z_tilt - 270.0)/360.0) * 2.0 * pi + 15.0 * pi/180.0 - 0.25 * 2.0 * pi))')
                 
                 #pars.add('y_tilt2', expr='20.0 * (0.6+0.4*cos(((z_tilt - 270.0)/360.0) * 2.0 * pi + 15.0 * pi/180.0 - 0.25 * 2.0 * pi))')
                 pars.add('disk_flux', expr='0')
@@ -92,9 +94,16 @@ for theta in theta_list:
 
                 x_short = []
                 data_short = []
-            
+
+                border1 = 0.231
+                #border2 = 0.0
+
+                #border3 = 0.233
+                #border4 = 0.33
+                
                 for i, X in enumerate(x):
-                    if (X > border) or (X < 1.0 - border):
+                    if (X > border1) or (X < 1.0 - border):
+                    #if ((X > border) and (X < border3)) or ((X > border4) and (X < 1.0 - border)):
                         x_short.append(x[i])
                         data_short.append(data[i])
 
