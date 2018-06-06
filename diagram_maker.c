@@ -9,7 +9,7 @@ int make_diagram(int dia)
   if (dia == 1)
     {
       FILE *diagram;
-      diagram = fopen("DIAGRAM_JI_70", "a");
+      diagram = fopen("DIAGRAM_JI_60", "a");
 
       int size_diagram = 180*20;
       int i, k, j;
@@ -75,7 +75,7 @@ int make_diagram(int dia)
       double test[size_diagram];
 
       FILE *data;
-      data = fopen("DIAGRAM_JI_70", "r");
+      data = fopen("DIAGRAM_JI_60", "r");
   
       fread(&test, sizeof(double), size_diagram, data);
 

@@ -8,7 +8,7 @@ import datetime
 direct = "./LC2" # directory for LC`s
 logs = "LOGS"
 
-with open("parameters", 'r') as f:
+with open("parameters_copy", 'r') as f:
     parameter_name, value = np.loadtxt(f, dtype=('str'), usecols=(0,1), unpack=True)
     
 p = {parameter_name[i]: float(value[i]) for i in range(len(parameter_name))}
@@ -68,6 +68,8 @@ A = p['A']
 uniform_disk = p['uniform_disk']
 
 disk_flux = p['disk_flux']
+
+h_warp = p['h_warp']
 
 
 
@@ -137,7 +139,8 @@ arg = ('./disco' + ' ' +
        str(p['rho_in']) + ' ' +
        str(p['A']) + ' ' +
        str(p['uniform_disk']) + ' ' +
-       str(p['disk_flux'])
+       str(p['disk_flux']) + ' ' +
+       str(p['h_warp'])
 )
 
 

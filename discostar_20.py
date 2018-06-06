@@ -7,7 +7,7 @@ from scipy.interpolate import interp1d
 direct = "./LC2" # directory for LC`s
 logs = "LOGS"
 
-with open("parameters", 'r') as f:
+with open("parameters_copy", 'r') as f:
     parameter_name, value = np.loadtxt(f, dtype=('str'), usecols=(0,1), unpack=True)
     
 p = {parameter_name[i]: float(value[i]) for i in range(len(parameter_name))}
@@ -65,73 +65,65 @@ rho_in = p['rho_in']
 A = p['A']
 
 uniform_disk = p['uniform_disk']
-1
+
 disk_flux = p['disk_flux']
 
+h_warp = p['h_warp']
 
-#Lx_list
-#PSI_pr_list
-#z_tilt_list
-#y_tilt2_list
-#z_tilt2_list
-#T_disk_list
-#y_tilt_list
-#disk_flux_list
-#kappa_list
-#ns_theta_list
-
-
-with open("./temp/phases_new_algorithm/discostar4_10_15", 'r') as f:
-    Lx_list, PSI_pr_list, z_tilt_list, y_tilt_list, y_tilt2_list, z_tilt2_list, T_disk_list, disk_flux_list, ns_theta_list, kappa_list, inclination_list = np.loadtxt(f, dtype=('float'), usecols=(0,1,2,3,4,5,6,7,8,9,10), unpack=True)
-
-
-    #    Lx_list, PSI_pr_list, z_tilt_list, y_tilt2_list, z_tilt2_list, T_disk_list, y_tilt_list, disk_flux_list, ns_theta_list, kappa_list, inclination_list = np.loadtxt(f, dtype=('float'), usecols=(0,1,2,3,4,5,6,7,8,9,10), unpack=True)
+with open("./temp/phases_new_algorithm/output_i87_z_tilt2_const_set_kappa_plus15_minus15_0", 'r') as f:
+    #phase_list, rchisq_list, Lx_list, PSI_pr_list, z_tilt_list, y_tilt_list, z_tilt2_list, y_tilt2_list, kappa_list, ns_theta_list  = np.loadtxt(f, dtype=('float'), usecols=(0,1,2,3,4,5,6,7,8,9), unpack=True)
+    #phase_list, rchisq_list, Lx_list, PSI_pr_list, z_tilt_list, y_tilt_list, y_tilt2_list, z_tilt2_list, T_disk_list, kappa_list, ns_theta_list  = np.loadtxt(f, dtype=('float'), usecols=(0,1,2,3,4,5,6,7,8,9,10), unpack=True)
+    phase_list, rchisq_list, Lx_list, PSI_pr_list, z_tilt_list, y_tilt_list, z_tilt2_list, T_disk_list, y_tilt2_list, kappa_list, ns_theta_list = np.loadtxt(f, dtype=('float'), usecols=(0,1,2,3,4,5,6,7,8,9,10), unpack=True)
 
 
 phase = {
-#    0:   '25_30.dat',
-#    342: '20_25.dat',
-#    324: '15_20.dat',
-    306: '10_15.dat',
-#    288: '05_10.dat',
-#    270: '00_05.dat',
-#    252: '95_00.dat',
-#    234: '90_95.dat',
-#    216: '85_90.dat',
-#    198: '80_85.dat',
-#    180: '75_80.dat',
-#    162: '70_75.dat',
-#    144: '65_70.dat',
-#    126: '60_65.dat',
-#    108: '55_60.dat',
-#    90:  '50_55.dat',
-#    72:  '45_50.dat',
-#    54:  '40_45.dat',
-#    36:  '35_40.dat',
-#    18:  '30_35.dat',
+    0.00: '00_05.dat',
+    0.05: '05_10.dat',
+    0.10: '10_15.dat',
+    0.15: '15_20.dat',
+    0.20: '20_25.dat',
+    0.25: '25_30.dat',
+    0.30: '30_35.dat',
+    0.35: '35_40.dat',
+    0.40: '40_45.dat',
+    0.45: '45_50.dat',
+    0.50: '50_55.dat',
+    0.55: '55_60.dat',
+    0.60: '60_65.dat',
+    0.65: '65_70.dat',
+    0.70: '70_75.dat',
+    0.75: '75_80.dat',
+    0.80: '80_85.dat',
+    0.85: '85_90.dat',
+    0.90: '90_95.dat',
+    0.95: '95_00.dat',  
 }
- 
+
 
 border = 0.13
 chisq_n = 1
 chisq_sum = 0
 
 
-for i in range(120):
+for i in range(302):
 
+
+    phi = phase_list[i]
+    rchisq = rchisq_list[i]
+    
     p['Lx'] = Lx_list[i] 
-    p['PSI_pr'] = PSI_pr_list[i] 
+    p['PSI_pr'] = PSI_pr_list[i]
+   
     p['z_tilt'] = z_tilt_list[i] 
+
     p['y_tilt2'] = y_tilt2_list[i] 
     p['z_tilt2'] = z_tilt2_list[i] 
-    p['T_disk'] = T_disk_list[i] 
+    #p['T_disk'] = T_disk_list[i] 
     p['y_tilt'] = y_tilt_list[i] 
-    p['disk_flux'] = disk_flux_list[i] 
     p['kappa'] = kappa_list[i] 
     p['ns_theta'] = ns_theta_list[i] 
-    p['inclination'] = inclination_list[i] 
 
-    data_file = phase[p['z_tilt']]
+    data_file = phase[phi]
 
     path_to_data_file = './OBSERVED_DATA/'+data_file
 
@@ -181,7 +173,8 @@ for i in range(120):
            str(p['rho_in']) + ' ' +
            str(p['A']) + ' ' +
            str(p['uniform_disk']) + ' ' +
-           str(p['disk_flux'])
+           str(p['disk_flux']) + ' ' +
+           str(p['h_warp'])
     )
 
     
@@ -194,23 +187,23 @@ for i in range(120):
 
     output = subprocess.check_output(arg, shell=True)
     
-    s = np.array(output.split(), dtype='float').reshape([-1,2])
+    #s = np.array(output.split(), dtype='float').reshape([-1,2])
     
-    xx = s[:,0] + 0.5
-    yy = s[:,1]
+    #xx = s[:,0] + 0.5
+    #yy = s[:,1]
     
-    spline = interp1d(xx, yy, kind='cubic')
+    #spline = interp1d(xx, yy, kind='cubic')
 
-    x_short = []
-    data_short = []
+    #x_short = []
+    #data_short = []
 
-    for j, X in enumerate(x):
-        if (X > border) or (X < 1.0 - border):
-            x_short.append(x[j])
-            data_short.append(data[j])
+    #for j, X in enumerate(x):
+    #    if (X > border) or (X < 1.0 - border):
+    #        x_short.append(x[j])
+    #        data_short.append(data[j])
 
-    N = len(data_short)
-    chisq = np.sum(np.square(data_short - spline(x_short)))/N
+    #N = len(data_short)
+    #chisq = np.sum(np.square(data_short - spline(x_short)))/N
 
     
     f_logs.write(output_filename+' '+arg+'\n')
@@ -218,7 +211,7 @@ for i in range(120):
     f.close
     f_logs.close
 
-    print 'z_tilt', '\t', z_tilt_list[i], '\t', 'kappa', '\t', kappa_list[i], '\t', 'ns_theta', '\t', ns_theta_list[i], '\t', "i", '\t', inclination_list[i], '\t', 'FILE', '\t', output_filename, '\t', 'chisq', '\t', chisq
+    print 'phi', '\t', phi, '\t', '\t', 'FILE', '\t', output_filename, '\t', 'chisq', '\t',  '{:6.5f}'.format(rchisq)
         
 #    if chisq_n < 20:
 #        chisq_n = chisq_n + 1

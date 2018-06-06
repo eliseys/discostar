@@ -89,7 +89,8 @@ def lc(*args):
            str(p['Lx_iso']) + ' ' +
            str(p['rho_in']) + ' ' +
            str(p['A']) + ' ' +
-           str(p['uniform_disk'])           
+           str(p['uniform_disk']) + ' ' +
+           str(p['h_warp'])
     )
 
     output = subprocess.check_output(arg, shell=True)
@@ -200,12 +201,13 @@ def lc_disk(*args):
            str(p['rho_in']) + ' ' +           
            str(p['A']) + ' ' +
            str(p['uniform_disk']) + ' ' +
-           str(p['disk_flux'])
+           str(p['disk_flux']) + ' ' +
+           str(p['h_warp'])
     )
 
     output = subprocess.check_output(arg, shell=True)
     
-    s = np.array(output.split(), dtype='float').reshape([-1,2])
+    s = np.array(output.split(), dtype='float').reshape([-1,6])
     
     x = s[:,0] + 0.5
     y = s[:,1]

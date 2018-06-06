@@ -93,11 +93,11 @@ double distance_to_disk_inside(vec3 p, disk disk);
 double eclipse_by_disk(disk disk, vec3 o, vec3 p);
 double eclipse_by_disk_inside(disk disk, vec3 o, vec3 p);
 
-double flux_star(vec3 o, double q, double omega, double beta, double u, disk disk, vec3 d2, double Lx, double Lx_disk, double Lx_iso, double Lx_disk_2, double albedo, int star_tiles, double T_star, double lambda, double a, vec3 neutron_star, double PSI_pr, int picture, int isotrope, sp disk_reflection_diagr, double * r_array, double * g_array, double * phi_array, double * theta_array, double * Ix_dd);
+double flux_star(vec3 o, double q, double omega, double beta, double u, disk disk, vec3 d2, double Lx, double Lx_disk, double Lx_iso, double Lx_disk_2, double albedo, int star_tiles, double T_star, double lambda, double a, vec3 neutron_star, double PSI_pr, int picture, int isotrope, sp disk_reflection_diagr, double * r_array, double * g_array, double * phi_array, double * theta_array, double * Ix_dd, double y_tilt, double y_tilt2, double z_tilt, double z_tilt2, double phi_orb);
 
 double B(disk disk, double A, double rho_in, double T);
 
-double flux_disk(vec3 o, disk disk, double rho_in, double A, double uniform_disk, double y_tilt, double z_tilt, double omega, double q, int disk_tiles, double phi_orb, double T_disk, double lambda, double a, int picture, int spot_disk, double T_spot, double spot_beg, double spot_end, double spot_rho_in, double spot_rho_out);
+double * flux_disk(vec3 o, disk disk, double rho_in, double A, double uniform_disk, double y_tilt, double z_tilt, double omega, double q, int disk_tiles, double phi_orb, double T_disk, double lambda, double a, int picture, int spot_disk, double T_spot, double spot_beg, double spot_end, double spot_rho_in, double spot_rho_out, double h_warp, double * Ix_dd, double Lx, vec3 neutron_star, vec3 d2);
 
 int make_diagram(int dia);
 

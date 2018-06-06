@@ -1,5 +1,7 @@
 *.[oa]
 *~
+*.pyc
+*_copy
 disco
 temp
 LC

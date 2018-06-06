@@ -12,7 +12,6 @@ albedo	     0.5
 # NS X-RAY LUMINOSITY, ERG/S; ORIENTATON
 #---------------------------------------
 
-#Lx		7.0e+37 
 Lx_disk		0.0e+37
 Lx_disk_2	0.0e+37
 Lx_iso		0.0e+37
@@ -24,27 +23,23 @@ isotrope	0
 
 h		0.023
 R		0.23
+h_warp		0.023
 rho_in		0.000236
 
-#########################################
+########################################
 
+Lx	   2.05e+37
+PSI_pr	   0.0
+z_tilt	   0.0
+y_tilt	   20.5
+z_tilt2	   20.5
+T_disk     24368.6635
+y_tilt2	   13.8688102
 
+disk_flux	0.0
 
-Lx          1.5e+37
-PSI_pr      54
-z_tilt      324
-y_tilt      20.0
-y_tilt2     10.0
-z_tilt2     20.0
-T_disk      16000.0
-
-
-
-disk_flux   	0
-
-
-kappa 	     	10.0
-ns_theta     	-5.0
+kappa 	     	15.0
+ns_theta     	-3.0
 
 #########################################
 
@@ -75,7 +70,7 @@ T_star	  	8400.0
 # OBSERVER
 #---------------------------------------
 
-inclination	82.0
+inclination	87.0
 
 #---------------------------------------
 # ANGSTREM

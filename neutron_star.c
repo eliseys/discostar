@@ -37,7 +37,7 @@ double * x_ray_direction_diagram(double PSI_pr)
 
   //double PSI_pr = 330.0 * M_PI/180.0 ; /* NS precession angle */
   //double angle_JI = 50.0 * M_PI/180.0; /* angle between J and I_3 vectors */
-  double angle_JI = 70.0 * M_PI/180.0; /* angle between J and I_3 vectors */
+  double angle_JI = 60.0 * M_PI/180.0; /* angle between J and I_3 vectors */
 
 
   /* vec3 test; */
