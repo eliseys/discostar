@@ -1,46 +1,78 @@
+from __future__ import print_function
+
 import lmfit
 import numpy as np
-import discostar4_lib as d4l
-
-z_tilt0 = 90.0
-
-
-lc_num = 50
-
-
-z_tilt_step = 360.0/(20.0*lc_num)
+import discostar_5_lib as d5l
+import datetime
+import itertools
+import json
+from collections import OrderedDict
+import subprocess
 
 
-PSI_pr = 0.0
-Lx = 1.12e+37
-y_tilt0 = 39.0
+data = json.load(open('data.json'), object_pairs_hook=OrderedDict)
 
-y_tilt_step = (39.0 - 25.0)/lc_num
+p = json.load(open('parameters.json'), object_pairs_hook=OrderedDict)
 
+iterables = tuple(p['additional'].values()) + tuple(p['main'].values())
 
+output_file = './logs/' + datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S") + str() + ".json"
 
-y_tilt2 = 38.0
-z_tilt2 = -20.0
-disk_flux = 0
-T_disk = 32000.0
-theta = -3.0
-kappa = 195.0
+output = [p]
 
+#for n in data:
+for n in ['0.0']:
+    for t in itertools.product(*iterables):
 
-for i in range(lc_num + 1): 
-
-    z_tilt = z_tilt0 - z_tilt_step * i
-    y_tilt = y_tilt0 - y_tilt_step * i
-
-    #PSI_pr = 0.0 + z_tilt_step*i
-
+        parameters = dict(zip(tuple(p['additional'].keys()) + tuple(p['main'].keys()), t))
+        parameters['n_data'] = n
+        
+        parameters = d5l.z_tilt_model(parameters)
+        
+        lmfit_parameters = lmfit.Parameters()
+        
                 
-    f = d4l.lc_disk(z_tilt, PSI_pr, Lx, y_tilt, y_tilt2, z_tilt2, disk_flux, T_disk, theta, kappa)
+        for x in p['lmfit']['parameters']:
+            lmfit_parameters.add_many(p['lmfit']['parameters'][x])
+        
+            
+        mini = lmfit.Minimizer(d5l.residual, lmfit_parameters, fcn_args=(parameters, data))
 
-    #print '{:8f}'.format(np.sum(np.square(data_short - f(x_short)))/N), '\t', '{:8f}'.format(z_tilt), '\t', '{:8f}'.format(y_tilt),  '\t','{:8f}'.format(y_tilt2), '\t', '{:8f}'.format(z_tilt2), '\t', '{:10f}'.format(T_disk), '\t', '{:E}'.format(Lx)
+        result = mini.minimize(method = p['lmfit']['method'], epsfcn = 5.0E-5)
 
-    Flux = float(f(float(i)/lc_num))
-    
-    
-    print '{:8f}'.format(float(i)/lc_num - 0.5), '\t', '{:8f}'.format(Flux)
+        curve = {}
+        
+        for parameter in lmfit_parameters.keys():
+            parameters[parameter] = result.params[parameter].value
+
+        parameters = d5l.z_tilt_model(parameters)
+        
+            
+        for UBV_filter in data[n].keys():
+            if data[n][UBV_filter]['flux'] == []:
+                continue
+        
+            parameters['UBV_filter'] = UBV_filter
+            f = d5l.lc(parameters)
+            
+            curve[UBV_filter] = {"orbit": tuple(np.linspace(0, 1, parameters['lc_num'])), "flux": tuple(f(np.linspace(0, 1, parameters['lc_num'])))}
+
+        #print(curve)
+        #print(parameters)
+
+        parameters['epsilon_out'] = (180.0/np.pi)*np.arcsin(np.cos(np.pi*(parameters['inclination']/180.0))*np.cos(np.pi*(result.params['y_tilt'].value/180.0)) + np.sin(np.pi*(parameters['inclination']/180.0))*np.sin(np.pi*(result.params['y_tilt'].value/180.0))*np.cos(np.pi*(parameters['z_tilt']/180.0))) 
+
+        parameters['epsilon_in'] = (180.0/np.pi)*np.arcsin(np.cos(np.pi*(parameters['inclination']/180.0))*np.cos(np.pi*(result.params['y_tilt2'].value/180.0)) + np.sin(np.pi*(parameters['inclination']/180.0))*np.sin(np.pi*(result.params['y_tilt2'].value/180.0))*np.cos(np.pi*(parameters['z_tilt2']/180.0))) 
+        
+        
+        output_i = {'parameters':parameters, 'data':data[n], 'curve':curve, 'rchisq':result.redchi, 'lmfit_parameters':p['lmfit']['parameters'], 'lmfit_method':p['lmfit']['method']}
+
+
+        output.append(output_i)
+
+
+        
+with open(output_file, "w") as f:
+    json.dump(output, f)
+
 

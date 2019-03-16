@@ -3,8 +3,11 @@
 *.pyc
 *_copy
 disco
+diagram
 temp
 LC
 LC2
 OBSERVED_DATA
 LOGS
+logs
+output

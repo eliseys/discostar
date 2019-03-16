@@ -1,0 +1,389 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <math.h>
+//#include "def.h"
+
+struct decart {
+  double x;
+  double y;
+  double z;
+};
+
+typedef struct decart vec3;
+
+
+struct spherical {
+  double phi;
+  double theta;
+  double r;
+};
+
+typedef struct spherical sp;
+
+
+vec3 sp2dec(sp a)
+{
+  vec3 result;
+
+  result.x = a.r * sin(a.theta) * cos(a.phi);
+  result.y = a.r * sin(a.theta) * sin(a.phi);
+  result.z = a.r * cos(a.theta);
+
+  return result;  
+}
+
+sp dec2sp(vec3 a)
+{
+  /* transforms cartesian coordinates to spherical */
+  
+  sp result;
+  
+  double x = a.x;
+  double y = a.y;
+  double z = a.z;
+
+  double phi, theta;
+
+  /* r [0,inf) */
+  result.r = sqrt(x * x + y * y + z * z);
+
+  /* theta [0, M_PI] */
+  if (x != 0.0 || y != 0.0 || z != 0.0)
+    theta = acos(z/sqrt(x * x + y * y + z * z));
+
+  else if (x == 0.0 && y == 0.0 && z == 0.0)
+    theta = 0.5 * M_PI;
+  
+  /* phi [0, 2*M_PI) */  
+  if (x > 0.0 && y > 0.0)
+    phi = asin((y/x)/sqrt(1 + (y/x)*(y/x)));
+  else if (x > 0.0 && y < 0.0)
+    phi = 2.0 * M_PI - asin(((-y)/x)/sqrt(1 + ((-y)/x)*((-y)/x)));
+  else if (x < 0.0 && y > 0.0)
+    phi = M_PI - asin((y/(-x))/sqrt(1 + (y/(-x))*(y/(-x))));
+  else if (x < 0.0 && y < 0.0)
+    phi = M_PI + asin(((-y)/(-x))/sqrt(1 + ((-y)/(-x))*((-y)/(-x))));
+  else if (x == 0.0 && y > 0.0)
+    phi = 0.5 * M_PI;
+  else if (x == 0.0 && y < 0.0)
+    phi = 1.5 * M_PI;
+  else if (x >= 0.0 && y == 0.0)
+    phi = 0.0;
+  else if (x < 0.0 && y == 0.0)
+    phi = M_PI;
+
+  result.phi = phi;
+  result.theta = theta;
+  
+  return result;
+}
+
+
+double len(vec3 p)
+{
+  return sqrt(p.x * p.x + p.y * p.y + p.z * p.z);
+}
+
+
+double dot(vec3 a, vec3 b)
+{
+  return a.x * b.x + a.y * b.y + a.z * b.z;
+}
+
+vec3 rotate(vec3 a, double Y, double Z)
+{
+  /* rotates counterclockwise around Y and Z axes */
+  
+  vec3 result;
+
+  result.x = a.x * cos(Y) * cos(Z) + a.y * sin(Z) - a.z * sin(Y) * cos(Z);
+  result.y = - a.x * cos(Y) * sin(Z) + a.y * cos(Z) + a.z * sin(Y) * sin(Z);
+  result.z = a.x * sin(Y) + a.z * cos(Y); 
+
+  return result;
+}
+
+
+vec3 disk_shape_0(double rho, double phi, double y_tilt, double y_tilt2, double z_tilt2, double h, double R)
+{
+  // center surface
+  double A = y_tilt2 * (R - rho)/R + y_tilt * rho/R;
+
+  double delta = z_tilt2 * (R - rho)/R;
+
+  double theta = A * cos(phi + delta) + 0.5 * M_PI;
+
+
+  //double theta = 0.5 * M_PI;
+
+  sp p;
+  p.phi = phi;
+  p.theta = theta;
+  p.r = rho;
+  
+  vec3 result = sp2dec(p);
+
+
+  return result;
+}
+
+
+
+vec3 disk_shape_top(double rho, double phi, double y_tilt, double y_tilt2, double z_tilt2, double h, double R)
+{
+  // center surface
+  double A = y_tilt2 * (R - rho)/R + y_tilt * rho/R;
+
+  double delta = z_tilt2 * (R - rho)/R;
+
+  double theta = A * cos(phi + delta) + 0.5 * M_PI - atan((rho/R)*0.5*h/R);
+
+
+  //double theta = 0.5 * M_PI;
+
+  sp p;
+  p.phi = phi;
+  p.theta = theta;
+  p.r = rho;
+  
+  vec3 result = sp2dec(p);
+
+
+  return result;
+}
+
+vec3 disk_shape_bot(double rho, double phi, double y_tilt, double y_tilt2, double z_tilt2, double h, double R)
+{
+  // center surface
+  double A = y_tilt2 * (R - rho)/R + y_tilt * rho/R;
+
+  double delta = z_tilt2 * (R - rho)/R;
+
+  double theta = A * cos(phi + delta) + 0.5 * M_PI + atan((rho/R)*0.5*h/R);
+
+
+  //double theta = 0.5 * M_PI;
+
+  sp p;
+  p.phi = phi;
+  p.theta = theta;
+  p.r = rho;
+  
+  vec3 result = sp2dec(p);
+
+
+  return result;
+}
+
+
+
+
+sp disk_shape_sp(double rho, double phi, double y_tilt, double y_tilt2, double z_tilt2, double h, double R)
+{
+  // center surface
+  double A = y_tilt2 * (R - rho)/R + y_tilt * rho/R;
+
+  double delta = z_tilt2 * (R - rho)/R;
+
+  double theta = A * cos(phi + delta) + 0.5 * M_PI;
+
+  //double theta = 0.5 * M_PI;
+
+  sp p;
+  p.phi = phi;
+  p.theta = theta;
+  p.r = rho;
+  
+  return p;
+}
+
+
+
+double n_r(double r, double phi, double y_tilt, double y_tilt2, double z_tilt2, double h, double R)
+{
+  // r projection ot the surface normal vector
+
+  double A = y_tilt2 * (R - r)/R + y_tilt * r/R;
+
+  double delta = z_tilt2 * (R - r)/R;
+
+  //double dl_dr = r * A * z_tilt2 * sin(phi + delta)/R + A * cos(phi + delta) + r * cos(phi + delta) * (y_tilt/R - y_tilt2/R);
+  double dl_dr = A * z_tilt2 * sin(phi + delta)/R + (y_tilt/R - y_tilt2/R) * cos(phi + delta) + h/(R*R);
+  
+  return dl_dr/sqrt(1 + dl_dr*dl_dr);
+
+}
+
+
+
+
+int main()
+{
+  int i, j;
+
+  vec3 d_top;
+  vec3 d_bot;
+  vec3 d0;
+  vec3 v;
+  
+  sp p0, q;
+  sp plane_s;
+  vec3 plane_v;
+  
+  double theta;
+  
+  double R = 0.23;
+  double h = 0.023;
+  double r;
+  double phi;
+  double y_tilt = 20.0 * (M_PI/180.0);
+  double y_tilt2 = 0.0 * (M_PI/180.0);
+  double z_tilt2 = -80.0 * (M_PI/180.0);
+
+  int phi_steps_num = 300;
+  int r_steps_num = 100;
+
+
+  vec3 n_in;
+  n_in.x = 0.0;
+  n_in.y = 0.0;
+  n_in.z = 1.0;
+
+  n_in = rotate(n_in, y_tilt2, -z_tilt2);
+
+  
+  double d_r = (double) R/r_steps_num; // radius element
+
+  double d_phi = (double) 2*M_PI/phi_steps_num; // phi element
+  
+  double s; // square element
+
+  double color; // 
+  
+  for(j = 10; j < r_steps_num; j++)
+    {
+      //phi = 2.0 * M_PI * (double) i/phi_steps_num;
+      r = R * (double) j/r_steps_num;
+ 
+      for(i = 0; i < phi_steps_num; i++)
+	{
+	  //r = R * (double) j/r_steps_num;
+	  phi = 2.0 * M_PI * (double) i/phi_steps_num;
+
+	  //d1 = disk_shape_1(r, phi, y_tilt, y_tilt2, z_tilt2, h, R);
+	  //d2 = disk_shape_2(r, phi, y_tilt, y_tilt2, z_tilt2, h, R);
+	  d0 = disk_shape_0(r, phi, y_tilt, y_tilt2, z_tilt2, h, R);
+
+	  d_top = disk_shape_top(r, phi, y_tilt, y_tilt2, z_tilt2, h, R);
+
+	  p0 = disk_shape_sp(r, phi, y_tilt, y_tilt2, z_tilt2, h, R);
+
+	  s = (r/R) * (d_r/R) * d_phi * sin(p0.theta);
+
+	  //color = s * n_r(r, phi, y_tilt, y_tilt2, z_tilt2, h, R)/(r*r);
+	  //color = s * n_r(r, phi, y_tilt, y_tilt2, z_tilt2, h, R)/((r/R)*(r/R));
+	  color = n_r(r, phi, y_tilt, y_tilt2, z_tilt2, h, R)/((r/R)*(r/R));
+
+	  plane_s.phi = phi;
+	  plane_s.r = r;
+	  plane_s.theta = 0.5*M_PI;
+
+	  //plane_v = sp2dec(plane_s);
+	  //plane_v = rotate(plane_v, y_tilt2, -z_tilt2);
+
+	  
+	  //printf("%f\t%f\t%f\n", d1.x, d1.y, d1.z);
+	  //printf("%f\t%f\t%f\n", d2.x, d2.y, d2.z);
+	  //printf("%f\t%f\t%f\t%f\n", d0.x, d0.y, d0.z, color);
+
+	  //printf("%f\t%f\t%f\t%f\n", plane_v.x, plane_v.y, plane_v.z, -1.0);
+
+
+	  
+	  /* if (color < 0.0 && dot(d0,n_in) < 0.0) */
+	  if (color < 0.0 && dot(d0,n_in) > 0.0)	    
+	    {
+	      
+	      printf("%f\t%f\t%f\t%f\n", d_top.x, d_top.y, d_top.z, fabs(color));
+	      
+	    }
+	  else
+	    {
+	      printf("%f\t%f\t%f\t%f\n", d_top.x, d_top.y, d_top.z, 0.0);
+	    }
+	    
+	}
+
+    }
+
+  /* for(j = 10; j < r_steps_num; j++) */
+  /*   { */
+  /*     //phi = 2.0 * M_PI * (double) i/phi_steps_num; */
+  /*     r = R * (double) j/r_steps_num; */
+ 
+  /*     for(i = 0; i < phi_steps_num; i++) */
+  /* 	{ */
+  /* 	  //r = R * (double) j/r_steps_num; */
+  /* 	  phi = 2.0 * M_PI * (double) i/phi_steps_num; */
+
+  /* 	  //d1 = disk_shape_1(r, phi, y_tilt, y_tilt2, z_tilt2, h, R); */
+  /* 	  //d2 = disk_shape_2(r, phi, y_tilt, y_tilt2, z_tilt2, h, R); */
+  /* 	  d0 = disk_shape_0(r, phi, y_tilt, y_tilt2, z_tilt2, h, R); */
+
+  /* 	  d_bot = disk_shape_bot(r, phi, y_tilt, y_tilt2, z_tilt2, h, R); */
+
+  /* 	  p0 = disk_shape_sp(r, phi, y_tilt, y_tilt2, z_tilt2, h, R); */
+
+  /* 	  s = (r/R) * (d_r/R) * d_phi * sin(p0.theta); */
+
+  /* 	  //color = s * n_r(r, phi, y_tilt, y_tilt2, z_tilt2, h, R)/(r*r); */
+  /* 	  //color = s * n_r(r, phi, y_tilt, y_tilt2, z_tilt2, h, R)/((r/R)*(r/R)); */
+  /* 	  color = n_r(r, phi, y_tilt, y_tilt2, z_tilt2, h, R)/((r/R)*(r/R)); */
+
+	  
+  /* 	  //printf("%f\t%f\t%f\n", d1.x, d1.y, d1.z); */
+  /* 	  //printf("%f\t%f\t%f\n", d2.x, d2.y, d2.z); */
+  /* 	  //printf("%f\t%f\t%f\t%f\n", d0.x, d0.y, d0.z, color); */
+
+	  
+  /* 	  if (color < 0.0 && dot(d0,n_in) < 0.0) */
+  /* 	  //if (dot(d0,n_in) < 0.0) */
+
+  /* 	    { */
+  /* 	      printf("%f\t%f\t%f\t%f\n", d_bot.x, d_bot.y, d_bot.z, fabs(color)); */
+  /* 	    } */
+  /* 	  else */
+  /* 	    { */
+  /* 	      printf("%f\t%f\t%f\t%f\n", d_bot.x, d_bot.y, d_bot.z, 0.0); */
+  /* 	    } */
+  /* 	  //printf("%f\t%f\n", phi, r); */
+
+  /* 	} */
+
+  /*   } */
+
+
+  /* for(j = 0; j < 20; j++) */
+  /*   { */
+  /*     theta = 0.5 * M_PI + (h/R) * (double) j/20 - (h/R) * 0.5; */
+ 
+  /*     for(i = 0; i < 300; i++) */
+  /* 	{ */
+  /* 	  phi = 2.0 * M_PI * (double) i/300; */
+
+  /* 	  q.r = R; */
+  /* 	  q.theta = theta; */
+  /* 	  q.phi = phi; */
+
+  /* 	  v = sp2dec(q); */
+  /* 	  v = rotate(v, -y_tilt, 0.0); */
+
+  /* 	  printf("%f\t%f\t%f\t%f\n", v.x, v.y, v.z, 0.0); */
+
+  /* 	} */
+
+  /*   } */
+
+  return 0;
+
+}

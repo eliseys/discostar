@@ -21,8 +21,8 @@ isotrope	0
 # DISK PARAMETERS
 #---------------------------------------
 
-h		0.023
-R		0.23
+h		0.024
+R		0.24
 h_warp		0.023
 rho_in		0.000236
 
@@ -31,14 +31,16 @@ rho_in		0.000236
 Lx	   2.05e+37
 PSI_pr	   0.0
 z_tilt	   0.0
-y_tilt	   20.5
-z_tilt2	   20.5
-T_disk     24368.6635
-y_tilt2	   13.8688102
+y_tilt	   20.0
+z_tilt2	   0.0
 
-disk_flux	0.0
 
-kappa 	     	15.0
+T_disk     6000.0
+y_tilt2	   20.0
+
+disk_flux	2.0e+35
+
+kappa 	     	8.0
 ns_theta     	-3.0
 
 #########################################
@@ -77,6 +79,7 @@ inclination	87.0
 #---------------------------------------
 
 lambda_A	4400.0
+UBV_filter	"B"
 
 #---------------------------------------
 # SEMIMAJOR AXIS, CM
@@ -88,7 +91,7 @@ a 	    	6.35e11
 # NUMBER OF LIGHT CURVE POINTS
 #---------------------------------------
 
-lc_num		100
+lc_num		11
 
 #---------------------------------------
 # STAR AND DISK TILES NUMBER
@@ -101,11 +104,11 @@ disk_tiles   	2000
 # OPENMP THREADS
 #---------------------------------------
 
-threads		2
+threads		20
 
 #---------------------------------------
 # PRINT 3D-PICTURE
 #---------------------------------------
 
-picture		0
+picture		1
 

@@ -317,7 +317,7 @@ double eclipse_by_disk_inside(disk disk, vec3 o, vec3 p)
 
 
 
-double flux_star(vec3 o, double q, double omega, double beta, double u, disk disk, vec3 d2, double Lx, double Lx_disk, double Lx_iso, double Lx_disk_2, double albedo, int tiles, double T, double lambda, double a, vec3 neutron_star, double PSI_pr, int picture, int isotrope, sp disk_reflection_diagr, double * r_array, double * g_array, double * phi_array, double * theta_array, double * Ix_dd, double y_tilt, double y_tilt2, double z_tilt, double z_tilt2, double phi_orb)
+double flux_star(vec3 o, double q, double omega, double beta, double u, disk disk, vec3 d2, double Lx, double Lx_disk, double Lx_iso, double Lx_disk_2, double albedo, int tiles, double T, double lambda, double a, vec3 neutron_star, double PSI_pr, int picture, int isotrope, sp disk_reflection_diagr, double * r_array, double * g_array, double * phi_array, double * theta_array, double * Ix_dd, double y_tilt, double y_tilt2, double z_tilt, double z_tilt2, double phi_orb, char UBV_filter)
 {
   /* */
   int steps = sqrt(tiles/2.0);
@@ -402,17 +402,6 @@ double flux_star(vec3 o, double q, double omega, double beta, double u, disk dis
   hn2_min.y = -hn2.y;
   hn2_min.z = -hn2.z;
 
-  /* static double *Ix_dd = NULL; */
-
-  /* if (Ix_dd == NULL) */
-  /*   { */
-  /*     Ix_dd = x_ray_direction_diagram(PSI_pr, Lx); */
-  /*   } */
-  /* else */
-  /*   {} */
-  
-  /* double *Fx_dd; */
-  /* Fx_dd = x_ray_direction_diagram(PSI_pr); */
 
   vec3 drd_vec3 = sp2dec(disk_reflection_diagr);
     
@@ -424,12 +413,6 @@ double flux_star(vec3 o, double q, double omega, double beta, double u, disk dis
   
   /* flux from star */
   double result = 0.0;
-
-
-  /* */
-  /* double F_0 = F_lambda(T,lambda); */
-
-
   
   int true_n_tiles = steps_theta * steps_phi;
 
@@ -448,50 +431,7 @@ double flux_star(vec3 o, double q, double omega, double beta, double u, disk dis
   double y_tilt_delta_plus1, y_tilt2_delta_plus1;
   double z_tilt2_delta_plus1;
 
-
-
-
-  
-  
-  /* static double *phi_array = NULL; */
-
-  /* if (phi_array == NULL) */
-  /*   { */
-  /*     phi_array = phi_func(steps_phi); */
-  /*   } */
-  /* else */
-  /*   {} */
-
-  
-  /* static double *theta_array = NULL; */
-
-  /* if (theta_array == NULL) */
-  /*   { */
-  /*     theta_array = theta_func(steps_theta); */
-  /*   } */
-  /* else */
-  /*   {} */
-
-
-  /* static double *r_array = NULL; */
-
-  /* if (r_array == NULL) */
-  /*   { */
-  /*     r_array = shape_r(steps_phi, steps_theta, q, omega); */
-  /*   } */
-  /* else */
-  /*   {} */
-
-  
-  /* static double *g_array = NULL; */
-
-  /* if (g_array == NULL) */
-  /*   { */
-  /*     g_array = shape_g_abs(steps_phi, steps_theta, q, omega); */
-  /*   } */
-  /* else */
-  /*   {} */
-
+  double Z;
   
   int i, j, k;
   
@@ -608,24 +548,40 @@ double flux_star(vec3 o, double q, double omega, double beta, double u, disk dis
 	  /* if ( cos_in < - eps && fabs(cos_irr) > cos_disk_shadow_semi_angle) */
 
 	  shadow_condition = 1.0;
-	    
+
+
+	  if (z_tilt2 - z_tilt >= 0)
+	    {
+	      Z = min( z_tilt + (2.0*M_PI - z_tilt2), z_tilt2 - z_tilt );
+	    }
+	  else if (z_tilt2 - z_tilt < 0)
+	    {
+	      Z = min( z_tilt2 + (2.0*M_PI - z_tilt), z_tilt - z_tilt2 );
+	      Z = - Z;
+	    }
+
+	  
+	  /* if (Z > M_PI) */
+	  /*   { */
+	  /*     Z = (fmod((z_tilt2 + M_PI), 2.0 * M_PI) - fmod((z_tilt + M_PI), 2.0 * M_PI)); */
+	  /*   } */
+		
 	  for (k=0; k < number_of_rings_in_disk; k++)
 	    {
 
-	      y_tilt_delta = k * (y_tilt - y_tilt2)/number_of_rings_in_disk;
-	      z_tilt2_delta = k * z_tilt2/number_of_rings_in_disk;
+	      y_tilt_delta = k * (y_tilt2 - y_tilt)/number_of_rings_in_disk;
+	      z_tilt2_delta = k * Z/number_of_rings_in_disk;
 
-	      y_tilt_delta_plus1 = (k+1) * (y_tilt - y_tilt2)/number_of_rings_in_disk;
-	      z_tilt2_delta_plus1 = (k+1) * z_tilt2/number_of_rings_in_disk;
+	      y_tilt_delta_plus1 = (k+1) * (y_tilt2 - y_tilt)/number_of_rings_in_disk;
+	      z_tilt2_delta_plus1 = (k+1) * Z/number_of_rings_in_disk;
 
-	      ring_k.x = - sin(y_tilt - y_tilt_delta) * cos(z_tilt + z_tilt2_delta - phi_orb + M_PI);
-	      ring_k.y = sin(y_tilt - y_tilt_delta) * sin(z_tilt + z_tilt2_delta - phi_orb + M_PI);
-	      ring_k.z = cos(y_tilt - y_tilt_delta);
+	      ring_k.x = sin(y_tilt + y_tilt_delta) * cos(z_tilt + z_tilt2_delta + phi_orb);
+	      ring_k.y = sin(y_tilt + y_tilt_delta) * sin(z_tilt + z_tilt2_delta + phi_orb);
+	      ring_k.z = cos(y_tilt + y_tilt_delta);
 
-	      ring_kplus1.x = - sin(y_tilt - y_tilt_delta_plus1) * cos(z_tilt + z_tilt2_delta_plus1 - phi_orb + M_PI);
-	      ring_kplus1.y = sin(y_tilt - y_tilt_delta_plus1) * sin(z_tilt + z_tilt2_delta_plus1 - phi_orb + M_PI);
-	      ring_kplus1.z = cos(y_tilt - y_tilt_delta_plus1);
-
+	      ring_kplus1.x = sin(y_tilt + y_tilt_delta_plus1) * cos(z_tilt + z_tilt2_delta_plus1 + phi_orb);
+	      ring_kplus1.y = sin(y_tilt + y_tilt_delta_plus1) * sin(z_tilt + z_tilt2_delta_plus1 + phi_orb);
+	      ring_kplus1.z = cos(y_tilt + y_tilt_delta_plus1);
 
 	      shadow_condition = shadow_condition * ((dot(ring_k,psn) > eps || dot(ring_kplus1,psn) < -eps) && (dot(ring_k,psn) < -eps || dot(ring_kplus1,psn) > eps));
 	      /* = 1, если в тень не попадает */
@@ -634,7 +590,8 @@ double flux_star(vec3 o, double q, double omega, double beta, double u, disk dis
 	    }
 
 	  
-	  if ( (cos_in < - eps && cos_irr > cos_disk_shadow_semi_angle && cos_irr2 > cos_disk_shadow_semi_angle || cos_in < - eps && cos_irr_min > cos_disk_shadow_semi_angle && cos_irr2_min > cos_disk_shadow_semi_angle) && shadow_condition )
+	  //if ( (cos_in < - eps && cos_irr > cos_disk_shadow_semi_angle && cos_irr2 > cos_disk_shadow_semi_angle || cos_in < - eps && cos_irr_min > cos_disk_shadow_semi_angle && cos_irr2_min > cos_disk_shadow_semi_angle) && shadow_condition )
+    	    if ( (cos_in < - eps && cos_irr > cos_disk_shadow_semi_angle && cos_irr2 > cos_disk_shadow_semi_angle || cos_in < - eps && cos_irr_min > cos_disk_shadow_semi_angle && cos_irr2_min > cos_disk_shadow_semi_angle) && shadow_condition )
 	    {
 
 	      if (isotrope == 0)
@@ -670,7 +627,8 @@ double flux_star(vec3 o, double q, double omega, double beta, double u, disk dis
 	      
 	      T_sum = pow((T_star_4 + T_irr_4),0.25); 
 
-	      F_0 = F_lambda(T_sum, lambda);
+	      //F_0 = F_lambda(T_sum, lambda);
+	      F_0 = F_filter(T_sum, UBV_filter);
 	      
 	      result = result + F_0 * (1 - u + u * cos_on) * pow(g,beta) * cos_on * S;
 
@@ -684,11 +642,6 @@ double flux_star(vec3 o, double q, double omega, double beta, double u, disk dis
 	      else if (picture == 0)
 		{}
 	    }
-
-
-
-
-
 
 	  
 	}
@@ -722,7 +675,7 @@ double B(disk disk, double A, double rho_in, double T)
 
 
   
-double * flux_disk(vec3 o, disk disk, double rho_in, double A, double uniform_disk, double y_tilt, double z_tilt, double omega, double q, int disk_tiles, double phi_orb, double T, double lambda, double a, int picture, int spot_disk, double T_spot, double spot_beg, double spot_end, double spot_rho_in, double spot_rho_out, double h_warp, double * Ix_dd, double Lx, vec3 neutron_star, vec3 d2)
+double * flux_disk(vec3 o, disk disk, double rho_in, double A, double uniform_disk, double y_tilt, double z_tilt, double omega, double q, int disk_tiles, double phi_orb, double T, double lambda, double a, int picture, int spot_disk, double T_spot, double spot_beg, double spot_end, double spot_rho_in, double spot_rho_out, double h_warp, double * Ix_dd, double Lx, vec3 neutron_star, vec3 d2, char UBV_filter)
 {
 
   sp coord = dec2sp(o);
@@ -868,12 +821,13 @@ double * flux_disk(vec3 o, disk disk, double rho_in, double A, double uniform_di
 
   sp s_neutron_star = dec2sp(neutron_star);
 
-  d = rotate(d, 0.0, phi_orb);
-  d2 = rotate(d2, 0.0, phi_orb);
+  d = rotate(d, 0.0, -phi_orb);
+  d2 = rotate(d2, 0.0, -phi_orb);
 
   //double kappa = 15.0 * M_PI/180.0;
   //double ns_theta = -3.0 * M_PI/180.0;
-  
+
+  // check sign of the phi_orb!!! DK 8Feb2019
   d_in_NS = rotate(d, -s_neutron_star.theta, -s_neutron_star.phi + phi_orb);
   d2_in_NS = rotate(d2, -s_neutron_star.theta, -s_neutron_star.phi + phi_orb);
 
@@ -945,7 +899,8 @@ double * flux_disk(vec3 o, disk disk, double rho_in, double A, double uniform_di
   double F_0_up; /* temperature may depend on rho, in that case set it in the cycle below */
   double F_0_down; /* temperature may depend on rho, in that case set it in the cycle below */
 
-  double F_spot = F_lambda(T_spot, lambda); /* side of the disk */
+  //double F_spot = F_lambda(T_spot, lambda); /* side of the disk */
+  double F_spot = F_filter(T_spot, UBV_filter); /* side of the disk */
 
   /* from top side of the disk */
   double result_1 = 0.0;
@@ -1010,8 +965,8 @@ double * flux_disk(vec3 o, disk disk, double rho_in, double A, double uniform_di
 	      delta_theta = theta_1 - theta_0;
 	      
 	      /* disc`s normal vector for side */
-	      n3.x = sin(phi) * sin(z_tilt - phi_orb + M_PI) + cos(phi) * cos(y_tilt) * cos(z_tilt - phi_orb + M_PI);
-	      n3.y = sin(phi) * cos(z_tilt - phi_orb + M_PI) - cos(phi) * cos(y_tilt) * sin(z_tilt - phi_orb + M_PI);
+	      n3.x = sin(phi) * sin(z_tilt + phi_orb) + cos(phi) * cos(y_tilt) * cos(z_tilt + phi_orb);
+	      n3.y = sin(phi) * cos(z_tilt + phi_orb) - cos(phi) * cos(y_tilt) * sin(z_tilt + phi_orb);
 	      n3.z = cos(phi) * sin(y_tilt);
 	      /**/
 	      //cos_on = dot(o,n3);
@@ -1086,8 +1041,10 @@ double * flux_disk(vec3 o, disk disk, double rho_in, double A, double uniform_di
 	  //printf("T_rho %f \t F_0 %f \n", T_rho, F_0);
 	  
 	  /* flux on on wavelenght lambda */
-	  F_0_up   = F_lambda(T_rho_up, lambda);
-	  F_0_down = F_lambda(T_rho_down, lambda);
+	  //F_0_up   = F_lambda(T_rho_up, lambda);
+	  //F_0_down = F_lambda(T_rho_down, lambda);
+	  F_0_up   = F_filter(T_rho_up, UBV_filter);
+	  F_0_down = F_filter(T_rho_down, UBV_filter);
 
 
 	  /* shifted coordinates of the disk */
@@ -1150,21 +1107,21 @@ double * flux_disk(vec3 o, disk disk, double rho_in, double A, double uniform_di
  
 	  
 	  /* tilt and shift disc */
-	  pt.x =   p.x * cos(y_tilt) * cos(z_tilt - phi_orb + M_PI) + p.y * sin(z_tilt - phi_orb + M_PI) - p.z * sin(y_tilt) * cos(z_tilt - phi_orb + M_PI) + 1.0;
-	  pt.y = - p.x * cos(y_tilt) * sin(z_tilt - phi_orb + M_PI) + p.y * cos(z_tilt - phi_orb + M_PI) + p.z * sin(y_tilt) * sin(z_tilt - phi_orb + M_PI);
-	  pt.z =   p.x * sin(y_tilt) + p.z * cos(y_tilt);
+	  pt.x =    p.x * cos(y_tilt) * cos(z_tilt + phi_orb) - p.y * sin(z_tilt + phi_orb) + p.z * sin(y_tilt) * cos(z_tilt + phi_orb) + 1.0;
+	  pt.y =    p.x * cos(y_tilt) * sin(z_tilt + phi_orb) + p.y * cos(z_tilt + phi_orb) + p.z * sin(y_tilt) * sin(z_tilt + phi_orb);
+	  pt.z =  - p.x * sin(y_tilt) + p.z * cos(y_tilt);
 
-	  nut.x =   nu.x * cos(y_tilt) * cos(z_tilt - phi_orb + M_PI) + nu.y * sin(z_tilt - phi_orb + M_PI) - nu.z * sin(y_tilt) * cos(z_tilt - phi_orb + M_PI);
-	  nut.y = - nu.x * cos(y_tilt) * sin(z_tilt - phi_orb + M_PI) + nu.y * cos(z_tilt - phi_orb + M_PI) + nu.z * sin(y_tilt) * sin(z_tilt - phi_orb + M_PI);
-	  nut.z =   nu.x * sin(y_tilt) + nu.z * cos(y_tilt);
+	  nut.x =   nu.x * cos(y_tilt) * cos(z_tilt + phi_orb) - nu.y * sin(z_tilt + phi_orb) + nu.z * sin(y_tilt) * cos(z_tilt + phi_orb);
+	  nut.y =   nu.x * cos(y_tilt) * sin(z_tilt + phi_orb) + nu.y * cos(z_tilt + phi_orb) + nu.z * sin(y_tilt) * sin(z_tilt + phi_orb);
+	  nut.z = - nu.x * sin(y_tilt) + nu.z * cos(y_tilt);
 
-	  ndt.x =   nd.x * cos(y_tilt) * cos(z_tilt - phi_orb + M_PI) + nd.y * sin(z_tilt - phi_orb + M_PI) - nd.z * sin(y_tilt) * cos(z_tilt - phi_orb + M_PI);
-	  ndt.y = - nd.x * cos(y_tilt) * sin(z_tilt - phi_orb + M_PI) + nd.y * cos(z_tilt - phi_orb + M_PI) + nd.z * sin(y_tilt) * sin(z_tilt - phi_orb + M_PI);
-	  ndt.z =   nd.x * sin(y_tilt) + nd.z * cos(y_tilt);
+	  ndt.x =   nd.x * cos(y_tilt) * cos(z_tilt + phi_orb) - nd.y * sin(z_tilt + phi_orb) + nd.z * sin(y_tilt) * cos(z_tilt + phi_orb);
+	  ndt.y =   nd.x * cos(y_tilt) * sin(z_tilt + phi_orb) + nd.y * cos(z_tilt + phi_orb) + nd.z * sin(y_tilt) * sin(z_tilt + phi_orb);
+	  ndt.z = - nd.x * sin(y_tilt) + nd.z * cos(y_tilt);
 
-	  nst.x =   ns.x * cos(y_tilt) * cos(z_tilt - phi_orb + M_PI) + ns.y * sin(z_tilt - phi_orb + M_PI) - ns.z * sin(y_tilt) * cos(z_tilt - phi_orb + M_PI);
-	  nst.y = - ns.x * cos(y_tilt) * sin(z_tilt - phi_orb + M_PI) + ns.y * cos(z_tilt - phi_orb + M_PI) + ns.z * sin(y_tilt) * sin(z_tilt - phi_orb + M_PI);
-	  nst.z =   ns.x * sin(y_tilt) + ns.z * cos(y_tilt);
+	  nst.x =   ns.x * cos(y_tilt) * cos(z_tilt + phi_orb) - ns.y * sin(z_tilt + phi_orb) + ns.z * sin(y_tilt) * cos(z_tilt + phi_orb);
+	  nst.y =   ns.x * cos(y_tilt) * sin(z_tilt + phi_orb) + ns.y * cos(z_tilt + phi_orb) + ns.z * sin(y_tilt) * sin(z_tilt + phi_orb);
+	  nst.z = - ns.x * sin(y_tilt) + ns.z * cos(y_tilt);
 	  
 	  cos_onut = dot(o,nut);
 	  cos_ondt = dot(o,ndt);
@@ -1323,7 +1280,7 @@ double * flux_disk(vec3 o, disk disk, double rho_in, double A, double uniform_di
       
     }
 
-  result_2 = 0.0;
+  result_3 = 0.0;
 
   double * result = (double *) malloc(sizeof(double) * 3);
   
@@ -1337,6 +1294,3 @@ double * flux_disk(vec3 o, disk disk, double rho_in, double A, double uniform_di
   return result;
 
 }
-
-
-

@@ -195,7 +195,6 @@ double * phi_func(int steps_phi, int threads)
 
   double * result = (double*) malloc(sizeof(double) * steps_phi);
 
-
   omp_set_dynamic(0);
   omp_set_num_threads(threads);
 
@@ -325,7 +324,3 @@ double * shape_r(int steps_phi, int steps_theta, double * phi_array, double * th
   return result;
     
 }
-
-
-
-
