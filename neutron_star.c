@@ -36,7 +36,7 @@ double * x_ray_direction_diagram(double PSI_pr)
 {
 
   //double angle_JI = 50.0 * M_PI/180.0; /* angle between J and I_3 vectors */
-  double angle_JI = 70.0 * M_PI/180.0; /* angle between J and I_3 vectors */
+  double angle_JI = 50.0 * M_PI/180.0; /* angle between J and I_3 vectors */
     
   /* sky pixelization */
   double n_theta;
@@ -59,9 +59,32 @@ double * x_ray_direction_diagram(double PSI_pr)
   
   double b[18], l[18], R[18], BEG[18], END[18], delta_theta[18], intensity[18];
 
-  /* !!!!!! I`d changed b[2] from 65.0 to 75.0 */
-  /* !!!!!! I`d changed END[8] from 350.0 to 380.0 */
+  /* !!!!!! I`ve changed b[2] from 65.0 to 75.0 */
+  /* !!!!!! I`ve changed END[8] from 350.0 to 380.0 */
   
+  b[0] = 70.0,    l[0] = 160.0,  R[0] = 50.0,   BEG[0] = 205.0,  END[0] = 250.0,  delta_theta[0] = 14.0,  intensity[0] = 54.3;
+  b[1] = 75.0,    l[1] = 180.0,  R[1] = 43.0,   BEG[1] = 250.0,  END[1] = 300.0,  delta_theta[1] = 13.0,  intensity[1] = 53.1;
+  b[2] = 75.0,    l[2] = 180.0,  R[2] = 43.0,   BEG[2] = 302.0,  END[2] = 350.0,  delta_theta[2] = 12.0,  intensity[2] = 51.5;
+  b[3] = 65.0,    l[3] = 170.0,  R[3] = 53.0,   BEG[3] = 355.0,  END[3] = 400.0,  delta_theta[3] = 11.0,  intensity[3] = 19.3;
+  b[4] = 60.0,    l[4] = 160.0,  R[4] = 55.0,   BEG[4] = 45.0,   END[4] = 60.0,   delta_theta[4] = 11.0,  intensity[4] = 4.5;
+  b[5] = 60.0,    l[5] = 150.0,  R[5] = 50.0,   BEG[5] = 65.0,   END[5] = 95.0,   delta_theta[5] = 11.0,  intensity[5] = 20.2;
+  b[6] = 58.0,    l[6] = 160.0,  R[6] = 55.0,   BEG[6] = 95.0,   END[6] = 120.0,  delta_theta[6] = 11.0,  intensity[6] = 25.8;
+  b[7] = 70.0,    l[7] = 140.0,  R[7] = 60.0,   BEG[7] = 120.0,  END[7] = 160.0,  delta_theta[7] = 13.0,  intensity[7] = 29.0;
+
+  b[8] = -97.0,   l[8] = 180.0,  R[8] = 44.0,   BEG[8] = 330.0,  END[8] = 380.0,  delta_theta[8] = 11.0,  intensity[8] = 4.1;
+  b[9] = -97.0,   l[9] = 180.0,  R[9] = 44.0,   BEG[9] = 20.0,   END[9] = 50.0,   delta_theta[9] = 11.0,  intensity[9] = 7.6;
+  b[10] = -97.0,  l[10] = 180.0, R[10] = 44.0,  BEG[10] = 50.0,  END[10] = 100.0, delta_theta[10] = 11.0, intensity[10] = 10.2;
+  b[11] = -95.0,  l[11] = 200.0, R[11] = 42.0,  BEG[11] = 110.0, END[11] = 170.0, delta_theta[11] = 8.0,  intensity[11] = 17.0;
+
+  b[12] = -100.0, l[12] = 200.0, R[12] = 65.0,  BEG[12] = 205.0, END[12] = 260.0, delta_theta[12] = 11.0, intensity[12] = 3.6;
+  b[13] = 60.0,   l[13] = 180.0, R[13] = 80.0,  BEG[13] = 250.0, END[13] = 280.0, delta_theta[13] = 11.0, intensity[13] = 11;
+  b[14] = 75.0,   l[14] = 180.0, R[14] = 105.0, BEG[14] = 90.0,  END[14] = 120.0, delta_theta[14] = 11.0, intensity[14] = 2.7;
+
+  /* magnetic poles: N, S, P1 */
+  b[15] = 60.0,   l[15] = 180.0, R[15] = 0.0, BEG[15] = 0.0,  END[15] = 360.0, delta_theta[15] = 16.0, intensity[15] = 100.0;
+  b[16] = -85.0,  l[16] = 0.0,   R[16] = 0.0, BEG[16] = 0.0,  END[16] = 360.0, delta_theta[16] = 16.0, intensity[16] = 32.6;
+  b[17] = -17.0,  l[17] = 80.0,  R[17] = 0.0, BEG[17] = 0.0,  END[17] = 360.0, delta_theta[17] = 14.0, intensity[17] = 0.94;
+
   /* b[0] = 70.0,    l[0] = 160.0,  R[0] = 50.0,   BEG[0] = 205.0,  END[0] = 250.0,  delta_theta[0] = 14.0,  intensity[0] = 54.3; */
   /* b[1] = 75.0,    l[1] = 180.0,  R[1] = 43.0,   BEG[1] = 250.0,  END[1] = 300.0,  delta_theta[1] = 13.0,  intensity[1] = 53.1; */
   /* b[2] = 75.0,    l[2] = 180.0,  R[2] = 43.0,   BEG[2] = 302.0,  END[2] = 350.0,  delta_theta[2] = 12.0,  intensity[2] = 51.5; */
@@ -84,29 +107,6 @@ double * x_ray_direction_diagram(double PSI_pr)
   /* b[15] = 60.0,   l[15] = 180.0, R[15] = 0.0, BEG[15] = 0.0,  END[15] = 360.0, delta_theta[15] = 16.0, intensity[15] = 100.0; */
   /* b[16] = -85.0,  l[16] = 0.0,   R[16] = 0.0, BEG[16] = 0.0,  END[16] = 360.0, delta_theta[16] = 16.0, intensity[16] = 32.6; */
   /* b[17] = -17.0,  l[17] = 80.0,  R[17] = 0.0, BEG[17] = 0.0,  END[17] = 360.0, delta_theta[17] = 14.0, intensity[17] = 0.94; */
-
-  b[0] = 70.0,    l[0] = 160.0,  R[0] = 50.0,   BEG[0] = 205.0,  END[0] = 250.0,  delta_theta[0] = 14.0,  intensity[0] = 54.3;
-  b[1] = 75.0,    l[1] = 180.0,  R[1] = 43.0,   BEG[1] = 250.0,  END[1] = 300.0,  delta_theta[1] = 13.0,  intensity[1] = 53.1;
-  b[2] = 75.0,    l[2] = 180.0,  R[2] = 43.0,   BEG[2] = 302.0,  END[2] = 350.0,  delta_theta[2] = 12.0,  intensity[2] = 51.5;
-  b[3] = 65.0,    l[3] = 170.0,  R[3] = 53.0,   BEG[3] = 355.0,  END[3] = 400.0,  delta_theta[3] = 11.0,  intensity[3] = 19.3;
-  b[4] = 60.0,    l[4] = 160.0,  R[4] = 55.0,   BEG[4] = 45.0,   END[4] = 60.0,   delta_theta[4] = 11.0,  intensity[4] = 4.5;
-  b[5] = 60.0,    l[5] = 150.0,  R[5] = 50.0,   BEG[5] = 65.0,   END[5] = 95.0,   delta_theta[5] = 11.0,  intensity[5] = 20.2;
-  b[6] = 58.0,    l[6] = 160.0,  R[6] = 55.0,   BEG[6] = 95.0,   END[6] = 120.0,  delta_theta[6] = 11.0,  intensity[6] = 25.8;
-  b[7] = 70.0,    l[7] = 140.0,  R[7] = 60.0,   BEG[7] = 120.0,  END[7] = 160.0,  delta_theta[7] = 13.0,  intensity[7] = 29.0;
-
-  b[8] = -97.0,   l[8] = 180.0,  R[8] = 44.0,   BEG[8] = 330.0,  END[8] = 380.0,  delta_theta[8] = 11.0,  intensity[8] = 4.1;
-  b[9] = -97.0,   l[9] = 180.0,  R[9] = 44.0,   BEG[9] = 20.0,   END[9] = 50.0,   delta_theta[9] = 11.0,  intensity[9] = 7.6;
-  b[10] = -97.0,  l[10] = 180.0, R[10] = 44.0,  BEG[10] = 50.0,  END[10] = 100.0, delta_theta[10] = 11.0, intensity[10] = 10.2;
-  b[11] = -95.0,  l[11] = 200.0, R[11] = 42.0,  BEG[11] = 110.0, END[11] = 170.0, delta_theta[11] = 8.0,  intensity[11] = 17.0;
-
-  b[12] = -100.0, l[12] = 200.0, R[12] = 65.0,  BEG[12] = 205.0, END[12] = 260.0, delta_theta[12] = 11.0, intensity[12] = 3.6;
-  b[13] = 60.0,   l[13] = 180.0, R[13] = 80.0,  BEG[13] = 250.0, END[13] = 280.0, delta_theta[13] = 11.0, intensity[13] = 11;
-  b[14] = 75.0,   l[14] = 180.0, R[14] = 105.0, BEG[14] = 90.0,  END[14] = 120.0, delta_theta[14] = 11.0, intensity[14] = 2.7;
-
-  /* magnetic poles: N, S, P1 */
-  b[15] = 74.0,   l[15] = 180.0, R[15] = 0.0, BEG[15] = 0.0,  END[15] = 360.0, delta_theta[15] = 16.0, intensity[15] = 100.0;
-  b[16] = -85.0,  l[16] = 0.0,   R[16] = 0.0, BEG[16] = 0.0,  END[16] = 360.0, delta_theta[16] = 16.0, intensity[16] = 32.6;
-  b[17] = -17.0,  l[17] = 80.0,  R[17] = 0.0, BEG[17] = 0.0,  END[17] = 360.0, delta_theta[17] = 14.0, intensity[17] = 0.94;
 
   
   double theta_n, delta_theta_n, epsilon_theta_n;

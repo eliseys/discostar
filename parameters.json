@@ -1,69 +1,66 @@
 {
     "lmfit":
     {
-	"parameters":
-	{
-	    "Lx": ["Lx",        1.0E+37, false, 0.0e+36, 1.0e+39, null, null],
-	    "y_tilt": ["y_tilt",    15.0,    false, 0.0,     40.0,    null, null],
-	    "y_tilt2": ["y_tilt2",   15.0,    false, 0.0,     40.0,    null, null],
-	    "disk_flux_B": ["disk_flux_B", 0.5, false, 0.0, 4.0, null, null],
-	    "disk_flux_V": ["disk_flux_V", 0.5, false, 0.0, 4.0, null, null]
-	},
-	"method":
-	    "leastsq"
-	
+        "parameters":
+        {
+            "Lx": ["Lx",        1.0E+37, true, 0.0e+36, 9.0e+39, null, null],
+	    "disk_flux": ["disk_flux", 1.0, true, 0.0, 4.0, null, null]
+        },
+        "method":
+            "leastsq"
+
     },
     "additional":
     {
-	"deltaPsi" : [-18.0],
-	"assymetry_factor" : [0.33],
-	"theta_fix" : [15.0],
-	"Z" : [50.0]
+        "deltaPsi" : [-18.0],
+	"z_tilt_dot_profile" : [2],
+        "break_amplitude" : [0.0],
+	"break_duration" : [0.0],
+        "slowest_phase" : [0.0],
+        "max_opening_phase" : [0.0175, 0.2, 0.0225],
+	"Z" : [90.0, 80.0, 70.0, 60.0, 50.0, 40.0, 30.0, 20.0, 10.0, 0.0, -10.0, -20.0, -30.0, -40.0, -50.0, -60.0, -70.0, -80.0, -90.0]
     },
     "main":
     {
-	"q":                   [0.58],
-	"mu":                  [1.0],
-	"beta":                [0.0],
-	"u":                   [0.0],
-	"albedo":              [0.5],
-	"Lx_disk":             [0.0e+37],
-	"Lx_disk_2":           [0.0e+37],
-	"Lx_iso":              [0.0e+37],
-	"Lx":                  [2.05e+37],
-	"isotrope":            [0],
-	"h":                   [0.048],
-	"R":                   [0.24],
-	"h_warp":              [0.023],
-	"rho_in":              [0.000236],
-	"z_tilt":              [0.0],
-	"z_tilt2":             [0.0],
-	"PSI_pr":              [0.0],
-	"y_tilt":              [15.0],
-	"y_tilt2":             [15.0],
-	"T_disk":              [6000.0],
-	"disk_flux_B":         [1.0],
-	"disk_flux_V":         [1.0],
-	"kappa":               [8.0],
-	"ns_theta":            [-3.0],
-	"uniform_disk":        [1],
-	"spot_disk":           [0],	   
-	"T_spot":              [20000.0],
-	"spot_beg":            [200.0],
-	"spot_end":            [340.0],
-	"spot_rho_in":         [0.05],
-	"spot_rho_out":        [0.25],
-	"drd_phi":             [180.0],
-	"drd_theta":           [30.0],
-	"A":                   [0.1],
-	"T_star":              [8400.0],
-	"inclination":         [87.0],
-	"lambda_A":	       [4400.0],
-	"a":                   [6.35e11],
-	"lc_num":              [51],
-	"star_tiles":          [8000],
-	"disk_tiles":          [2000],
-	"threads":             [20],
-	"picture":             [0]
+        "q":                   [0.6448],
+        "mu":                  [1.0],
+        "beta":                [0.08],
+        "u":                   [0.0],
+        "albedo":              [0.5],
+        "Lx_disk":             [0.0e+37],
+        "Lx_disk_2":           [0.0e+37],
+        "Lx_iso":              [0.0e+37],
+        "Lx_noniso":           [2.05e+37],
+        "h":                   [0.084],
+        "R":                   [0.24],
+        "h_warp":              [0.023],
+        "rho_in":              [0.000236],
+        "z_tilt":              [324.0],
+        "z_tilt2":             [0.0],
+        "PSI_pr":              [0.0],
+        "T_disk":              [6000.0],
+        "kappa":               [10.0],
+        "ns_theta":            [-3.0],
+        "uniform_disk":        [1],
+        "spot_disk":           [0],
+        "T_spot":              [20000.0],
+        "spot_beg":            [200.0],
+        "spot_end":            [340.0],
+        "spot_rho_in":         [0.05],
+        "spot_rho_out":        [0.25],
+        "drd_phi":             [180.0],
+        "drd_theta":           [30.0],
+        "A":                   [0.1],
+        "T_star":              [7794.0],
+        "inclination":         [88.0],
+        "a":                   [-1],
+        "lc_num":              [50],
+        "lc_start":            [0.13],
+        "lc_end":              [0.87],
+        "star_tiles":          [6000],
+        "disk_tiles":          [2000],
+        "threads":             [20],
+        "picture":             [0],
+	"disk_flux":           [0]
     }
 }

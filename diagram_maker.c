@@ -6,7 +6,7 @@
 int main(){
   
   FILE *diagram;
-  diagram = fopen("DIAGRAM_test", "a");
+  diagram = fopen("DIAGRAM_50", "a");
 
   int psi_step_num = 360; /* number of steps along precession axis*/
   int theta_step_num = 180; /* number of theta steps */
@@ -36,7 +36,7 @@ int main(){
   double test[size_diagram];
 
   FILE *data;
-  data = fopen("DIAGRAM_test", "r");
+  data = fopen("DIAGRAM_50", "r");
   
   fread(&test, sizeof(double), size_diagram, data);
 

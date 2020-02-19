@@ -1,5 +1,5 @@
 # Source, Executable, Includes, Library Defines
-INCL   = def_copy.h
+INCL   = def.h
 #SRC    = main.c func.c intensity.c neutron_star.c operators.c star_shape.c disk_shape.c diagram_maker.c
 SRC1    = main.c func.c intensity.c operators.c star_shape.c disk_shape.c
 SRC2    = diagram_maker.c neutron_star.c operators.c
@@ -32,10 +32,10 @@ RM      = /bin/rm -f
 
 # Link all Object Files with external Libraries into Binaries
 $(EXE1): $(OBJ1)
-	$(CC) $(LDFLAGS1) $(OBJ1)
+	$(CC) $(OBJ1) $(LDFLAGS1)
 
 $(EXE2): $(OBJ2)
-	$(CC) $(LDFLAGS2) $(OBJ2)
+	$(CC) $(OBJ2) $(LDFLAGS2)
 
 
 # Objects depend on these Libraries

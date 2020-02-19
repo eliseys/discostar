@@ -2,6 +2,10 @@
 #define DEF_H
 
 #include <math.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <omp.h>
+
 
 #define eps 0.000001
 
@@ -18,10 +22,91 @@
 #define SIGMA 5.6704e-5
 
 /* constants in Planck function, see F_lambda in intensity.c */
-#define C1 3.74185e-5
+#define C1 1.19104295e-5
 #define C2 1.43883
 
 #define min(x, y) (((x) < (y)) ? (x) : (y))
+
+#define A_cm 1e-8
+
+/* star parameters */
+double q;                /* mass ratio q = m_x/m_opt */
+double mu;               /* roche lobe filling */
+double beta;             /* gravity darkening coefficient */
+double u;                /* limb darkening coefficient */  
+double albedo;           /* 1 - (X-ray photons reprocessing efficiency) */	 
+double T_star;
+
+/* neutron star parameter */
+double Lx_noniso;               /* erg/s */ 
+
+double h;                /* semi-thickness */ 
+double R;                /* radius */
+double y_tilt; 
+double z_tilt;  
+
+double y_tilt2; 
+double z_tilt2;  
+
+int picture;             /* print 3D picture */
+  
+/* observer */
+double inclination;
+
+int lc_num; /* number of light curve points */
+
+/* star and disk surface partition */
+int star_tiles;
+int disk_tiles;
+
+int threads;             /* number of OpenMP threads */
+
+/* temperature of star and disk and spectral band */
+double T_disk;
+
+double a_cm;
+
+double PSI_pr;
+double kappa;
+
+double Lx_disk;
+double Lx_disk_2;
+double Lx_iso;
+
+int spot_disk;
+double T_spot;
+double spot_beg;
+double spot_end;
+
+double ns_theta;
+
+double spot_rho_in;
+double spot_rho_out;
+
+double drd_phi;
+double drd_theta;
+
+double rho_in;
+
+double A;
+
+double uniform_disk;
+
+double disk_flux_B;
+double disk_flux_V;
+
+double h_warp;
+
+char filter;
+
+double lc_start;
+double lc_end;
+
+
+/**/
+
+
+
 
 struct decart {
   double x;
@@ -58,8 +143,7 @@ sp dec2sp(vec3 a);
 vec3 rotate(vec3 a, double Y, double Z);
 vec3 axrot(vec3 a, vec3 u, double theta);
 
-double F_lambda(double T, double lambda);
-double F_filter(double T, char filter);
+double F_filter(double T, char * filter);
 
 double fr(double r, double phi, double theta, double q, double omega);
 double dfr(double r, double phi, double theta, double q, double omega);
@@ -92,10 +176,10 @@ double distance_to_disk_inside(vec3 p, disk disk);
 double eclipse_by_disk(disk disk, vec3 o, vec3 p);
 double eclipse_by_disk_inside(disk disk, vec3 o, vec3 p);
 
-double flux_star(vec3 o, double q, double omega, double beta, double u, disk disk, vec3 d2, double Lx, double Lx_disk, double Lx_iso, double Lx_disk_2, double albedo, int star_tiles, double T_star, double lambda, double a, vec3 neutron_star, double PSI_pr, int picture, int isotrope, sp disk_reflection_diagr, double * r_array, double * g_array, double * phi_array, double * theta_array, double * Ix_dd, double y_tilt, double y_tilt2, double z_tilt, double z_tilt2, double phi_orb, char UBV_filter);
+double flux_star(vec3 o, double q, double omega, double beta, double u, disk disk, vec3 d2, double Lx_noniso, double Lx_disk, double Lx_iso, double Lx_disk_2, double albedo, int star_tiles, double T_star, double a, vec3 neutron_star, double PSI_pr, int picture, sp disk_reflection_diagr, double * r_array, double * g_array, double * phi_array, double * theta_array, double * Ix_dd, double y_tilt, double y_tilt2, double z_tilt, double z_tilt2, double phi_orb, char * filter);
 
 double B(disk disk, double A, double rho_in, double T);
 
-double * flux_disk(vec3 o, disk disk, double rho_in, double A, double uniform_disk, double y_tilt, double z_tilt, double omega, double q, int disk_tiles, double phi_orb, double T_disk, double lambda, double a, int picture, int spot_disk, double T_spot, double spot_beg, double spot_end, double spot_rho_in, double spot_rho_out, double h_warp, double * Ix_dd, double Lx, vec3 neutron_star, vec3 d2, char UBV_filter);
+double * flux_disk(vec3 o, disk disk, double rho_in, double A, double uniform_disk, double y_tilt, double z_tilt, double omega, double q, int disk_tiles, double phi_orb, double T_disk, double a, int picture, int spot_disk, double T_spot, double spot_beg, double spot_end, double spot_rho_in, double spot_rho_out, double h_warp, double * Ix_dd, double Lx_noniso, vec3 neutron_star, vec3 d2, char * filter);
 
 #endif //DEF_H

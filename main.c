@@ -15,7 +15,7 @@ int main(int argc, char **argv)
   double albedo;  /* 1 - (X-ray photons reprocessing efficiency) */	 
 
   /* neutron star parameter */
-  double Lx;     /* in units of L of the optical star */ 
+  double Lx_noniso;     /* in units of L of the optical star */ 
 
   double h;      /* semi-thickness */ 
   double R;      /* radius */
@@ -41,13 +41,13 @@ int main(int argc, char **argv)
   /* temperature of star and disk and spectral band */
   double T_disk;
   double T_star;
-  double lambda_A;
+
+  char filter[5];
+
   double a_cm;
 
   double PSI_pr;
   double kappa;
-
-  int isotrope;
 
   double Lx_disk;
   double Lx_disk_2;
@@ -72,14 +72,13 @@ int main(int argc, char **argv)
 
   double uniform_disk;
 
-  double disk_flux_B;
-  double disk_flux_V;
   double disk_flux;
-
   double h_warp;
 
-  char UBV_filter;
+  double lc_start;
+  double lc_end;
 
+  
   /**/
   
   sscanf(argv[1], "%lf", &q);
@@ -87,7 +86,7 @@ int main(int argc, char **argv)
   sscanf(argv[3], "%lf", &beta);
   sscanf(argv[4], "%lf", &u);
   sscanf(argv[5], "%lf", &albedo);  
-  sscanf(argv[6], "%lf", &Lx);  
+  sscanf(argv[6], "%lf", &Lx_noniso);  
   sscanf(argv[7], "%lf", &h); 
   sscanf(argv[8], "%lf", &R); 
   sscanf(argv[9], "%lf", &y_tilt); 
@@ -100,39 +99,32 @@ int main(int argc, char **argv)
   sscanf(argv[16], "%d", &threads);
   sscanf(argv[17], "%lf", &T_disk);
   sscanf(argv[18], "%lf", &T_star);
-  sscanf(argv[19], "%lf", &lambda_A);
-  sscanf(argv[20], "%lf", &a_cm);
-  sscanf(argv[21], "%lf", &y_tilt2);
-  sscanf(argv[22], "%lf", &z_tilt2);
-  sscanf(argv[23], "%lf", &PSI_pr);
-  sscanf(argv[24], "%lf", &kappa);
-  sscanf(argv[25], "%d", &isotrope);
-  sscanf(argv[26], "%lf", &Lx_disk);
-  sscanf(argv[27], "%d", &spot_disk);
-  sscanf(argv[28], "%lf", &T_spot);
-  sscanf(argv[29], "%lf", &spot_beg);
-  sscanf(argv[30], "%lf", &spot_end);
-  sscanf(argv[31], "%lf", &ns_theta);
-  sscanf(argv[32], "%lf", &spot_rho_in);
-  sscanf(argv[33], "%lf", &spot_rho_out);
-  sscanf(argv[34], "%lf", &drd_phi);
-  sscanf(argv[35], "%lf", &drd_theta);
-  sscanf(argv[36], "%lf", &Lx_disk_2);
-  sscanf(argv[37], "%lf", &Lx_iso);
-  sscanf(argv[38], "%lf", &rho_in);
-  sscanf(argv[39], "%lf", &A);
-  sscanf(argv[40], "%lf", &uniform_disk);
-  sscanf(argv[41], "%lf", &disk_flux_B);
-  sscanf(argv[42], "%lf", &disk_flux_V);
-  sscanf(argv[43], "%lf", &h_warp);
-  sscanf(argv[44], "%s",  &UBV_filter);
+  sscanf(argv[19], "%lf", &a_cm);
+  sscanf(argv[20], "%lf", &y_tilt2);
+  sscanf(argv[21], "%lf", &z_tilt2);
+  sscanf(argv[22], "%lf", &PSI_pr);
+  sscanf(argv[23], "%lf", &kappa);
+  sscanf(argv[24], "%lf", &Lx_disk);
+  sscanf(argv[25], "%d", &spot_disk);
+  sscanf(argv[26], "%lf", &T_spot);
+  sscanf(argv[27], "%lf", &spot_beg);
+  sscanf(argv[28], "%lf", &spot_end);
+  sscanf(argv[29], "%lf", &ns_theta);
+  sscanf(argv[30], "%lf", &spot_rho_in);
+  sscanf(argv[31], "%lf", &spot_rho_out);
+  sscanf(argv[32], "%lf", &drd_phi);
+  sscanf(argv[33], "%lf", &drd_theta);
+  sscanf(argv[34], "%lf", &Lx_disk_2);
+  sscanf(argv[35], "%lf", &Lx_iso);
+  sscanf(argv[36], "%lf", &rho_in);
+  sscanf(argv[37], "%lf", &A);
+  sscanf(argv[38], "%lf", &uniform_disk);
+  sscanf(argv[39], "%lf", &disk_flux);
+  sscanf(argv[40], "%lf", &h_warp);
+  sscanf(argv[41], "%s", &filter);
+  sscanf(argv[42], "%lf", &lc_start);
+  sscanf(argv[43], "%lf", &lc_end);
 
-  /**/
-
-  double A_cm = 1E-8;
-  double lambda_cm = lambda_A * A_cm;
-  
-  /* z_tilt = - z_tilt; /\* Disk precession is opposite to the orbital movement *\/ */
   
   /* h in the parameters list is the full width of the disk */
   h = h * 0.5; /* here h is the semiwidth of the disk */
@@ -167,20 +159,6 @@ int main(int argc, char **argv)
   double flux_from_the_star;
   
   vec3 o;
-  /* o.x = sin(inclination) * cos(phi); */
-  /* o.y = sin(inclination) * sin(phi); */
-  /* o.z = cos(inclination); */
-
-
-  /* "z_tilt - phi" because disk doesn`t rotatate with respect to observer */
-  /* d.h.x = - h * sin(y_tilt) * cos(z_tilt - phi + M_PI); */
-  /* d.h.y = h * sin(y_tilt) * sin(z_tilt - phi + M_PI); */
-  /* d.h.z = h * cos(y_tilt); */
-  /* d.R = R; */
-
-  /* d2.x = - h * sin(y_tilt2) * cos(z_tilt + z_tilt2 - phi + M_PI); */
-  /* d2.y = h * sin(y_tilt2) * sin(z_tilt + z_tilt2 - phi + M_PI); */
-  /* d2.z = h * cos(y_tilt2); */
   
   double phase[lc_num];
   double phase_array[lc_num];
@@ -308,7 +286,10 @@ int main(int argc, char **argv)
 #pragma omp parallel for private(i, phi, o, d, d2, drd_vec3, disk_reflection_diagr, neutron_star_sp, neutron_star, star, flux_from_the_star, disk_delta_phase, disk_flux_evaluation)
   for(i = 0; i < lc_num; i++)
     {
-      phi = (double) i * 2.0 * M_PI/(lc_num - 1) - M_PI;
+      //phi = (double) i * 2.0 * M_PI/(lc_num - 1) - M_PI;
+
+      phi = (double) i * 2.0 * M_PI * (lc_end - lc_start)/(lc_num - 1) - M_PI + 2.0 * M_PI * lc_start;
+      
       //phi = phase_array[i];
       
       o.x = sin(inclination) * cos(phi);
@@ -317,7 +298,7 @@ int main(int argc, char **argv)
       
       disk_delta_phase = ((double) i / (lc_num - 1) - 0.5) * disk_precession_over_phase * (-1.0);
 
-      /* "z_tilt - phi" because disk doesn`t rotatate with respect to observer */
+      /* "z_tilt - phi" because disk doesn`t rotatates with respect to observer */
       d.h.x = h * sin(y_tilt) * cos(z_tilt + phi + disk_delta_phase);
       d.h.y = h * sin(y_tilt) * sin(z_tilt + phi + disk_delta_phase);
       d.h.z = h * cos(y_tilt);
@@ -376,8 +357,11 @@ int main(int argc, char **argv)
 
       neutron_star = rotate(neutron_star, 0.0, -phi);
       neutron_star = axrot(neutron_star, o, kappa);
+
+      //printf("%f\t%f\t%f\n", neutron_star.x, neutron_star.y, neutron_star.z);
+
       
-      star = flux_star(o, q, omega, beta, u, d, d2, Lx, Lx_disk, Lx_disk_2, Lx_iso, albedo, star_tiles, T_star, lambda_cm, a_cm, neutron_star, PSI_pr, picture, isotrope, disk_reflection_diagr, r_array, g_array, phi_array, theta_array, Ix_dd, y_tilt, y_tilt2, z_tilt+disk_delta_phase, z_tilt2+disk_delta_phase, phi, UBV_filter);
+      star = flux_star(o, q, omega, beta, u, d, d2, Lx_noniso, Lx_disk, Lx_iso, Lx_disk_2, albedo, star_tiles, T_star, a_cm, neutron_star, PSI_pr, picture, disk_reflection_diagr, r_array, g_array, phi_array, theta_array, Ix_dd, y_tilt, y_tilt2, z_tilt+disk_delta_phase, z_tilt2+disk_delta_phase, phi, filter);
 
       flux_from_the_star = star;
       
@@ -394,7 +378,7 @@ int main(int argc, char **argv)
       else if (picture == 1)
 	{
 	  //F_disk = disk_flux;
-	  disk_flux_evaluation = flux_disk(o, d, rho_in, A, uniform_disk, y_tilt, z_tilt, omega, q, disk_tiles, phi, T_disk, lambda_cm, a_cm, picture, spot_disk, T_spot, spot_beg, spot_end, spot_rho_in, spot_rho_out, h_warp, Ix_dd, Lx, neutron_star, d2, UBV_filter);
+	  disk_flux_evaluation = flux_disk(o, d, rho_in, A, uniform_disk, y_tilt, z_tilt, omega, q, disk_tiles, phi, T_disk, a_cm, picture, spot_disk, T_spot, spot_beg, spot_end, spot_rho_in, spot_rho_out, h_warp, Ix_dd, Lx_noniso, neutron_star, d2, filter);
 	}
 
       
@@ -416,45 +400,95 @@ int main(int argc, char **argv)
   free(phi_array);
   free(theta_array);
 
-  double min = flx[0]; /* searching minimum of the light curve */
-
-  
+  double min = flx[0]; /* searching minimum of the light curve */  
   for(i = 1; i < lc_num; i++)
     {
       if (flx[i] < min)
   	{
   	  min = flx[i];
   	}
-
     }
 
-
-  if (UBV_filter == 'B')
-    {
-      disk_flux == disk_flux_B;
-    }
-  else if (UBV_filter == 'V')
-    {
-      disk_flux == disk_flux_V;
-    }
   
+  /* double disk_flux; */
+  /* /\* double lc_slope; *\/ */
   
+  /* if (UBV_filter == 'B') */
+  /*   { */
+  /*     disk_flux = disk_flux_B; */
+  /*     /\* lc_slope = lc_slope_B; *\/ */
+  /*   } */
+  /* else if (UBV_filter == 'V') */
+  /*   { */
+  /*     disk_flux = disk_flux_V; */
+  /*     /\* lc_slope = lc_slope_V; *\/ */
+  /*   } */
+  /* else if (UBV_filter == 'W') */
+  /*   { */
+  /*     disk_flux = disk_flux_WASP; */
+  /*     /\* lc_slope = lc_slope_V; *\/ */
+  /*   } */
+  /* else if (UBV_filter == '') */
+  /*   { */
+  /*     disk_flux = disk_flux_0 */
+  /*     /\* lc_slope = lc_slope_V; *\/ */
+  /*   } */
+
+  
+  /* printf ("%c %f\n", UBV_filter, disk_flux); */
+  
+  /* for(i = 0; i < lc_num; i++) */
+  /*   { */
+  /*     if (picture == 0) */
+  /* 	{ */
+  /* 	  if (((phase[i]/(2.0 * M_PI) + 0.5) >= 0.13 - eps) && ((phase[i]/(2.0 * M_PI) + 0.5) <= 0.87 + eps)) */
+  /* 	    { */
+  /* 	      printf("%.10f\t %.10f\n", phase[i]/(2.0 * M_PI), flx[i]/min + disk_flux + (phase[i]/(2.0 * M_PI))/tan(lc_slope)); */
+  /* 	    } */
+  /* 	  else if (((phase[i]/(2.0 * M_PI) + 0.5) < 0.13) || ((phase[i]/(2.0 * M_PI) + 0.5) > 0.87)) */
+  /* 	    { */
+  /* 	      printf("%.10f\t %.10f\n", phase[i]/(2.0 * M_PI), 1.0); */
+  /* 	    } */
+  /* 	} */
+  /*     else if (picture == 1) */
+  /* 	{} */
+  /*   } */
+
+
+
+  /* normalized flux */
   for(i = 0; i < lc_num; i++)
     {
       if (picture == 0)
-	{
-	  if (((phase[i]/(2.0 * M_PI) + 0.5) >= 0.13 - eps) && ((phase[i]/(2.0 * M_PI) + 0.5) <= 0.87 + eps))
-	    {
-	      printf("%.10f\t %.10f\n", phase[i]/(2.0 * M_PI), flx[i]/min + disk_flux);
-	    }
-	  else if (((phase[i]/(2.0 * M_PI) + 0.5) < 0.13) || ((phase[i]/(2.0 * M_PI) + 0.5) > 0.87))
-	    {
-	      printf("%.10f\t %.10f\n", phase[i]/(2.0 * M_PI), 1.0);
-	    }
-	}
+  	{
+  	  if (((phase[i]/(2.0 * M_PI) + 0.5) >= lc_start - eps) && ((phase[i]/(2.0 * M_PI) + 0.5) <= lc_end + eps))
+  	    {
+  	      printf("%.10f\t %.10f\n", phase[i]/(2.0 * M_PI), flx[i]/min + disk_flux);
+  	    }
+  	  else if (((phase[i]/(2.0 * M_PI) + 0.5) < lc_start) || ((phase[i]/(2.0 * M_PI) + 0.5) > lc_end))
+  	    {
+  	      printf("%.10f\t %.10f\n", phase[i]/(2.0 * M_PI), 1.0);
+  	    }
+  	}
       else if (picture == 1)
   	{}
     }
 
+
+
+  /* /\* absolute flux *\/ */
+  /* /\* there is no disk *\/ */
+  /* for(i = 0; i < lc_num; i++) */
+  /*   { */
+  /*     if (picture == 0) */
+  /* 	{ */
+  /* 	  printf("%.10f\t %.10f\n", phase[i]/(2.0 * M_PI), flx[i]); */
+  /* 	} */
+  /*     else if (picture == 1) */
+  /* 	{} */
+  /*   } */
+
+
+  
   return 0;
 }

@@ -1,53 +1,61 @@
+
+##############################
+#  Parameters for Aql X-1
+##############################
+
 #---------------------------------------
 # DONOR STAR PARAMETERS
 #---------------------------------------
 
-q	     0.58
+q	     2.545
 mu	     1.0
 beta	     0.0
 u	     0.0
-albedo	     0.5
+albedo	     0.9
 
 #---------------------------------------
 # NS X-RAY LUMINOSITY, ERG/S; ORIENTATON
 #---------------------------------------
 
 Lx_disk		0.0e+37
-Lx_disk_2	0.0e+37
-Lx_iso		0.0e+37
-isotrope	0
+Lx_disk_2	1.0e+37
+Lx_iso		7.0e+36
+Lx_noniso	0.0e+37
+
 
 #---------------------------------------
 # DISK PARAMETERS
 #---------------------------------------
 
-h		0.024
-R		0.24
-h_warp		0.023
-rho_in		0.000236
+h		0.04148
+R		0.4148
+h_warp		0.0
+rho_in		0.0002
+
+disk_flux	0.0
+
 
 ########################################
 
-Lx	   2.05e+37
-PSI_pr	   0.0
-z_tilt	   0.0
-y_tilt	   20.0
-z_tilt2	   0.0
+PSI_pr	   	   0.0
+z_tilt	   	   0.0
+y_tilt	   	   0.0
+z_tilt2	   	   0.0
 
 
-T_disk     6000.0
-y_tilt2	   20.0
+T_disk     	   6000.0
+y_tilt2	   	   0.0
 
-disk_flux	2.0e+35
-
-kappa 	     	8.0
-ns_theta     	-3.0
+kappa 	     	   0.0
+ns_theta     	   0.0
 
 #########################################
 
-# 0,1,2,3 -- none, top, side, bottom
 
 uniform_disk 	1
+
+# 0,1,2,3 -- none, top, side, bottom
+
 spot_disk       0	   
 
 T_spot		20000.0
@@ -59,39 +67,38 @@ spot_rho_out	0.25
 # disk reflection diagram axis
 
 drd_phi		180.0
-drd_theta	30.0
+drd_theta	0.0
 
 #---------------------------------------
 # TEMPERATURES, KELVINS
 #---------------------------------------
 
 A		0.1
-T_star	  	8400.0
+T_star	  	4000.0
 
 #---------------------------------------
 # OBSERVER
 #---------------------------------------
 
-inclination	87.0
+inclination	40.0
 
 #---------------------------------------
-# ANGSTREM
+# ANGSTREM # name of the filter or lambda, AA
 #---------------------------------------
 
-lambda_A	4400.0
-UBV_filter	"B"
+filter		5510
 
 #---------------------------------------
 # SEMIMAJOR AXIS, CM
 #---------------------------------------
 
-a 	    	6.35e11
+a 	    	3.126121552e11
 
 #---------------------------------------
 # NUMBER OF LIGHT CURVE POINTS
 #---------------------------------------
 
-lc_num		11
+lc_num		101
 
 #---------------------------------------
 # STAR AND DISK TILES NUMBER
@@ -110,5 +117,12 @@ threads		20
 # PRINT 3D-PICTURE
 #---------------------------------------
 
-picture		1
+picture		0
+
+#---------------------------------------
+# LIGHTCURVE START AND END
+#---------------------------------------
+
+lc_start	0.0
+lc_end		1.0
 

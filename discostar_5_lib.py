@@ -62,7 +62,7 @@ def lc(parameters):
     x = s[:,0] + 0.5
     y = s[:,1]
     
-    return interp1d(x, y, kind='cubic')
+    return interp1d(x, y, kind='linear')
 
 
 
@@ -73,6 +73,8 @@ def z_tilt_model(parameters):
     inclination = parameters['inclination']
     theta_fix = parameters['theta_fix'] 
     phase_index = float(parameters['n_data']) 
+    slowest_phase = parameters['slowest_phase']
+
     
     delta_z_tilt_dot = (180.0/np.pi) * 0.05 * 2.0 * np.pi * (2.0 * np.pi * assymetry_factor - np.arccos(-np.tan((90.0 - inclination) * np.pi / 180.0)/np.tan(theta_fix * np.pi/180.0)))/np.sin(2.0*np.pi*assymetry_factor)
 
@@ -81,10 +83,12 @@ def z_tilt_model(parameters):
     #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     #if delta_z_tilt_dot < 0.0:
     #    continue
+
+    delta_z_tilt_dot = 0.0
     
     phase = (1.0/20.0)*phase_index
 
-    parameters['z_tilt'] = ((phase - (delta_z_tilt_dot/18.0) * np.sin((phase - 0.1)*2*np.pi)/(2*np.pi)) - 0.1) * 360.0 % 360.0
+    parameters['z_tilt'] = ((phase - (delta_z_tilt_dot/18.0) * np.sin((phase - slowest_phase)*2*np.pi)/(2*np.pi)) - slowest_phase) * 360.0 % 360.0
     
     parameters['z_tilt2'] = parameters['z_tilt'] + parameters['Z']
 
@@ -99,6 +103,7 @@ def residual(lmfit_parameters, parameters, data):
         
     for x in lmfit_parameters:
         parameters[str(x)] = lmfit_parameters[str(x)].value
+        #print(parameters[str(x)])
 
     parameters = z_tilt_model(parameters)
         
@@ -107,7 +112,7 @@ def residual(lmfit_parameters, parameters, data):
     r = OrderedDict()
     
     for UBV_filter in data[n].keys():
-
+    
         if data[n][UBV_filter]['flux'] == []:
             continue
         
@@ -117,7 +122,10 @@ def residual(lmfit_parameters, parameters, data):
 
     #print('{:8f}'.format(np.sum(np.square(data_short - f(x_short)))/N), '\t', '{:8f}'.format(y_tilt),  '\t','{:8f}'.format(y_tilt2), '\t', '{:E}'.format(Lx), '\t', '{:E}'.format(disk_flux))
 
-    print("Res = {}".format(sum(r['B']**2.0)/len(r['B'])))
+    #print("\t Res_B = {}".format(sum(r['B']**2.0)/len(r['B'])))
+    #print("\t Res_V = {}".format(sum(r['V']**2.0)/len(r['V'])))
+    print("{}\t{}".format(parameters['Z'], (sum(r['B']**2.0)+sum(r['V']**2.0))/(len(r['B']) + len(r['V'])) ))
     
-    return r['B']
+    return np.append(r['B'], r['V'])
+
 
