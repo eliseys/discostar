@@ -1,128 +1,54 @@
-
-##############################
-#  Parameters for Aql X-1
-##############################
-
 #---------------------------------------
-# DONOR STAR PARAMETERS
+# DONOR STAR AND BINARY SYSTEM PARAMETERS
 #---------------------------------------
 
-q	     2.545
+q	     0.6448
 mu	     1.0
-beta	     0.0
+beta	     0.08
 u	     0.0
-albedo	     0.9
+X_albedo     0.5
+T_star_polar	7794.0
+a		6.509544e11
+inclination	87.0
 
 #---------------------------------------
 # NS X-RAY LUMINOSITY, ERG/S; ORIENTATON
 #---------------------------------------
 
-Lx_disk		0.0e+37
-Lx_disk_2	1.0e+37
-Lx_iso		7.0e+36
-Lx_noniso	0.0e+37
+Lx		1.0e+37
+NS_phi 		0.0
+NS_kappa	0.0
+NS_theta	-3.0
 
 
 #---------------------------------------
 # DISK PARAMETERS
 #---------------------------------------
 
-h		0.04148
-R		0.4148
-h_warp		0.0
-rho_in		0.0002
+h_out		0.072
+r_out		0.24
+r_in		0.00024
+gamma		2.0
 
-disk_flux	0.0
+theta_out	15.0
+theta_in	15.0
 
+phi_out		0.0
+phi_in		0.0
 
-########################################
-
-PSI_pr	   	   0.0
-z_tilt	   	   0.0
-y_tilt	   	   0.0
-z_tilt2	   	   0.0
-
-
-T_disk     	   6000.0
-y_tilt2	   	   0.0
-
-kappa 	     	   0.0
-ns_theta     	   0.0
-
-#########################################
-
-
-uniform_disk 	1
-
-# 0,1,2,3 -- none, top, side, bottom
-
-spot_disk       0	   
-
-T_spot		20000.0
-spot_beg	200.0
-spot_end	340.0
-spot_rho_in	0.05
-spot_rho_out	0.25
-
-# disk reflection diagram axis
-
-drd_phi		180.0
-drd_theta	0.0
 
 #---------------------------------------
-# TEMPERATURES, KELVINS
 #---------------------------------------
 
-A		0.1
-T_star	  	4000.0
+do_lc		true
+
+N_lc		51
+N_theta		30
+N_r		20
+OMP_threads	4
+
+
+filter		vis	
 
 #---------------------------------------
-# OBSERVER
 #---------------------------------------
-
-inclination	40.0
-
-#---------------------------------------
-# ANGSTREM # name of the filter or lambda, AA
-#---------------------------------------
-
-filter		5510
-
-#---------------------------------------
-# SEMIMAJOR AXIS, CM
-#---------------------------------------
-
-a 	    	3.126121552e11
-
-#---------------------------------------
-# NUMBER OF LIGHT CURVE POINTS
-#---------------------------------------
-
-lc_num		101
-
-#---------------------------------------
-# STAR AND DISK TILES NUMBER
-#---------------------------------------
-
-star_tiles   	8000
-disk_tiles   	2000
-
-#---------------------------------------
-# OPENMP THREADS
-#---------------------------------------
-
-threads		20
-
-#---------------------------------------
-# PRINT 3D-PICTURE
-#---------------------------------------
-
-picture		0
-
-#---------------------------------------
-# LIGHTCURVE START AND END
-#---------------------------------------
-
-lc_start	0.0
-lc_end		1.0
-

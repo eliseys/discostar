@@ -14,6 +14,38 @@ double dot(vec3 a, vec3 b)
   return a.x * b.x + a.y * b.y + a.z * b.z;
 }
 
+
+
+
+vec3 sum(vec3 a, vec3 b)
+{
+  vec3 result;
+  
+  result.x = a.x + b.x;
+  result.y = a.y + b.y;
+  result.z = a.z + b.z;
+  
+  return result;
+}
+
+
+
+
+vec3 scale(vec3 a, double s)
+{
+  vec3 result;
+  result.x = a.x * s;
+  result.y = a.y * s;
+  result.z = a.z * s;
+
+  return result;
+
+}
+
+  
+
+
+
 vec3 sp2dec(sp a)
 {
   vec3 result;
@@ -71,6 +103,10 @@ sp dec2sp(vec3 a)
   return result;
 }
 
+
+
+
+
 vec3 rotate(vec3 a, double Y, double Z)
 {
   /* rotates counterclockwise around Y and Z axes */
@@ -85,6 +121,50 @@ vec3 rotate(vec3 a, double Y, double Z)
 }
 
 
+vec3 R_x(vec3 a, double X)
+{
+
+  vec3 b;
+
+  b.x = a.x;
+  b.y = a.y * cos(X) - a.z * sin(X);
+  b.z = a.y * sin(X) + a.z * cos(X);
+
+  return b;
+}
+
+
+vec3 R_y(vec3 a, double Y)
+{
+
+  vec3 b;
+
+  b.x = a.x * cos(Y) + a.z * sin(Y);
+  b.y = a.y;
+  b.z = - a.x * sin(Y) + a.z * cos(Y);
+
+  return b;
+  
+}
+
+
+vec3 R_z(vec3 a, double Z)
+{
+  
+  vec3 b;
+  
+  b.x = a.x * cos(Z) - a.y * sin(Z);
+  b.y = a.x * sin(Z) + a.y * cos(Z);
+  b.z = a.z;
+
+  return b;
+}
+
+
+
+
+
+
 vec3 axrot(vec3 a, vec3 u, double theta)
 {
   /* rotates by an angle of theta about an axis in the direction of u */
@@ -96,4 +176,5 @@ vec3 axrot(vec3 a, vec3 u, double theta)
 
   return result;
 }
+
 

@@ -40,6 +40,9 @@ double eclipse_by_star(double omega, double q, vec3 o, vec3 p)
       
   double shift1 = shift0 - distance_to_star(position, omega, q)/derivative;
 
+
+
+  
   /* double shift1 = shift0 + distance_to_star(position, omega, q); */
   
   int i = 0;
@@ -65,6 +68,8 @@ double eclipse_by_star(double omega, double q, vec3 o, vec3 p)
       
       /* shift1 = shift0 + distance_to_star(position, omega, q); */
       i++;
+      
+      //printf("Ray tracing iteration %d\n", i);
       
       if (i > 10)
 	{
@@ -98,9 +103,9 @@ double eclipse_by_star(double omega, double q, vec3 o, vec3 p)
 double distance_to_disk(vec3 p, disk disk)
 {
   double R = disk.R;
-  double h = len(disk.h);
+  double h = disk.h;
   double r = len(p);
-  double hr = dot(disk.h,p);
+  double hr = dot(scale(disk.n, h), p);
   double r1 = sqrt(fabs(r * r - (hr * hr)/(h * h)));
   double r2 = fabs(hr/h); 
 
@@ -123,30 +128,7 @@ double distance_to_disk(vec3 p, disk disk)
 }
 
 
-double distance_to_disk_inside(vec3 p, disk disk)
-{
-  // distance function for rays outgoing from disk 
 
-  double R = disk.R;
-  double h = len(disk.h);
-  double r = len(p);
-  double hr = dot(disk.h,p);
-  double r1 = sqrt(fabs(r * r - (hr * hr)/(h * h)));
-  double r2 = fabs(hr/h); 
-
-  double d;
-  
-  if (r2 < h)
-    {
-      d = - (r1 - R);
-    }
-  else if (r2 >= h)
-    {
-      d = sqrt((r1 - R) * (r1 - R) + (r2 - h) * (r2 - h));
-    }
-
-  return d;
-}
 
 double eclipse_by_disk(disk disk, vec3 o, vec3 p)
 {
@@ -231,93 +213,107 @@ double eclipse_by_disk(disk disk, vec3 o, vec3 p)
   return ray;
 }
 
-double eclipse_by_disk_inside(disk disk, vec3 o, vec3 p)
+
+
+double disk_h_profile(disk disk, double r, double gamma)
 {
-    
-  /* delta for calculating derivation (now equal to eps) */
-  vec3 d;
-  d.x = eps * o.x;
-  d.y = eps * o.y;
-  d.z = eps * o.z;
 
-  /* zeroth approximation */
-  double shift0 = distance_to_disk_inside(p, disk);
-  vec3 position;
-  position.x = p.x + o.x * shift0;
-  position.y = p.y + o.y * shift0;
-  position.z = p.z + o.z * shift0;
-   
-  vec3 position_p;
-  position_p.x = position.x + d.x * 0.5;
-  position_p.y = position.y + d.y * 0.5;
-  position_p.z = position.z + d.z * 0.5;  
-  vec3 position_m;	           
-  position_m.x = position.x - d.x * 0.5;
-  position_m.y = position.y - d.y * 0.5;
-  position_m.z = position.z - d.z * 0.5;
-  double plus_delta = distance_to_disk_inside(position_p, disk);
-  double mins_delta = distance_to_disk_inside(position_m, disk);
-  double derivative = (plus_delta - mins_delta)/len(d);
-      
-  double shift1 = shift0 - distance_to_disk_inside(position, disk)/derivative;
-
+  double r_in = disk.r_in;
   
-  int i = 0;
-  while (fabs(shift1 - shift0) > eps)
-    {
-      shift0 = shift1;
+  return disk.h * pow(((r - r_in)/(disk.R-r_in)), gamma);
 
-      position.x = p.x + o.x * shift0;
-      position.y = p.y + o.y * shift0;
-      position.z = p.z + o.z * shift0;
-   
-      position_p.x = position.x + d.x * 0.5;
-      position_p.y = position.y + d.y * 0.5;
-      position_p.z = position.z + d.z * 0.5;  
-      position_m.x = position.x - d.x * 0.5;
-      position_m.y = position.y - d.y * 0.5;
-      position_m.z = position.z - d.z * 0.5;
-      plus_delta = distance_to_disk_inside(position_p, disk);
-      mins_delta = distance_to_disk_inside(position_m, disk);
-      derivative = (plus_delta - mins_delta)/len(d);
-      
-      shift1 = shift0 - distance_to_disk_inside(position, disk)/derivative;
+}
 
-      i++;
 
-      if (i > 10)
-	{
-	  break;
-	} 
-    }
+double disk_h_diff_profile(disk disk, double r, double gamma)
+{
+  /* differential by r */
+  double r_in = disk.r_in;
   
-  double result = distance_to_disk_inside(position, disk);
+  return disk.h * gamma * pow(((r - r_in)/(disk.R-r_in)), gamma)/(r - r_in);
 
-  /* test if the direction of the ray opposite to the direction of trace */
-
-  vec3 shift;
-  shift.x = position.x - p.x;
-  shift.y = position.y - p.y;
-  shift.z = position.z - p.z;
-
-  double direction_test = dot(shift, o);
-
-  double ray;
-  
-  if (result < eps && direction_test < 0.0 )
-    ray = 1.0;
-  else if (result < eps && direction_test > 0.0 )
-    ray = 0.0;
-  else if (result > eps )
-    ray = 1.0;
-
-
-  return ray;
 }
 
 
 
-double flux_star(vec3 o, double q, double omega, double beta, double u, disk disk, vec3 d2, double Lx_noniso, double Lx_disk, double Lx_iso, double Lx_disk_2, double albedo, int tiles, double T, double a, vec3 neutron_star, double PSI_pr, int picture, sp disk_reflection_diagr, double * r_array, double * g_array, double * phi_array, double * theta_array, double * Ix_dd, double y_tilt, double y_tilt2, double z_tilt, double z_tilt2, double phi_orb, char * filter)
+
+
+double star_F(double * star_elements, parameters parameters, disk disk, vec3 observer)
+{
+  
+  int N = star_elements[0];
+
+  double T;
+
+  vec3 p;
+  vec3 n;
+
+  double s, g;
+
+  double zeta;
+  double fx;
+
+
+  vec3 ns;
+  ns.x = - 1.0;
+  ns.y = 0.0;
+  ns.z = 0.0;
+  
+  
+  for (int i = 0; i < N; i++)
+    {
+      p.x = star_elements[8*i + 1];
+      p.y = star_elements[8*i + 2];
+      p.z = star_elements[8*i + 3];
+
+      n.x = star_elements[8*i + 4];
+      n.y = star_elements[8*i + 5];
+      n.z = star_elements[8*i + 6];
+
+      s = star_elements[8*i + 7];
+      g = star_elements[8*i + 8];
+
+      
+      zeta = dot(n, scale(sum(p, ns), len(sum(p,ns))));
+
+
+      
+      if ( ray_disk(disk, observer, sum(p, ns)) && dot(n, observer) > 0 )
+	{
+	  fx = 0.0;
+
+	  T = parameters.T_star_polar * pow(g, parameters.beta);
+
+
+	  
+	  if (zeta < 0)
+	    {
+	      fx = (parameters.Lx/(4.0 * M_PI * pow(len(p)*parameters.a,2))) * fabs(zeta) * (double) disk_shadow(sum(p, ns), disk);
+	      T = pow((pow(T,4) + fx/SIGMA), 1.0/4.0);
+
+	      //printf(">>>> %f\t%f\n", (double) disk_shadow(p, disk), fx);
+	    }
+	  else
+	    {}
+
+	  //F_0 = F_filter(T, filter);
+	  //F_0 = photometric_filter(T, filter);
+
+	  //printf("%f\t%f\t%f\t%f\t%f\n", w.phi * (180.0/M_PI), p.x, p.y, p.z, T);
+	  /* printf("%f\t%f\t%f\t%f\n", p.x, p.y, p.z, T); */
+	  
+	  //printf("%e\n", s);
+	}
+    }
+
+  return 0;
+
+}
+
+
+
+
+double flux_star(vec3 o, double q, double omega, double beta, double u, disk disk, double Lx_noniso, double Lx_disk, double Lx_iso, double Lx_disk_2, double albedo, int tiles, double T, double a, vec3 neutron_star, double PSI_pr, int picture, sp disk_reflection_diagr, double * r_array, double * g_array, double * phi_array, double * theta_array, double * Ix_dd, double y_tilt, double y_tilt2, double z_tilt, double z_tilt2, double phi_orb, char * filter)
 {
   /* */
   int steps = sqrt(tiles/2.0);
@@ -356,20 +352,16 @@ double flux_star(vec3 o, double q, double omega, double beta, double u, disk dis
   /* dot products */
   double cos_on, cos_rn;
   
-  /* overlapping */
-  double ray;
 
   /* irradiation */
-  double cos_irr;
-  double cos_irr2;
-  double cos_irr_min;
-  double cos_irr2_min;
+
   double cos_in;
-  double h = len(disk.h);
+  double h = disk.h;
   double R = disk.R;
-  double disk_shadow_semi_angle = atan(h/R);
-  double cos_disk_shadow_semi_angle = cos(0.5 * M_PI - disk_shadow_semi_angle);
-  double cos_drd;
+  double r_in = 0.0002;
+  //double disk_shadow_semi_angle = atan(h/R);
+  //double cos_disk_shadow_semi_angle = cos(0.5 * M_PI - disk_shadow_semi_angle);
+  //double cos_drd;
   
   double S;
   double Fx;
@@ -381,34 +373,21 @@ double flux_star(vec3 o, double q, double omega, double beta, double u, disk dis
   
   double color;
   
-  /* unity vectior along disk.h */
-  vec3 hn;
-  hn.x = disk.h.x/h;
-  hn.y = disk.h.y/h;
-  hn.z = disk.h.z/h;
-
-  vec3 hn_min;
-  hn_min.x = -hn.x;
-  hn_min.y = -hn.y;
-  hn_min.z = -hn.z;
-
-  vec3 hn2;
-  hn2.x = d2.x/h;
-  hn2.y = d2.y/h;
-  hn2.z = d2.z/h;
-
-  vec3 hn2_min;
-  hn2_min.x = -hn2.x;
-  hn2_min.y = -hn2.y;
-  hn2_min.z = -hn2.z;
 
 
-  vec3 drd_vec3 = sp2dec(disk_reflection_diagr);
+  /* vec3 drd_vec3 = sp2dec(disk_reflection_diagr); */
     
   double Fx_sum = 0.0;
   sp star_surface_spherical_coordinates;
   
   int diagr_index;
+
+
+
+  double zeta; // cos incident X-ray and observer
+  
+  double energy = 1.0; // energy in keV
+
 
   
   /* flux from star */
@@ -417,8 +396,8 @@ double flux_star(vec3 o, double q, double omega, double beta, double u, disk dis
   int true_n_tiles = steps_theta * steps_phi;
 
 
-  double shadow_condition = 1.0;
-
+  bool X_shadow;
+  bool ray;
 
   int number_of_rings_in_disk = 20;
 
@@ -447,11 +426,6 @@ double flux_star(vec3 o, double q, double omega, double beta, double u, disk dis
 	  //theta = (double) j * M_PI/steps_theta + 0.5 * M_PI/steps_theta;
 	  theta = theta_array[j];
 
-	  /* gradient omega */
-	  //double *grd;
-	  //grd = gradient(phi, theta, q, omega);
-	  //g_abs = grd[0];
-	  //g = g_abs/polar_g_abs;
 
 	  /* surface normal vector */	  
 	  g   = g_array[(steps_phi * j + i)*4 + 0];
@@ -482,9 +456,9 @@ double flux_star(vec3 o, double q, double omega, double beta, double u, disk dis
 	  ps.y = p.y;
 	  ps.z = p.z;
 
-	  /* ray = eclipse_by_disk(disk, o, ps); */
+	  //ray = eclipse_by_disk(disk, o, ps);
 
-	  ray = 1.0;
+	  /* ray = 1.0; */
 	  
 	  /* if (o.x < cos(R + max_r)) */
 	  /*   { */
@@ -506,13 +480,6 @@ double flux_star(vec3 o, double q, double omega, double beta, double u, disk dis
 	  
 	  cos_rn = dot(pn,n);
 
-	  /* if (cos_rn < 0.0) */
-	  /*   { */
-	  /*     printf("%f\n", cos_rn); */
-	  /*     printf("%f %f %f\t %f %f %f\n", pn.x, pn.y, pn.z, n.x, n.y, n.z); */
-		      
-	  /*   } */
-
 
 	  lps = len(ps); /* distance from the secondary to the point p */
 	  psn.x = ps.x/lps;
@@ -520,126 +487,65 @@ double flux_star(vec3 o, double q, double omega, double beta, double u, disk dis
 	  psn.z = ps.z/lps;
 
 
-	  cos_drd = dot(psn, drd_vec3);
-
-	  //printf("PSN %f %f %f\t DRD %f %f %f\n", psn.x, psn.y, psn.z, drd_vec3.x, drd_vec3.y, drd_vec3.z);
-
-	  //printf("COS_DRD %f\n", cos_drd);
-	  
 	  /* Irradiation */	  
-	  /* */
 
-	  cos_irr = dot(psn, hn);
-	  cos_irr2 = dot(psn, hn2);
-
-	  cos_in  = dot(psn, n);
+	  zeta = dot(psn, n); 
 	  
-	  cos_irr_min = dot(psn, hn_min);
-	  cos_irr2_min = dot(psn, hn2_min);
-
+	  
 	  diagr_index = (int) floor( acos(dot(neutron_star, psn)) * 180.0/M_PI );
 
-	  //printf("%f\t %f\t %f\n", neutron_star.x, neutron_star.y, neutron_star.z);
 	  
-	  /* Surface element */
-	  
+	  /* Surface element of the star */	  
 	  S = a * a * r * r * sin(theta) * delta_phi * delta_theta / cos_rn;
 	  
-	  
-	  /* printf("%f\n", cos_rn); */
+	  	  
 
-	  /* X-ray flux incident of the surface element */
-	  /* if ( cos_in < - eps && fabs(cos_irr) > cos_disk_shadow_semi_angle) */
-
-	  shadow_condition = 1.0;
+	  X_shadow = disk_shadow(ps, disk);
+	  ray = ray_disk(disk, o, ps);
 
 
-	  if (z_tilt2 - z_tilt >= 0)
-	    {
-	      Z = min( z_tilt + (2.0*M_PI - z_tilt2), z_tilt2 - z_tilt );
-	    }
-	  else if (z_tilt2 - z_tilt < 0)
-	    {
-	      Z = min( z_tilt2 + (2.0*M_PI - z_tilt), z_tilt - z_tilt2 );
-	      Z = - Z;
-	    }
-
-	  
-	  /* if (Z > M_PI) */
-	  /*   { */
-	  /*     Z = (fmod((z_tilt2 + M_PI), 2.0 * M_PI) - fmod((z_tilt + M_PI), 2.0 * M_PI)); */
-	  /*   } */
-		
-	  for (k=0; k < number_of_rings_in_disk; k++)
-	    {
-
-	      y_tilt_delta = k * (y_tilt2 - y_tilt)/number_of_rings_in_disk;
-	      z_tilt2_delta = k * Z/number_of_rings_in_disk;
-
-	      y_tilt_delta_plus1 = (k+1) * (y_tilt2 - y_tilt)/number_of_rings_in_disk;
-	      z_tilt2_delta_plus1 = (k+1) * Z/number_of_rings_in_disk;
-
-	      ring_k.x = sin(y_tilt + y_tilt_delta) * cos(z_tilt + z_tilt2_delta + phi_orb);
-	      ring_k.y = sin(y_tilt + y_tilt_delta) * sin(z_tilt + z_tilt2_delta + phi_orb);
-	      ring_k.z = cos(y_tilt + y_tilt_delta);
-
-	      ring_kplus1.x = sin(y_tilt + y_tilt_delta_plus1) * cos(z_tilt + z_tilt2_delta_plus1 + phi_orb);
-	      ring_kplus1.y = sin(y_tilt + y_tilt_delta_plus1) * sin(z_tilt + z_tilt2_delta_plus1 + phi_orb);
-	      ring_kplus1.z = cos(y_tilt + y_tilt_delta_plus1);
-
-	      shadow_condition = shadow_condition * ((dot(ring_k,psn) > eps || dot(ring_kplus1,psn) < -eps) && (dot(ring_k,psn) < -eps || dot(ring_kplus1,psn) > eps));
-	      /* = 1, если в тень не попадает */
-
-	      		
-	    }
 
 	  
 	  //if ( (cos_in < - eps && cos_irr > cos_disk_shadow_semi_angle && cos_irr2 > cos_disk_shadow_semi_angle || cos_in < - eps && cos_irr_min > cos_disk_shadow_semi_angle && cos_irr2_min > cos_disk_shadow_semi_angle) && shadow_condition )
-    	    if ( (cos_in < - eps && cos_irr > cos_disk_shadow_semi_angle && cos_irr2 > cos_disk_shadow_semi_angle || cos_in < - eps && cos_irr_min > cos_disk_shadow_semi_angle && cos_irr2_min > cos_disk_shadow_semi_angle) && shadow_condition )
+	  if (zeta < - eps && X_shadow )
 	    {
 	      
-	      Fx =
-		Lx_noniso * Ix_dd[diagr_index] * (1.0 - albedo) * fabs(cos_in) / (lps * lps * a * a) +
-		Lx_disk_2 * (1.0 - albedo) * fabs(cos_drd) * fabs(cos_in) / (2.0 * M_PI * lps * lps * a * a) +
-		Lx_disk * (1.0 - albedo) * fabs(cos_irr2) * fabs(cos_in) / (2.0 * M_PI * lps * lps * a * a) +
-		Lx_iso * (1.0 - albedo) * fabs(cos_in) / (4.0 * M_PI * lps * lps * a * a);
-		    
+	      /* Fx = */
+	      /* 	Lx_noniso * Ix_dd[diagr_index] * (1.0 - albedo) * fabs(zeta) / (lps * lps * a * a) + */
+	      /* 	Lx_iso * (1.0 - albedo) * fabs(zeta) / (4.0 * M_PI * lps * lps * a * a); */
+
+	      Fx = Lx_iso / (4.0 * M_PI * lps * lps * a * a);
+	      //Fx = Lx_noniso * Ix_dd[diagr_index] / (lps * lps * a * a);
+	      
 	    }
 	  else
 	    {
 	      Fx = 0.0;
 	    }
 
-	    
-
-
-
-	    
-	  /* if (j == steps_theta/2 && i == 0) /\* Lagrange point *\/ */
-	  /* 	{ */
-	  /* 	  T_irr_4 = Fx / SIGMA; */
-	  /* 	  T_sum = pow((T_star_4 + T_irr_4),0.25);  */
-
-	  /* 	  T_Lagrange_point = T_sum; */
-	  /* 	}	   */
 	  
-	  if (ray == 1.0 && cos_on > 0.0 + eps)
+	  if (ray && cos_on > eps)
 	    {
 
 	      T_irr_4 = Fx / SIGMA;
 	      
 	      T_sum = pow((T_star_4 + T_irr_4),0.25); 
-
 	      F_0 = F_filter(T_sum, filter);
-	      
-	      result = result + F_0 * (1 - u + u * cos_on) * pow(g,beta) * cos_on * S;
+
+
+	      /* optical flux */
+	      //result = result + F_0 * (1 - u + u * cos_on) * pow(g,beta) * cos_on * S;
 
 	      
+	      /* reflected X-ray flux */
+	      //result = result + Fx * S * cos_on * x_rays_reflected_fraction(zeta, energy);
+	      /* result = result + Fx * S * cos_on * x_rays_reflected_fraction(fabs(zeta), energy); */
+	      result = result + Fx * S * cos_on * x_ray_flux_integrated(-zeta);
+
+	      	      
 	      //color = F_0 * (1 - u + u * cos_on) * pow(g,beta) * cos_on * S;
 	      if (picture == 1)
 	      	{
-	      	  /* star_surface_spherical_coordinates = dec2sp(p); */
-	      	  /* printf("%f\t %f\t %f\t %f\t %f\t %f\t %f\n", phase_orb*180.0/M_PI , p.x, p.y, p.z, T_sum, star_surface_spherical_coordinates.phi, star_surface_spherical_coordinates.theta); */
 	      	  printf("%f\t %f\t %f\t %f\t %f\t \n", phase_orb*180.0/M_PI , p.x, p.y, p.z, T_sum);
 	      	}
 	      else if (picture == 0)
@@ -658,34 +564,96 @@ double flux_star(vec3 o, double q, double omega, double beta, double u, disk dis
   //output[0] = result; 
   //output[1] = T_Lagrange_point; 
 
+  //printf("result %f\n", result);
   return result;
   
 }
 
 
 
-double B(disk disk, double A, double rho_in, double T)
-{
-  /* auxuliary function for determining T(rho)  */
 
-  double R = disk.R;
-  double h = 2.0 * len(disk.h);
+
+
+double disk_F(double * disk_elements, parameters parameters, disk disk, vec3 observer)
+{
+
+  int N = (int) disk_elements[0];
+  //printf(">> %d\n", N);
   
-  return (pow(T,4) * (R*R + R*h) - 2.0 * A * (1.0/rho_in - 1.0/R + h/(2.0*R*R)))/(2.0*(log(R) - log(rho_in) + h/(2.0*R)));
+  vec3 p;
+  vec3 n;
+  double s;
+
+  double fx;
+  
+  double T = 10000.0;
+  
+  double zeta;
+
+  sp w = dec2sp(observer);
+  
+  for (int i = 0; i < N; i++)
+    {
+      p.x = disk_elements[7*i + 1];
+      p.y = disk_elements[7*i + 2];
+      p.z = disk_elements[7*i + 3];
+
+      n.x = disk_elements[7*i + 4];
+      n.y = disk_elements[7*i + 5];
+      n.z = disk_elements[7*i + 6];
+
+      s = disk_elements[7*i + 7];
+
+      zeta = dot(n, scale(p, len(p)));
+
+      
+      
+      if ( ray_disk(disk, observer, p) && dot(n, observer) > 0 )
+	{
+	  fx = 0.0;
+	  T = 10000.0;
+
+	  if (zeta < 0)
+	    {
+	      fx = (parameters.Lx/(4.0 * M_PI * pow(len(p)*parameters.a,2))) * fabs(zeta) * (double) disk_shadow(p, disk);
+	      T = pow((pow(T,4) + fx/SIGMA), 1.0/4.0);
+
+	      //printf(">>>> %f\t%f\n", (double) disk_shadow(p, disk), fx);
+	    }
+	      
+
+	  //F_0 = F_filter(T, filter);
+	  //F_0 = photometric_filter(T, filter);
+
+	  /* printf("%f\t%f\t%f\t%f\t%f\n", w.phi * (180.0/M_PI), p.x + 1.0, p.y, p.z, T); */
+	  /* printf("%f\t%f\t%f\t%f\n", p.x + 1.0, p.y, p.z, T); */
+	  
+	  //printf("%e\n", s);
+
+	  
+	}
+    }
+
+
+  return 0.0;
+
 
 }
 
 
 
+
+
+
   
-double * flux_disk(vec3 o, disk disk, double rho_in, double A, double uniform_disk, double y_tilt, double z_tilt, double omega, double q, int disk_tiles, double phi_orb, double T, double a, int picture, int spot_disk, double T_spot, double spot_beg, double spot_end, double spot_rho_in, double spot_rho_out, double h_warp, double * Ix_dd, double Lx_noniso, vec3 neutron_star, vec3 d2, char * filter)
+double * flux_disk(vec3 o, disk disk, double rho_in, double A, double uniform_disk, double y_tilt, double z_tilt, double omega, double q, int disk_tiles, double phi_orb, double T, double a, int picture, int spot_disk, double T_spot, double spot_beg, double spot_end, double spot_rho_in, double spot_rho_out, double h_warp, double * Ix_dd, double Lx_iso, double Lx_noniso, vec3 neutron_star, char * filter)
 {
 
   sp coord = dec2sp(o);
   double phase_orb = coord.phi;
 
   double R = disk.R;
-  double h = len(disk.h); /* semithickness of the disk */
+  double h = disk.h; /* semithickness of the disk */
   /* double h = h_warp; /\* semithickness of the disk *\/ */
 
   /* */
@@ -721,20 +689,8 @@ double * flux_disk(vec3 o, disk disk, double rho_in, double A, double uniform_di
   vec3 ps;
 
   vec3 pt_non_shifted;
+
   
-  /* unity normal vectors to top and bottom surface of the disk */
-  vec3 n1;
-  n1.x = disk.h.x/h;
-  n1.y = disk.h.y/h;
-  n1.z = disk.h.z/h;
-
-  vec3 n2;
-  n2.x = - disk.h.x/h;
-  n2.y = - disk.h.y/h;
-  n2.z = - disk.h.z/h; 
-
-  vec3 n3;
-
   vec3 z_u, z_d;
   z_u.x = 0.0;
   z_u.y = 0.0;
@@ -758,7 +714,7 @@ double * flux_disk(vec3 o, disk disk, double rho_in, double A, double uniform_di
     
   /* overlapping */
   double ray;
-  double ray_2;
+  bool ray_2;
 
   /* */
   double S_sp, S_cy;
@@ -811,76 +767,41 @@ double * flux_disk(vec3 o, disk disk, double rho_in, double A, double uniform_di
   vec3 p_disk_irradiation;
 
 
-  vec3 d = n1;
+  //vec3 d = n1;
 
-  double d2_len = len(d2);
+  /* double d2_len = len(d2); */
 
-  d2.x = d2.x/d2_len;
-  d2.y = d2.y/d2_len;
-  d2.z = d2.z/d2_len;
+  /* d2.x = d2.x/d2_len; */
+  /* d2.y = d2.y/d2_len; */
+  /* d2.z = d2.z/d2_len; */
 
-  vec3 d_in_NS;
-  vec3 d2_in_NS;
+  //vec3 d_in_NS;
+  //vec3 d2_in_NS;
 
   sp s_neutron_star = dec2sp(neutron_star);
 
-  d = rotate(d, 0.0, -phi_orb);
-  d2 = rotate(d2, 0.0, -phi_orb);
+  //d = rotate(d, 0.0, -phi_orb);
+  //d2 = rotate(d2, 0.0, -phi_orb);
 
   //double kappa = 15.0 * M_PI/180.0;
   //double ns_theta = -3.0 * M_PI/180.0;
 
   // check sign of the phi_orb!!! DK 8Feb2019
-  d_in_NS = rotate(d, -s_neutron_star.theta, -s_neutron_star.phi + phi_orb);
-  d2_in_NS = rotate(d2, -s_neutron_star.theta, -s_neutron_star.phi + phi_orb);
+  //d_in_NS = rotate(d, -s_neutron_star.theta, -s_neutron_star.phi + phi_orb);
+  //d2_in_NS = rotate(d2, -s_neutron_star.theta, -s_neutron_star.phi + phi_orb);
 
   double L_sum_up = 0.0;
   double L_sum_down = 0.0;
 
   int diagr_index;
 
-  double alpha = acos(dot(d,d2));
+  //double alpha = acos(dot(d,d2));
 
   
-  /* for(i = 0; i < theta_disk_irradiation_num_of_steps; i++) */
-  /*   { */
-  /*     s_disk_irradiation.theta = (i + 0.5)*M_PI/theta_disk_irradiation_num_of_steps; */
-      
-  /*     for(j = 0; j < phi_disk_irradiation_num_of_steps; j++) */
-  /* 	{ */
-  /*           s_disk_irradiation.phi = (j + 0.5)*2.0*M_PI/phi_disk_irradiation_num_of_steps; */
-
-  /* 	    p_disk_irradiation = sp2dec(s_disk_irradiation); */
-	    
-  /* 	    diagr_index = (int) floor( s_disk_irradiation.theta * 180.0/M_PI ); */
-
-	    
-
-  /* 	    if ( (dot(p_disk_irradiation, d_in_NS) < 0) && (dot(p_disk_irradiation, d2_in_NS) > 0)) */
-  /* 	      { */
-
-  /* 	    	L_sum_up = L_sum_up + Lx * Ix_dd[diagr_index] * (2.0 * M_PI / phi_disk_irradiation_num_of_steps) * (M_PI / theta_disk_irradiation_num_of_steps) * sin(s_disk_irradiation.theta); */
-		
-  /* 	    	/\* printf("%f\t%f\t%f\t%f\n", p_disk_irradiation.x, p_disk_irradiation.y, p_disk_irradiation.z, Ix_dd[diagr_index] ); *\/ */
-		
-
-  /* 	      } */
-  /* 	    else if ( (dot(p_disk_irradiation, d_in_NS) > 0) && (dot(p_disk_irradiation, d2_in_NS) < 0)) */
-  /* 	      { */
-
-  /* 	    	L_sum_down = L_sum_down + Lx * Ix_dd[diagr_index] * (2.0 * M_PI / phi_disk_irradiation_num_of_steps) * (M_PI / theta_disk_irradiation_num_of_steps) * sin(s_disk_irradiation.theta); */
-		
-  /* 	    	/\* printf("%f\t%f\t%f\t%f\n", p_disk_irradiation.x, p_disk_irradiation.y, p_disk_irradiation.z, Ix_dd[diagr_index] ); *\/ */
-		
-
-  /* 	      } */
 
 
 
-	    
-  /* 	} */
-  /*   } */
-
+	 
   /* double T_up = pow(((L_sum_up/(R*R*a*a) + (Lx*h)/(14*M_PI*R*R*R*a*a))/SIGMA), 0.25); */
 
   /* double T_down = pow(((L_sum_down/(R*R*a*a) + (Lx*h)/(14*M_PI*R*R*R*a*a))/SIGMA), 0.25); */
@@ -888,19 +809,16 @@ double * flux_disk(vec3 o, disk disk, double rho_in, double A, double uniform_di
   double T_up = T;
   double T_down = T;
 
-
-
-  
-  //printf("%f\t%f\n",T_up, T_down);
-  
-
-
   
   /* */
   double F_0 = 0.0; /* temperature may depend on rho, in that case set it in the cycle below */
   double F_0_up; /* temperature may depend on rho, in that case set it in the cycle below */
   double F_0_down; /* temperature may depend on rho, in that case set it in the cycle below */
 
+  double Fx;
+
+  double energy = 1.0; // keV
+  
   double F_spot = F_filter(T_spot, filter); /* side of the disk */
 
   /* from top side of the disk */
@@ -924,6 +842,13 @@ double * flux_disk(vec3 o, disk disk, double rho_in, double A, double uniform_di
   free(plr);
 
 
+  double pl;
+  double cos_pnu, cos_pnd; 
+
+  /* disk's h profile */
+  double gamma = 1.0/8.0;
+
+  
   static double *phi_array_disk = NULL;
 
   if (phi_array_disk == NULL)
@@ -966,9 +891,9 @@ double * flux_disk(vec3 o, disk disk, double rho_in, double A, double uniform_di
 	      delta_theta = theta_1 - theta_0;
 	      
 	      /* disc`s normal vector for side */
-	      n3.x = sin(phi) * sin(z_tilt + phi_orb) + cos(phi) * cos(y_tilt) * cos(z_tilt + phi_orb);
-	      n3.y = sin(phi) * cos(z_tilt + phi_orb) - cos(phi) * cos(y_tilt) * sin(z_tilt + phi_orb);
-	      n3.z = cos(phi) * sin(y_tilt);
+	      /* n3.x = sin(phi) * sin(z_tilt + phi_orb) + cos(phi) * cos(y_tilt) * cos(z_tilt + phi_orb); */
+	      /* n3.y = sin(phi) * cos(z_tilt + phi_orb) - cos(phi) * cos(y_tilt) * sin(z_tilt + phi_orb); */
+	      /* n3.z = cos(phi) * sin(y_tilt); */
 	      /**/
 	      //cos_on = dot(o,n3);
 
@@ -1000,15 +925,33 @@ double * flux_disk(vec3 o, disk disk, double rho_in, double A, double uniform_di
 	  p.z = r * cos(theta);
 
 	  
-	  /* disk with complex profile h = h(rho) */
+	  //p.z = disk_h_profile(disk, r, gamma, rho_in);
 
+
+	  /* normalized p vector */
+	  pl = len(p);
+	  pn.x = p.x/pl;
+	  pn.y = p.y/pl;
+	  pn.z = p.z/pl;
+
+
+	  
+	  /* disk with complex profile h = h(rho) */
+	  
+
+	  
+	  
 	  if (j <= N - 1)
 	    {
-	      p.z = p.z + (h * sqrt(p.x*p.x + p.y*p.y))/R - h;
+	      //p.z = p.z + (h * sqrt(p.x*p.x + p.y*p.y))/R - h;
+	      p.z = disk_h_profile(disk, r, gamma);
+	      
 	    }
 	  if (j >= M && j <= steps_theta)
 	    {
-	      p.z = p.z - (h * sqrt(p.x*p.x + p.y*p.y))/R + h;
+	      //p.z = p.z - (h * sqrt(p.x*p.x + p.y*p.y))/R + h;
+	      p.z = - disk_h_profile(disk, r, gamma);
+
 	    }
 
 	  /* Temperature profile of the disk */
@@ -1034,16 +977,10 @@ double * flux_disk(vec3 o, disk disk, double rho_in, double A, double uniform_di
 	      T_rho = 0.0;
 	    }
 
-
-	  //printf("%f\t%f\n", uniform_disk, T_rho);
 	  
-
-	  //printf("T_rho %f \t F_0 %f \n", T_rho, F_0);
 	  
-	  /* flux on on wavelenght lambda */
-	  F_0_up   = F_filter(T_rho_up, filter);
-	  F_0_down = F_filter(T_rho_down, filter);
-
+	  /* F_0_up   = F_filter(T_rho_up, filter); */
+	  /* F_0_down = F_filter(T_rho_down, filter); */
 
 	  /* shifted coordinates of the disk */
 	  ps.x = p.x + 1.0;
@@ -1058,34 +995,22 @@ double * flux_disk(vec3 o, disk disk, double rho_in, double A, double uniform_di
 
 	  /* surface normal vectors */
 	  /* top of the disc */
-	  /* simple constant profile disk */
-	  nu.x = 0.0;
-	  nu.y = 0.0;
-	  nu.z = 1.0;
 
 	  /* normal vector for complex profile disk */
-	  nu.x = -(h/R) * p.x/sqrt(p.x*p.x + p.y*p.y);
-	  nu.y = -(h/R) * p.y/sqrt(p.x*p.x + p.y*p.y);
-	  nu.z = 1.0;
 
-	  len_nu = len(nu);
-	  nu.x = nu.x/len_nu;
-	  nu.y = nu.y/len_nu;
-	  nu.z = nu.z/len_nu;
-	  /**/
+
+	  nu.x = - sin(atan(disk_h_diff_profile(disk, r, gamma))) * cos(phi);
+	  nu.y = - sin(atan(disk_h_diff_profile(disk, r, gamma))) * sin(phi);
+	  nu.z = cos(atan(disk_h_diff_profile(disk, r, gamma)));
+
 	  
 	  /* bottom of the disc */
 	  /* simple constant profile disk */	  
-	  nd.x = -(h/R) * p.x/sqrt(p.x*p.x + p.y*p.y);
-	  nd.y = -(h/R) * p.y/sqrt(p.x*p.x + p.y*p.y);
-	  nd.z = -1.0;
 
-
-	  len_nd = len(nd);
-	  nd.x = nd.x/len_nd;
-	  nd.y = nd.y/len_nd;
-	  nd.z = nd.z/len_nd;
-
+	  nd.x = - sin(atan(disk_h_diff_profile(disk, r, gamma))) * cos(phi);
+	  nd.y = - sin(atan(disk_h_diff_profile(disk, r, gamma))) * sin(phi);
+	  nd.z = - cos(atan(disk_h_diff_profile(disk, r, gamma)));
+	  
 	  
 	  /* side of the disc */
 	  ns.x = cos(phi);
@@ -1102,61 +1027,59 @@ double * flux_disk(vec3 o, disk disk, double rho_in, double A, double uniform_di
 
 	  /* cylindrical surface element */
 	  S_cy = a * a * r * delta_phi * delta_N;
- 
-	  
-	  /* tilt and shift disc */
-	  pt.x =    p.x * cos(y_tilt) * cos(z_tilt + phi_orb) - p.y * sin(z_tilt + phi_orb) + p.z * sin(y_tilt) * cos(z_tilt + phi_orb) + 1.0;
-	  pt.y =    p.x * cos(y_tilt) * sin(z_tilt + phi_orb) + p.y * cos(z_tilt + phi_orb) + p.z * sin(y_tilt) * sin(z_tilt + phi_orb);
-	  pt.z =  - p.x * sin(y_tilt) + p.z * cos(y_tilt);
 
-	  nut.x =   nu.x * cos(y_tilt) * cos(z_tilt + phi_orb) - nu.y * sin(z_tilt + phi_orb) + nu.z * sin(y_tilt) * cos(z_tilt + phi_orb);
-	  nut.y =   nu.x * cos(y_tilt) * sin(z_tilt + phi_orb) + nu.y * cos(z_tilt + phi_orb) + nu.z * sin(y_tilt) * sin(z_tilt + phi_orb);
-	  nut.z = - nu.x * sin(y_tilt) + nu.z * cos(y_tilt);
 
-	  ndt.x =   nd.x * cos(y_tilt) * cos(z_tilt + phi_orb) - nd.y * sin(z_tilt + phi_orb) + nd.z * sin(y_tilt) * cos(z_tilt + phi_orb);
-	  ndt.y =   nd.x * cos(y_tilt) * sin(z_tilt + phi_orb) + nd.y * cos(z_tilt + phi_orb) + nd.z * sin(y_tilt) * sin(z_tilt + phi_orb);
-	  ndt.z = - nd.x * sin(y_tilt) + nd.z * cos(y_tilt);
+	  diagr_index = (int) floor( acos(dot(neutron_star, pn)) * 180.0/M_PI );
 
-	  nst.x =   ns.x * cos(y_tilt) * cos(z_tilt + phi_orb) - ns.y * sin(z_tilt + phi_orb) + ns.z * sin(y_tilt) * cos(z_tilt + phi_orb);
-	  nst.y =   ns.x * cos(y_tilt) * sin(z_tilt + phi_orb) + ns.y * cos(z_tilt + phi_orb) + ns.z * sin(y_tilt) * sin(z_tilt + phi_orb);
-	  nst.z = - ns.x * sin(y_tilt) + ns.z * cos(y_tilt);
-	  
-	  cos_onut = dot(o,nut);
-	  cos_ondt = dot(o,ndt);
-	  cos_onst = dot(o,nst);
-	  
-	  /* ray = eclipse_by_star(omega, q, o, pt); */
-	  if (o.x < - cos(R + max_r))
-	    {
-	      ray = eclipse_by_star(omega, q, o, pt);
-	      //ray = 1.0;
-	    }
-	  else if (o.x > - cos(R + max_r))
-	    {
-	      ray = 1.0;
-	    }
-	  
-	  /* ray = 1.0; */
-	  /* printf("%d\n", j); */
 
+	  cos_pnu = dot(pn, nu);
+	  cos_pnd = dot(pn, nd);
+
+     	    
+	  Fx = Lx_iso / (4.0 * M_PI * r * r * a * a);
+
+
+	  //Lx_noniso * Ix_dd[diagr_index] * fabs(cos_pnu) / (r * r * a * a)
+
+	  //printf("F_0_up\t %f\n", F_0_up);
 	  
+	  //Lx_noniso * Ix_dd[diagr_index] * fabs(cos_pnd) / (r * r * a * a)
+	    
+	  //printf("F_0_down\t %f\n", F_0_down);
+	  
+
+	  pt = rotate(p, y_tilt, z_tilt + phi_orb);
+	  pt.x = pt.x + 1;
+	  
+
+	  nut = rotate(nu, y_tilt, z_tilt + phi_orb);
+	  
+
+	  ndt = rotate(nd, y_tilt, z_tilt + phi_orb);
+	  
+
+	  nst = rotate(ns, y_tilt, z_tilt + phi_orb);
+
+
+	  	  
+	  cos_onut = dot(o, nut);
+	  cos_ondt = dot(o, ndt);
+	  cos_onst = dot(o, nst);
+	  
+	  ray = eclipse_by_star(omega, q, o, pt);
+	  	  
 	  pt_non_shifted.x = pt.x - 1.0;
 	  pt_non_shifted.y = pt.y;
 	  pt_non_shifted.z = pt.z;
 	  
 	  disk_spherical_coord = dec2sp(pt_non_shifted);
-
-	  //cos_on1 = dot(n1,o);
-	  //cos_on2 = dot(n2,o);
-
 	  
-	  ray_2 = eclipse_by_disk_inside(disk, o, pt_non_shifted);
-	  //ray_2 = 1.0;
+	  ray_2 = ray_disk(disk, o, p);
 	  
-	  if ( j <= N - 1 && ray == 1.0  &&  ray_2 == 1.0  && cos_onut > eps )
+	  //if ( j <= N - 1 && ray == 1.0  &&  ray_2 == 1.0  && cos_onut > eps && n1to > eps)
+	  if ( j <= N - 1 && ray == 1.0  && ray_2 && cos_onut > eps )
 	    {
 	      /* top surface */
-	      /* printf("%f\t %f\t %f\n", pt.x, pt.y, pt.z); */
 
 	      if (spot_disk == 1)
 		{
@@ -1181,22 +1104,26 @@ double * flux_disk(vec3 o, disk disk, double rho_in, double A, double uniform_di
 		  /* T_color = (F_0 * cos_onut * S_cy)/cos_rn_u; */
 		}
 	      
-	      //result_1 = result_1 + (F_0 * cos_on * S)/cos_rn_u;
+	      //result_1 = result_1 + (F_0_up * cos_onut * S_cy)/cos_rn_u;
+	      // result_1 = result_1 + Fx * S_cy * cos_onut * x_rays_reflected_fraction(fabs(cos_pnu), energy);
+	      result_1 = result_1 + Fx * S_cy * cos_onut * x_ray_flux_integrated(fabs(cos_pnu));
+	      //result_1 = result_1 + (F_0_up * S_cy)/cos_rn_u;
+
+	      
 	      /* result_1 = result_1 + cos_rn_u; */
 	      
 	      //color = (F_0 * cos_on * S)/cos_rn_u;
 	      if (picture == 1)
 		{
-		  printf("%f\t %f\t %f\t %f\t %f\n", phase_orb*180.0/M_PI, pt.x, pt.y, pt.z, T_color);
+		  printf("%f\t %f\t %f\t %f\t %f\n", phase_orb*180.0/M_PI, pt.x, pt.y, pt.z, 0.0);
 		}
 	      else if (picture == 0)
 		{}
 
 	    }
-	  else if ( j >= M && j <= steps_theta && ray == 1.0 && ray_2 == 1.0 && cos_ondt > eps)
+	  else if ( j >= M && j <= steps_theta && ray == 1.0 && ray_2 == 1.0 && cos_ondt > eps )
 	    {
 	      /* bottom surface */
-	      /* printf("%f\t %f\t %f\n", pt.x, pt.y, pt.z); */
 
 	      if (spot_disk == 3)
 		{
@@ -1218,13 +1145,15 @@ double * flux_disk(vec3 o, disk disk, double rho_in, double A, double uniform_di
 		  T_color = T_rho_down;
 		}
 	      
-	      //result_2 = result_2 + (F_0 * cos_on * S)/cos_rn_d;
-	      
+	      //result_2 = result_2 + (F_0_down * cos_ondt * S_cy)/cos_rn_d;
+	      //result_2 = result_2 + Fx * S_cy * cos_ondt * x_rays_reflected_fraction(fabs(cos_pnd), energy);
+	      result_2 = result_2 + Fx * S_cy * cos_ondt * x_ray_flux_integrated(fabs(cos_pnd));
+
 	      /* result_2 = result_2 + cos_rn_d; */
 
 	      if (picture == 1)
 		{
-		  printf("%f\t %f\t %f\t %f\t %f\n", phase_orb*180.0/M_PI, pt.x, pt.y, pt.z, T_color);
+		  printf("%f\t %f\t %f\t %f\t %f\n", phase_orb*180.0/M_PI, pt.x, pt.y, pt.z, 0.0);
 		}
 	      else if (picture == 0)
 		{}
@@ -1265,7 +1194,7 @@ double * flux_disk(vec3 o, disk disk, double rho_in, double A, double uniform_di
 	      //color = (F_0 * cos_on * S)/cos_rn_u;
 	      if (picture == 1)
 		{
-		  printf("%f\t %f\t %f\t %f\t %f\n", phase_orb*180.0/M_PI, pt.x, pt.y, pt.z, T_color);
+		  printf("%f\t %f\t %f\t %f\t %f\n", phase_orb*180.0/M_PI, pt.x, pt.y, pt.z, 0.0);
 		}
 	      else if (picture == 0)
 		{}

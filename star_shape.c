@@ -33,6 +33,9 @@ double radius_star(double phi, double theta, double q, double omega)
   return r1;  
 }
 
+
+
+
 double * polar(double q, double omega)
 {
   /* Computes polar_g_abs and polar_r of the star */
@@ -323,4 +326,132 @@ double * shape_r(int steps_phi, int steps_theta, double * phi_array, double * th
 
   return result;
     
+}
+
+
+
+
+
+double * star_geometry(parameters parameters)
+{
+
+  double q = parameters.q;
+  double mu = parameters.mu;
+  int N_theta = parameters.N_theta;
+
+  double omega = omg(q, mu);
+
+
+  double * pol = polar(q, mu); 
+
+  //double g_polar = pol[0]; 
+  
+
+  int N_phi[N_theta];
+    
+  double delta_theta = 0.5*M_PI/N_theta;
+  double theta;
+
+  double delta_phi;
+  double phi;
+  
+  double phi_random_shift;
+
+  sp v;
+  
+  vec3 p0, p1;
+
+  double * g;
+
+  g = gradient(0.0, 0.0, q, omega);
+
+  double g_polar = g[0];
+  
+  vec3 n0, n1;
+  
+  double s;
+
+  int N = 0;
+  for (int i = 0; i < N_theta; i++)
+    {
+      //N_phi[i] = (int) round(2.0 * M_PI * (i + 0.5));
+      N_phi[i] = round(4 * N_theta * sin((i + 0.5) * delta_theta));
+      N = N + N_phi[i];
+    }
+
+  N = 2 * N; 
+
+  double * output = (double * ) malloc(sizeof(double) * N * 8 + 1);
+
+  output[0] = N;
+  
+  int k = 0;
+  for (int i = 0; i < N_theta; i++)
+    {
+      theta = ((double) i + 0.5) * delta_theta;
+      delta_phi = (double) (2.0 * M_PI)/N_phi[i];
+      phi_random_shift = ((double) rand()/RAND_MAX) * delta_phi;
+
+      for (int j = 0; j < N_phi[i]; j++)
+  	{
+
+  	  phi = (double) j * delta_phi + phi_random_shift;
+
+	  v.theta = theta;
+	  v.phi = phi;
+	  v.r = radius_star(phi, theta, q, omega);
+
+	  p0 = sp2dec(v);
+
+	  p1.x = p0.x;
+	  p1.y = p0.y;
+	  p1.z = - p0.z;
+
+	  
+	  g = gradient(phi, theta, q, omega);
+
+	  n0.x = g[1];
+	  n0.y = g[2];
+	  n0.z = g[3];
+
+	  n1.x = g[1];
+	  n1.y = g[2];
+	  n1.z = - g[3];
+	  
+	  s = pow(v.r,2) * sin(theta) * delta_phi * delta_theta / dot(n0, scale(p0, len(p0)));
+
+	  output[16*k + 1] = p0.x;
+	  output[16*k + 2] = p0.y;
+	  output[16*k + 3] = p0.z;
+	  output[16*k + 4] = n0.x;
+	  output[16*k + 5] = n0.y;
+	  output[16*k + 6] = n0.z;
+	  output[16*k + 7] = s;
+	  output[16*k + 8] = g[0]/g_polar;
+	  output[16*k + 9] = p1.x;
+	  output[16*k + 10] = p1.y;
+	  output[16*k + 11] = p1.z;
+	  output[16*k + 12] = n1.x;
+	  output[16*k + 13] = n1.y;
+	  output[16*k + 14] = n1.z;
+	  output[16*k + 15] = s;
+	  output[16*k + 16] = g[0]/g_polar;
+	  k++;
+
+	  
+	  
+
+
+	  //printf("%f\t%f\t%f\n", p0.x, p0.y, p0.z);
+
+	  
+	  
+	}
+
+
+
+    }
+
+  return output;
+
 }
