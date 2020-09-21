@@ -1,3 +1,3 @@
-# discostar &mdash program for calculating optical light curves of X-ray binaries with warped accretion disc and irradiation effects.
+# discostar &mdash; program for calculating optical light curves of X-ray binaries with warped accretion disc and irradiation effects.
 
 documentation of the program are under development...
