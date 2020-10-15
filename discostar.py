@@ -9,18 +9,47 @@ logs = "LOGS"
 with open("parameters", 'r') as f:
     name, value = np.loadtxt(f, dtype=('str'), usecols=(0,1), unpack=True)
     
-
-
-
-
-
     
 p = dict(zip(name, value))   
 
-if p['do_lc'] in ['true', 'True', 'TRUE', 'T', '1']:
-    p['do_lc'] = '1'
-elif p['do_lc'] in ['false', 'False', 'FALSE', 'F', '0']:
-    p['do_lc'] = '0'
+
+
+def boolifier(p, p_name):
+    try:
+        if p[p_name] in ['true', 'True', 'TRUE', 'T', '1']:
+            p[p_name] = '1'
+        elif p[p_name] in ['false', 'False', 'FALSE', 'F', '0']:
+            p[p_name] = '0'
+        else:
+            raise ValueError(p[p_name])
+    except ValueError:
+        raise
+
+boolifier(p, 'do_lc')
+boolifier(p, 'do_corona')
+
+
+# filter parameters check
+try:
+    if (p['filter'] in ['B', 'V', 'WASP', 'vis']):
+        pass
+    else:
+        float(p['filter'])
+except ValueError:
+    print("filter must be either float number or one of the following: 'B', 'V', 'WASP', 'vis'")
+    raise
+
+
+
+# convert degrees to radians
+p['inclination'] = str(float(p['inclination']) * (np.pi/180.0))
+p['NS_phi'] = str(float(p['NS_phi']) * (np.pi/180.0))
+p['NS_kappa'] = str(float(p['NS_kappa']) * (np.pi/180.0))
+p['NS_theta'] = str(float(p['NS_theta']) * (np.pi/180.0))
+p['theta_out'] = str(float(p['theta_out']) * (np.pi/180.0))
+p['phi_out'] = str(float(p['phi_out']) * (np.pi/180.0))
+p['theta_in']  = str(float(p['theta_in']) * (np.pi/180.0))
+p['phi_in']  = str(float(p['phi_in']) * (np.pi/180.0))
 
 
 output_filename = "TEST.data"
@@ -52,7 +81,12 @@ arg = ('./disco' + ' ' +
        p['N_theta'] + ' ' + 
        p['N_r'] + ' ' + 
        p['OMP_threads'] + ' ' + 
+       p['do_corona'] + ' ' + 
+       p['N_corona'] + ' ' + 
+       p['h_corona'] + ' ' + 
+       p['rs_corona']  + ' ' +
        p['filter']
+
 )
 
 

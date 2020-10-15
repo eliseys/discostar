@@ -331,7 +331,6 @@ double * shape_r(int steps_phi, int steps_theta, double * phi_array, double * th
 
 
 
-
 double * star_geometry(parameters parameters)
 {
 
@@ -374,7 +373,7 @@ double * star_geometry(parameters parameters)
   int N = 0;
   for (int i = 0; i < N_theta; i++)
     {
-      //N_phi[i] = (int) round(2.0 * M_PI * (i + 0.5));
+      /* N_phi[i] = (int) round(2.0 * M_PI * (i + 0.5)); */
       N_phi[i] = round(4 * N_theta * sin((i + 0.5) * delta_theta));
       N = N + N_phi[i];
     }
@@ -400,7 +399,7 @@ double * star_geometry(parameters parameters)
 	  v.theta = theta;
 	  v.phi = phi;
 	  v.r = radius_star(phi, theta, q, omega);
-
+	  
 	  p0 = sp2dec(v);
 
 	  p1.x = p0.x;
@@ -418,8 +417,8 @@ double * star_geometry(parameters parameters)
 	  n1.y = g[2];
 	  n1.z = - g[3];
 	  
-	  s = pow(v.r,2) * sin(theta) * delta_phi * delta_theta / dot(n0, scale(p0, len(p0)));
-
+	  s = pow(v.r, 2) * sin(theta) * delta_phi * delta_theta / dot(n0, scale(p0, 1.0/len(p0)));
+	  
 	  output[16*k + 1] = p0.x;
 	  output[16*k + 2] = p0.y;
 	  output[16*k + 3] = p0.z;
@@ -440,14 +439,7 @@ double * star_geometry(parameters parameters)
 
 	  
 	  
-
-
-	  //printf("%f\t%f\t%f\n", p0.x, p0.y, p0.z);
-
-	  
-	  
 	}
-
 
 
     }

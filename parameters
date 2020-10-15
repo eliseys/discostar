@@ -8,24 +8,32 @@ beta	     0.08
 u	     0.0
 X_albedo     0.5
 T_star_polar	7794.0
-a		6.509544e11
+a		6.509544e+11
 inclination	87.0
 
 #---------------------------------------
 # NS X-RAY LUMINOSITY, ERG/S; ORIENTATON
 #---------------------------------------
 
-Lx		1.0e+37
+Lx		5.0e+37
 NS_phi 		0.0
-NS_kappa	0.0
+NS_kappa	8.0
 NS_theta	-3.0
 
+#---------------------------------------
+# X-RAY CORONA PARAMETERS
+#---------------------------------------
+
+do_corona	true
+N_corona	10000
+h_corona	0.1
+rs_corona	1
 
 #---------------------------------------
 # DISK PARAMETERS
 #---------------------------------------
 
-h_out		0.072
+h_out		0.036
 r_out		0.24
 r_in		0.00024
 gamma		2.0
@@ -33,22 +41,23 @@ gamma		2.0
 theta_out	15.0
 theta_in	15.0
 
-phi_out		0.0
-phi_in		0.0
-
+phi_out		-110.0
+phi_in		-50.0
 
 #---------------------------------------
+# TECHNICAL
 #---------------------------------------
 
 do_lc		true
+#do_lc		false
 
 N_lc		51
 N_theta		30
 N_r		20
 OMP_threads	4
 
-
-filter		vis	
+filter	 	V	
 
 #---------------------------------------
+# END
 #---------------------------------------

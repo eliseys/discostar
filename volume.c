@@ -8,7 +8,7 @@
 
 bool ray_star(double omega, double q, vec3 o, vec3 p)
 {
-
+  
   double lambda = distance_to_star(p, omega, q);
 
   do {
@@ -96,7 +96,7 @@ bool ray_disk(disk disk, vec3 o, vec3 p)
 bool disk_shadow(vec3 p, disk disk)
 {
 
-  double theta_out = disk.theta_out ;
+  double theta_out = disk.theta_out;
   double theta_in = disk.theta_in;
   double phi_out = disk.phi_out;
   double phi_in = disk.phi_in;
@@ -114,105 +114,107 @@ bool disk_shadow(vec3 p, disk disk)
   phi_out = M_PI/2.0 + phi_out;
   phi_in = M_PI/2.0 + phi_in;
 
-  double A = (theta_out - theta_in)/(r_out - r_in);  
+  double A = (theta_out - theta_in)/(r_out - r_in);
   double B = (phi_out - phi_in)/(r_out - r_in);
  
-
   double in = (A * (r_in - r_out) + theta_out) * sin(v.phi - (B*(r_in - r_out) + phi_out));
   double out = theta_out * sin(v.phi - phi_out);
-
 
   double r_1, r_0;
 
   if (len(p) > sqrt(pow(disk.h, 2) + pow(disk.R, 2)))
+    /* p is outside disk */
     {
-
-      //printf("TEST");
       
       if ( (fabs(M_PI/2.0 - t - out) > atan(disk.h/disk.R)) && (max(theta_in, theta_out) - fabs(M_PI/2.0 - t)) < 0 )
-	{
-	  return true;
-	}
-      else if ( (fabs(M_PI/2.0 - t - out) < atan(disk.h/disk.R)) || (M_PI/2.0 - t - in)*(M_PI/2.0 - t - out) < 0 )
-	{
-	  return false;
-	}
+      	{
+      	  return true;
+      	}
+      // else if ( (fabs(M_PI/2.0 - t - out) < atan(disk.h/disk.R)) || (M_PI/2.0 - t - in)*(M_PI/2.0 - t - out) < 0 ) // new version of the shadow 
+      else if ( (fabs(M_PI/2.0 - t - out) < atan(disk.h/disk.R)) || (M_PI/2.0 - t - in)*(M_PI/2.0 - t - out) < 0 || (fabs(M_PI/2.0 - t - in) < atan(disk.h/disk.R)) )
+
+      	{
+      	  return false;
+      	}
       else if ( (fabs(M_PI/2.0 - t - out) > atan(disk.h/disk.R)) && (M_PI/2.0 - t - in)*(M_PI/2.0 - t - out) > 0 && (max(theta_in, theta_out) - fabs(M_PI/2.0 - t)) > 0 )
-	{
+      	{
 
-	  if (B == 0)
-	    {
-	      return true;
-	    }
-	  else if (B != 0)
-	    {
+      	  if (B == 0)
+      	    {
+      	      return true;
+      	    }
+      	  else if (B != 0)
+      	    {
       
-	      r_0 = (r_in + r_out)*0.5 ;
+      	      r_0 = (r_in + r_out)*0.5;
 
-	      do {
+      	      do {
 	
-		r_1 = r_0 -
-		  (( - B * cos(B * (r_0 - r_out) + phi_out - v.phi) * (theta_out + A * (r_0 - r_out))) - A * sin(B * (r_0 - r_out) + phi_out - v.phi))/( B * B * sin(B * (r_0 - r_out) + phi_out - v.phi) * (theta_out + A * (r_0 - r_out)) - 2 * A * B * cos(B * (r_0 - r_out) + phi_out - v.phi));
+      		r_1 = r_0 -
+      		  (( - B * cos(B * (r_0 - r_out) + phi_out - v.phi) * (theta_out + A * (r_0 - r_out))) - A * sin(B * (r_0 - r_out) + phi_out - v.phi))/( B * B * sin(B * (r_0 - r_out) + phi_out - v.phi) * (theta_out + A * (r_0 - r_out)) - 2 * A * B * cos(B * (r_0 - r_out) + phi_out - v.phi));
 	
-		r_0 = r_1;
-
+      		r_0 = r_1;
+		
 	    
-	      } while (fabs(r_0 - r_1) > eps);
+      	      } while (fabs(r_0 - r_1) > eps);
 
-	      if ((M_PI/2.0 - t - in)*(M_PI/2.0 - t - (A * ((r_1 - r_out) + theta_out) * sin(v.phi - (B*(r_1 - r_out) + phi_out)))) > 0)
-		{
+      	      if ((M_PI/2.0 - t - in)*(M_PI/2.0 - t - (A * ((r_1 - r_out) + theta_out) * sin(v.phi - (B*(r_1 - r_out) + phi_out)))) > 0) //!!!!!!
+      		{
+      		  return true;
+      		}
+      	      else
+      		{
+      		  //return false
+		  // set to true to avoid bug
 		  return true;
-		}
-	      else
-		{
-		  return false;
-		}
-	    }
-	}
+      		}
+      	    }
+      	}
+
 
     }
   else
+    /* self screening */
     {
   
   
       if ( (M_PI/2.0 - t - in)*(M_PI/2.0 - t - out) < 0 )
-	{
-	  return false;
-	}
+      	{
+      	  return false;
+      	}
       else
-	{
-	  if (B == 0)
-	    {
-	      return true;
-	    }
-	  else if (B != 0)
-	    {
+      	{
+      	  if (B == 0)
+      	    {
+      	      return true;
+      	    }
+      	  else if (B != 0)
+      	    {
       
-	      r_0 = (r_in + r_out)*0.5 ;
+      	      r_0 = (r_in + r_out)*0.5 ;
 
-	      do {
+      	      do {
 	
-		r_1 = r_0 -
-		  (( - B * cos(B * (r_0 - r_out) + phi_out - v.phi) * (theta_out + A * (r_0 - r_out))) - A * sin(B * (r_0 - r_out) + phi_out - v.phi))/( B * B * sin(B * (r_0 - r_out) + phi_out - v.phi) * (theta_out + A * (r_0 - r_out)) - 2 * A * B * cos(B * (r_0 - r_out) + phi_out - v.phi));
+      		r_1 = r_0 -
+      		  (( - B * cos(B * (r_0 - r_out) + phi_out - v.phi) * (theta_out + A * (r_0 - r_out))) - A * sin(B * (r_0 - r_out) + phi_out - v.phi))/( B * B * sin(B * (r_0 - r_out) + phi_out - v.phi) * (theta_out + A * (r_0 - r_out)) - 2 * A * B * cos(B * (r_0 - r_out) + phi_out - v.phi));
 	
-		r_0 = r_1;
+      		r_0 = r_1;
 
 	    
-	      } while (fabs(r_0 - r_1) > eps);
+      	      } while (fabs(r_0 - r_1) > eps);
 
-	      if ((M_PI/2.0 - t - in)*(M_PI/2.0 - t - (A * ((r_1 - r_out) + theta_out) * sin(v.phi - (B*(r_1 - r_out) + phi_out)))) > 0)
-		{
-		  return true;
-		}
-	      else
-		{
-		  return false;
-		}
-	    }	
-	}
+      	      if ((M_PI/2.0 - t - in)*(M_PI/2.0 - t - (A * ((r_1 - r_out) + theta_out) * sin(v.phi - (B*(r_1 - r_out) + phi_out)))) > 0)
+      		{
+      		  return true;
+      		}
+      	      else
+      		{
+      		  return false;
+      		}
+      	    }
+      	}
 
     }
-
 
 
   
@@ -222,20 +224,30 @@ bool disk_shadow(vec3 p, disk disk)
 
 
 
-
-
-
-
-vec3 rand_p(int seed, double q, double omega, double delta_r)
+double * rand_p(parameters parameters)
 {
 
-  //srand(seed);
+  int N = parameters.N_corona;
+  int seed = parameters.rs_corona;
+  double delta_r = parameters.h_corona;
+  
+  double q = parameters.q;
+  double omega = parameters.omega;
+  
+  double * output = (double * ) malloc(sizeof(double) * N * 3 + 1);
+
+  output[0] = N;
+  
+  // srand(seed);
+  // printf("delta_r %f\n", delta_r);
+
+
+  double add_r;
   
   vec3 p;
   p.x = 0.0;
   p.y = 0.0;
   p.z = 0.0;
-
 
   vec3 r;
   
@@ -244,7 +256,6 @@ vec3 rand_p(int seed, double q, double omega, double delta_r)
   vec3 x_ray;
   vec3 n_x_ray;
 
-  
   vec3 ns_shift;
   ns_shift.x = -1.0;
   ns_shift.y = 0.0;
@@ -253,55 +264,62 @@ vec3 rand_p(int seed, double q, double omega, double delta_r)
   //double * normal;
   vec3 n;
 
+
   
-  do {
+  for (int i=0; i<N; i++)
+    {
+  
+      do {
 
-      double * normal;
+	double * normal;
 
-      v.phi = ((double) rand()/RAND_MAX) * M_PI + 1.5 * M_PI;
-      v.theta = ((double) rand()/RAND_MAX) * M_PI;
-      v.r = radius_star(v.phi, v.theta, q, omega);
+	v.phi = ((double) rand()/RAND_MAX) * M_PI + 1.5 * M_PI;
+	v.theta = ((double) rand()/RAND_MAX) * M_PI;
+	v.r = radius_star(v.phi, v.theta, q, omega);
 
-      r = sp2dec(v);
+	r = sp2dec(v);
 
-      //printf("r >>>>>> %f\t%f\t%f\t%f\n", r.x, r.y, r.z, len(r));
+	//printf("r >>>>>> %f\t%f\t%f\t%f\n", r.x, r.y, r.z, len(r));
 	     
-      normal = gradient(v.phi, v.theta, q, omega);
-      n.x = normal[1];
-      n.y = normal[2];
-      n.z = normal[3];
+	normal = gradient(v.phi, v.theta, q, omega);
+	n.x = normal[1];
+	n.y = normal[2];
+	n.z = normal[3];
 
-      //printf("%f\n", n.x);
-
+	// printf("%f\n", n.x);
+	// printf("delta_r %f\n", delta_r);
       
-      //delta_r = ((double) rand()/RAND_MAX) * delta_r * len(r);
+	add_r = ((double) rand()/RAND_MAX) * delta_r * len(r) + 2.0 * eps;
 
-      delta_r = 2.0 * eps;
-      //printf("%f\n", v.r);
+	// printf("delta_r %f\n", add_r);
+
+	// delta_r = 2.0 * eps;
       
       
-      p = sum(r, scale(n, delta_r)); 
       
-      //printf("n %f\t%f\t%f\t%f\n", n.x, n.y, n.z, len(n));
+	p = sum(r, scale(n, add_r)); 
+      
 
-      x_ray = sum(r, ns_shift);
-      //printf("x %f\t%f\t%f\t%f\n", x_ray.x, x_ray.y, x_ray.z, len(x_ray));
+	x_ray = sum(r, ns_shift); //????
+	
 
-      n_x_ray = scale(x_ray, 1.0/len(x_ray));
-      //printf("nx %f\t%f\t%f\t%f\n", n_x_ray.x, n_x_ray.y, n_x_ray.z, len(n_x_ray));
-
-
-      //printf("dot n nx >>>>>> %f\n", dot(n, n_x_ray));
-      free(normal);
-   } while (dot(n_x_ray, n) > eps);
+	n_x_ray = scale(x_ray, 1.0/len(x_ray)); //????
+	
+	free(normal);
+      } while (dot(n_x_ray, n) > eps); //????
 
 
-  //free(normal); 
-  return p;
+      //free(normal);
+      
+      output[3*i + 1] = p.x;
+      output[3*i + 2] = p.y;
+      output[3*i + 3] = p.z;
 
-}
+    }
+
+  return output;
   
-
+}
 
 
 

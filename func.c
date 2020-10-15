@@ -238,7 +238,50 @@ double disk_h_diff_profile(disk disk, double r, double gamma)
 
 
 
-double star_F(double * star_elements, parameters parameters, disk disk, vec3 observer)
+
+
+double x_ray_corona(parameters parameters, disk disk, vec3 observer, double * corona_elements)
+{
+
+  /* M is the number of points in the corona */
+
+  int M = corona_elements[0]; 
+
+  double omega = parameters.omega;
+  
+  double summa = 0;
+
+  vec3 p;
+
+  vec3 ns;
+  ns.x = - 1.0;
+  ns.y = 0.0;
+  ns.z = 0.0;
+  
+  for(int i=0; i < M; i++)
+    {
+
+      p.x = corona_elements[3*i + 1];
+      p.y = corona_elements[3*i + 2];
+      p.z = corona_elements[3*i + 3];
+
+      if(ray_disk(disk, observer, sum(p, ns)) && ray_star(omega, parameters.q, observer, p) && disk_shadow(sum(p, ns), disk))
+      /* if (ray_disk(disk, observer, sum(p, ns))) */
+	
+	{
+	  summa = summa + 1.0/pow(len(sum(p, ns)),2);
+	  /* printf("%f\t%f\t%f\t%f\n", p.x, p.y, p.z, 1.0/pow(len(sum(p, ns)),2)); */
+	}
+
+    }
+
+  return summa;
+
+}
+
+
+
+double star_F(double * star_elements, parameters parameters, disk disk, vec3 observer, vec3 neutron_star, double * Ix_dd)
 {
   
   int N = star_elements[0];
@@ -253,12 +296,24 @@ double star_F(double * star_elements, parameters parameters, disk disk, vec3 obs
   double zeta;
   double fx;
 
+  double F;
+  double Fx = 0;
+
+  
+  double lambda_scat = 1.0;
+  double tau = 0.03;
+  
 
   vec3 ns;
   ns.x = - 1.0;
   ns.y = 0.0;
   ns.z = 0.0;
+
+  int diagr_index;
+
+  double cos_on;
   
+  double result = 0.0;
   
   for (int i = 0; i < N; i++)
     {
@@ -273,40 +328,91 @@ double star_F(double * star_elements, parameters parameters, disk disk, vec3 obs
       s = star_elements[8*i + 7];
       g = star_elements[8*i + 8];
 
-      
-      zeta = dot(n, scale(sum(p, ns), len(sum(p,ns))));
+      zeta = dot(n, scale(sum(p, ns), 1/len(sum(p, ns))));
 
+      //printf("ZETA %f\n", zeta);
+
+      
+      cos_on = dot(n, observer);
+
+      s = s * pow(parameters.a,2);
+
+      
+      diagr_index = (int) floor( acos(dot(neutron_star, scale(p,1/len(p)))) * 180.0/M_PI );
 
       
       if ( ray_disk(disk, observer, sum(p, ns)) && dot(n, observer) > 0 )
-	{
-	  fx = 0.0;
+      	{
 
-	  T = parameters.T_star_polar * pow(g, parameters.beta);
-
-
+      	  T = parameters.T_star_polar;
 	  
-	  if (zeta < 0)
-	    {
-	      fx = (parameters.Lx/(4.0 * M_PI * pow(len(p)*parameters.a,2))) * fabs(zeta) * (double) disk_shadow(sum(p, ns), disk);
-	      T = pow((pow(T,4) + fx/SIGMA), 1.0/4.0);
+      	  if (zeta < 0 && disk_shadow(sum(p, ns), disk))
+      	    {
 
-	      //printf(">>>> %f\t%f\n", (double) disk_shadow(p, disk), fx);
+              //fx = parameters.Lx * Ix_dd[diagr_index] * (1.0 - parameters.X_albedo) * fabs(zeta) / pow(len(sum(p, ns))*parameters.a,2);
+	      
+	      fx = (parameters.Lx/(4.0 * M_PI * pow(len(sum(p, ns))*parameters.a,2))) * fabs(zeta) * (1.0 - parameters.X_albedo);
+      	    }
+      	  else
+      	    {
+	      fx = 0.0;	      
 	    }
-	  else
-	    {}
 
-	  //F_0 = F_filter(T, filter);
-	  //F_0 = photometric_filter(T, filter);
-
-	  //printf("%f\t%f\t%f\t%f\t%f\n", w.phi * (180.0/M_PI), p.x, p.y, p.z, T);
-	  /* printf("%f\t%f\t%f\t%f\n", p.x, p.y, p.z, T); */
 	  
-	  //printf("%e\n", s);
-	}
+	  T = pow((pow(T,4) + fx/SIGMA), 1.0/4.0);	      
+
+	      
+	  F = F_filter(T, parameters.filter);
+	  /* result = result + F * (1 - parameters.u + parameters.u * cos_on) * pow(g, parameters.beta) * cos_on * s; */
+
+	  
+	  /* X-ray flux thin atmosphere */
+	  result = result + fx * s;
+	  
+	  
+	  
+      	  //result = result + fx * s * cos_on * x_ray_flux_integrated(-zeta);
+      	  //result = result + fx * s * x_ray_flux_integrated(-zeta);
+      	  //result = result + s;
+	  
+      	  //F_0 = F_filter(T, filter);
+      	  //F_0 = photometric_filter(T, filter);
+
+      	  //printf("%f\t%f\t%f\t%f\t%f\n", w.phi * (180.0/M_PI), p.x, p.y, p.z, T);
+      	  if (!parameters.do_lc)
+      	    {
+      	      printf("%f\t%f\t%f\t%f\n", p.x, p.y, p.z, T);
+      	    }
+      	  //printf("%e\n", s);
+      	}
+
+      /* if (ray_disk(disk, observer, sum(p, ns)) && disk_shadow(sum(p, ns), disk) && dot(n, observer) > 0) */
+      /* 	{ */
+      /* 	  fx = 0.0; */
+      /* 	  T = parameters.T_star_polar * pow(g, parameters.beta); */
+      /* 	  if (zeta < 0) */
+      /* 	    { */
+      /* 	      fx = (lambda_scat/(4.0*M_PI)) * tau * (parameters.Lx/(4.0 * M_PI * pow(len(sum(p, ns)) * parameters.a,2))) * (double) disk_shadow(sum(p, ns), disk); */
+
+      /* 	      result = result + s * fx * dot(n, observer); */
+	      
+      /* 	    } */
+
+      /* 	  if (!parameters.do_lc) */
+      /* 	    { */
+      /* 	      printf("%f\t%f\t%f\t%f\n", p.x, p.y, p.z, T;); */
+      /* 	    } */
+	  
+
+      /* 	} */
+
+
+
+      
     }
 
-  return 0;
+  
+  return result;
 
 }
 
@@ -591,6 +697,11 @@ double disk_F(double * disk_elements, parameters parameters, disk disk, vec3 obs
   double zeta;
 
   sp w = dec2sp(observer);
+
+
+  double result = 0.0;
+
+
   
   for (int i = 0; i < N; i++)
     {
@@ -608,7 +719,7 @@ double disk_F(double * disk_elements, parameters parameters, disk disk, vec3 obs
 
       
       
-      if ( ray_disk(disk, observer, p) && dot(n, observer) > 0 )
+      if ( ray_disk(disk, observer, p) && dot(n, observer) > 0 ) // ray_star ?
 	{
 	  fx = 0.0;
 	  T = 10000.0;
@@ -626,8 +737,12 @@ double disk_F(double * disk_elements, parameters parameters, disk disk, vec3 obs
 	  //F_0 = photometric_filter(T, filter);
 
 	  /* printf("%f\t%f\t%f\t%f\t%f\n", w.phi * (180.0/M_PI), p.x + 1.0, p.y, p.z, T); */
-	  /* printf("%f\t%f\t%f\t%f\n", p.x + 1.0, p.y, p.z, T); */
-	  
+
+
+	  if (!parameters.do_lc)
+	    {
+	      printf("%f\t%f\t%f\t%f\n", p.x + 1.0, p.y, p.z, T);
+	    }
 	  //printf("%e\n", s);
 
 	  

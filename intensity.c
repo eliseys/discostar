@@ -437,6 +437,8 @@ double x_ray_reflected_fraction(double zeta, double energy)
 
   //printf("kappa %e\n", kappa_mm(energy));
   return D/(3.0*zeta*zeta) - k*D2/(3.0*zeta);
+
+  
 }
 
 
@@ -518,10 +520,6 @@ double x_ray_flux_integrated(double zeta)
       /* F0 = Lx * normalized_x_ray_spectrum(energy_0); */
      
       /* F1 = Lx * normalized_x_ray_spectrum(energy_1); */
-      
-     
-
-
 
       summa = summa + energy_step * (F0+F1)/2.0;
 

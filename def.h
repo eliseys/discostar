@@ -135,6 +135,7 @@ struct parameters {
 
   double q; /* mass ratio q = m_x/m_opt */
   double mu; /* roche lobe filling */
+  double omega; /* dimentionless potential */ 
   double beta;    
   double u;   
   double X_albedo;  /* X-ray albedo */	 
@@ -152,7 +153,7 @@ struct parameters {
   double h_out; /* semi-thickness of the outer edge of the disk */ 
   double r_out; /* outer radius of the disk */
   double r_in; /* inner radius of the disk */
-  double gamma; /* h-profile exponent of the disk*/
+  double gamma; /* h-profile exponent of the disk */
 
   double theta_out; 
   double phi_out;  
@@ -160,7 +161,7 @@ struct parameters {
   double theta_in; 
   double phi_in;  
 
-  bool do_lc; /* light curve */
+  bool do_lc; /* If true calculate light curve. If false returns xyz-coordinates of points and corresponding temperatures */
   
   int N_lc; /* number of light curve points */
 
@@ -170,6 +171,11 @@ struct parameters {
   int OMP_threads; /* OpenMP threads */
 
   char filter[5];
+
+  bool do_corona; /* calculate X-ray flux from corona */
+  int N_corona; /* number of randomly distributed points in the corona */
+  double h_corona; /* height of the corona */
+  int rs_corona; /* random seed */
 
 };
 
@@ -194,8 +200,21 @@ struct disk {
 typedef struct disk disk;
 
 
-
-
+struct ion {
+  char * name[8];
+  int * Z;
+  int * N;
+  float * E_th;
+  float * E_max;
+  float * E_0;
+  float * sigma_0;
+  float * y_a;
+  float * P;
+  float * y_w;
+  float * y_0;
+  float * y_1;
+};
+typedef struct ion ion;
 
 
 
@@ -204,11 +223,7 @@ typedef struct disk disk;
 bool ray_star(double omega, double q, vec3 o, vec3 p);
 bool ray_disk(disk disk, vec3 o, vec3 p);
 bool disk_shadow(vec3 p, disk disk);
-vec3 rand_p(int seed, double q, double omega, double delta_r);
-
-
-
-
+double * rand_p(parameters parameters);
 
 double len(vec3 p);
 double dot(vec3 a, vec3 b);
@@ -271,7 +286,9 @@ double disk_h_diff_profile(disk disk, double r, double gamma);
 
 double * disk_geometry(disk disk, parameters parameters);
 
-double star_F(double * star_elements, parameters parameters, disk disk, vec3 observer);
+double x_ray_corona(parameters parameters, disk disk, vec3 observer, double * corona_elements);
+
+double star_F(double * star_elements, parameters parameters, disk disk, vec3 observer, vec3 neutron_star, double * Ix_dd);
 
 double flux_star(vec3 o, double q, double omega, double beta, double u, disk disk, double Lx_noniso, double Lx_disk, double Lx_iso, double Lx_disk_2, double albedo, int star_tiles, double T_star, double a, vec3 neutron_star, double PSI_pr, int picture, sp disk_reflection_diagr, double * r_array, double * g_array, double * phi_array, double * theta_array, double * Ix_dd, double y_tilt, double y_tilt2, double z_tilt, double z_tilt2, double phi_orb, char * filter);
 
@@ -280,5 +297,9 @@ double B(disk disk, double A, double rho_in, double T);
 double disk_F(double * disk_elements, parameters parameters, disk disk, vec3 observer);
 
 double * flux_disk(vec3 o, disk disk, double rho_in, double A, double uniform_disk, double y_tilt, double z_tilt, double omega, double q, int disk_tiles, double phi_orb, double T_disk, double a, int picture, int spot_disk, double T_spot, double spot_beg, double spot_end, double spot_rho_in, double spot_rho_out, double h_warp, double * Ix_dd, double Lx_iso, double Lx_noniso, vec3 neutron_star, char * filter);
+
+void ion_init();
+double sigma_phot(double E, int i);
+
 
 #endif //DEF_H
