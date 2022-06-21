@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
-#include "def_copy.h"
+#include "def.h"
 
 int main(){
   

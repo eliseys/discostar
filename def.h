@@ -35,77 +35,77 @@
 #define A_cm 1e-8
 
 /* star parameters */
-double q;                /* mass ratio q = m_x/m_opt */
-double mu;               /* roche lobe filling */
-double beta;             /* gravity darkening coefficient */
-double u;                /* limb darkening coefficient */  
-double albedo;           /* 1 - (X-ray photons reprocessing efficiency) */	 
-double T_star;
+//double q;                /* mass ratio q = m_x/m_opt */
+//double mu;               /* roche lobe filling */
+//double beta;             /* gravity darkening coefficient */
+//double u;                /* limb darkening coefficient */  
+//double albedo;           /* 1 - (X-ray photons reprocessing efficiency) */	 
+//double T_star;
 
 /* neutron star parameter */
-double Lx_noniso;               /* erg/s */ 
-
-double h;                /* semi-thickness */ 
-double R;                /* radius */
-double y_tilt; 
-double z_tilt;  
-
-double y_tilt2; 
-double z_tilt2;  
-
-int picture;             /* print 3D picture */
-  
-/* observer */
-double inclination;
-
-int lc_num; /* number of light curve points */
-
-/* star and disk surface partition */
-int star_tiles;
-int disk_tiles;
-
-int threads;             /* number of OpenMP threads */
-
-/* temperature of star and disk and spectral band */
-double T_disk;
-
-double a_cm;
-
-double PSI_pr;
-double kappa;
-
-double Lx_disk;
-double Lx_disk_2;
-double Lx_iso;
-
-int spot_disk;
-double T_spot;
-double spot_beg;
-double spot_end;
-
-double ns_theta;
-
-double spot_rho_in;
-double spot_rho_out;
-
-double drd_phi;
-double drd_theta;
-
-double rho_in;
-
-double A;
-
-double uniform_disk;
-
-double disk_flux_B;
-double disk_flux_V;
-
-double h_warp;
-
-char filter;
-
-double lc_start;
-double lc_end;
+//double Lx_noniso;               /* erg/s */ 
+//
+//double h;                /* semi-thickness */ 
+//double R;                /* radius */
+//double y_tilt; 
+//double z_tilt;  
+//
+//double y_tilt2; 
+//double z_tilt2;  
+//
+//int picture;             /* print 3D picture */
+//  
+///* observer */
+//double inclination;
+//
+//int lc_num; /* number of light curve points */
+//
+///* star and disk surface partition */
+//int star_tiles;
+//int disk_tiles;
+//
+//int threads;             /* number of OpenMP threads */
+//
+///* temperature of star and disk and spectral band */
+//double T_disk;
+//
+//double a_cm;
+//
+//double PSI_pr;
+//double kappa;
+//
+//double Lx_disk;
+//double Lx_disk_2;
+//double Lx_iso;
+//
+//int spot_disk;
+//double T_spot;
+//double spot_beg;
+//double spot_end;
+//
+//double ns_theta;
+//
+//double spot_rho_in;
+//double spot_rho_out;
+//
+//double drd_phi;
+//double drd_theta;
+//
+//double rho_in;
+//
+//double A;
+//
+//double uniform_disk;
+//
+//double disk_flux_B;
+//double disk_flux_V;
+//
+//double h_warp;
+//
+//char filter;
+//
+//double lc_start;
+//double lc_end;
 
 
 /**/
@@ -160,6 +160,9 @@ struct parameters {
 
   double theta_in; 
   double phi_in;  
+
+  double epsilon_0_out; /* tau scale */
+  double epsilon_0_in;
 
   bool do_lc; /* If true calculate light curve. If false returns xyz-coordinates of points and corresponding temperatures */
   
@@ -290,6 +293,8 @@ double x_ray_corona(parameters parameters, disk disk, vec3 observer, double * co
 
 double star_F(double * star_elements, parameters parameters, disk disk, vec3 observer, vec3 neutron_star, double * Ix_dd);
 
+double star_X(double * star_elements, parameters parameters, disk disk, vec3 observer, vec3 neutron_star, double * Ix_dd, double E);
+
 double flux_star(vec3 o, double q, double omega, double beta, double u, disk disk, double Lx_noniso, double Lx_disk, double Lx_iso, double Lx_disk_2, double albedo, int star_tiles, double T_star, double a, vec3 neutron_star, double PSI_pr, int picture, sp disk_reflection_diagr, double * r_array, double * g_array, double * phi_array, double * theta_array, double * Ix_dd, double y_tilt, double y_tilt2, double z_tilt, double z_tilt2, double phi_orb, char * filter);
 
 double B(disk disk, double A, double rho_in, double T);
@@ -300,6 +305,23 @@ double * flux_disk(vec3 o, disk disk, double rho_in, double A, double uniform_di
 
 void ion_init();
 double sigma_phot(double E, int i);
+
+
+double integrate(double * f, int N);
+double * Legendre_2(int N);
+double * h_0(int N);
+double * phi_scatter(double x_0, double x_2, double a, int N);
+double I_h(double * h, double * phi, double mu, int N);
+double * H(double x_0, double x_2, double a, int N);
+double * rho(double x_0, double x_2, double a, int N);
+double * I(double flux, double x_0, double x_2, double a, int N);
+double * albedo_mu(double x_0, double x_2, double a, int N);
+
+
+
+sp arcgen(double theta, double N_phi, int i);
+double * x_ray_direction_diagram(double PSI_pr);
+
 
 
 #endif //DEF_H

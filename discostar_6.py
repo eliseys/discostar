@@ -31,7 +31,7 @@ def psi(x, z_tilt_dot_profile, break_amplitude, break_duration, slowest_phase, m
 
 
 
-data = json.load(open('data.json'), object_pairs_hook=OrderedDict)
+data = json.load(open('DATA/data.json'), object_pairs_hook=OrderedDict)
 N = 20.0 # precession cycle lenght in orbital periods
 
 p = json.load(open('parameters.json'), object_pairs_hook=OrderedDict)
@@ -109,7 +109,7 @@ for n in data:
         
         mini = lmfit.Minimizer(d6l.residual, lmfit_parameters, fcn_args=(parameters, data), nan_policy = 'omit')
         
-        result = mini.minimize(method = p['lmfit']['method'], epsfcn = 5.0E-5, maxfev = 0)
+        result = mini.minimize(method = p['lmfit']['method'], epsfcn = 5.0E-5, max_nfev = 0)
         #result = mini.minimize(method = p['lmfit']['method'])
 
         curve = {}
@@ -150,7 +150,7 @@ for n in data:
 
         output.append(output_i)
         
-with open(output_file, "w") as f:
-    json.dump(output, f)
+data = json.load(open('DATA/data.json'), object_pairs_hook=OrderedDict)
+json.dump(output, f)
 
 

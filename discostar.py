@@ -30,14 +30,14 @@ boolifier(p, 'do_corona')
 
 
 # filter parameters check
-try:
-    if (p['filter'] in ['B', 'V', 'WASP', 'vis']):
-        pass
-    else:
-        float(p['filter'])
-except ValueError:
-    print("filter must be either float number or one of the following: 'B', 'V', 'WASP', 'vis'")
-    raise
+# try:
+#     if (p['filter'] in ['B', 'V', 'WASP', 'vis']):
+#         pass
+#     else:
+#         float(p['filter'])
+# except ValueError:
+#     print("filter must be either float number or one of the following: 'B', 'V', 'WASP', 'vis'")
+#     raise
 
 
 

@@ -19,9 +19,16 @@ double F_filter(double T, char * filter)
   lambda = strtod(filter, &filter_name); 
 
 
+  //printf("filter %s\n", filter);
+  
   /* printf("++++++++ %lf\n", lambda); */
 
 
+  /* printf("strcmp(filter_name, \"V\") %d\n", strcmp(filter_name, "V")); */
+  /* printf("filter_name %s\n", filter_name); */
+  /* printf("%s\n", ""); */
+  
+  
   
   if ( lambda == 0.0 && strcmp(filter_name, "") == 0 )
     {
@@ -36,7 +43,7 @@ double F_filter(double T, char * filter)
     {
       if ( strcmp(filter_name, "B") != 0 && strcmp(filter_name, "V") != 0 && strcmp(filter_name, "WASP") != 0 && strcmp(filter_name, "vis") != 0)
 	{
-	  printf("444 %s filter does not exist\n", filter_name );
+	  //printf("%s filter does not exist\n", filter_name );
 	  return EINVAL;  
 	}
       

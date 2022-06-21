@@ -130,7 +130,7 @@ bool disk_shadow(vec3 p, disk disk)
       	{
       	  return true;
       	}
-      // else if ( (fabs(M_PI/2.0 - t - out) < atan(disk.h/disk.R)) || (M_PI/2.0 - t - in)*(M_PI/2.0 - t - out) < 0 ) // new version of the shadow 
+      //else if ( (fabs(M_PI/2.0 - t - out) < atan(disk.h/disk.R)) || (M_PI/2.0 - t - in)*(M_PI/2.0 - t - out) < 0 ) // new version of the shadow 
       else if ( (fabs(M_PI/2.0 - t - out) < atan(disk.h/disk.R)) || (M_PI/2.0 - t - in)*(M_PI/2.0 - t - out) < 0 || (fabs(M_PI/2.0 - t - in) < atan(disk.h/disk.R)) )
 
       	{
@@ -164,7 +164,7 @@ bool disk_shadow(vec3 p, disk disk)
       		}
       	      else
       		{
-      		  //return false
+      		  // return false;
 		  // set to true to avoid bug
 		  return true;
       		}
@@ -264,9 +264,50 @@ double * rand_p(parameters parameters)
   //double * normal;
   vec3 n;
 
+  int i;
+
+
+  /* for (i=0; i<N; i++) */
+  /*   { */
+
+  /* 	v.phi = 0.0; */
+  /* 	v.theta = ((double) i/(N-1)) * M_PI; */
+  /* 	v.r = radius_star(v.phi, v.theta, q, omega); */
+
+  /* 	r = sp2dec(v); */
+
+  /* 	double * normal; */
+  /* 	normal = gradient(v.phi, v.theta, q, omega); */
+  /* 	n.x = normal[1]; */
+  /* 	n.y = normal[2]; */
+  /* 	n.z = normal[3]; */
+
+  /* 	x_ray = sum(r, ns_shift);  */
+       
+  /* 	n_x_ray = scale(x_ray, 1.0/len(x_ray));  */
+
+  /* 	if (dot(n_x_ray, n) < eps) */
+  /* 	  { */
+  /* 	    add_r = delta_r * len(r); */
+  /* 	  } */
+  /* 	else */
+  /* 	  { */
+  /* 	    add_r = 0.0; */
+  /* 	  } */
+
+  /* 	p = sum(r, scale(n, add_r)); */
+
+  /* 	printf("%f\t%f\n", p.x, p.z); */
+
+  /*   } */
+
+
+
+
 
   
-  for (int i=0; i<N; i++)
+  
+  for (i=0; i<N; i++)
     {
   
       do {
@@ -275,6 +316,8 @@ double * rand_p(parameters parameters)
 
 	v.phi = ((double) rand()/RAND_MAX) * M_PI + 1.5 * M_PI;
 	v.theta = ((double) rand()/RAND_MAX) * M_PI;
+	//v.theta = ((double) i/(N-1)) * M_PI;
+
 	v.r = radius_star(v.phi, v.theta, q, omega);
 
 	r = sp2dec(v);
@@ -300,14 +343,13 @@ double * rand_p(parameters parameters)
 	p = sum(r, scale(n, add_r)); 
       
 
-	x_ray = sum(r, ns_shift); //????
+	x_ray = sum(r, ns_shift); 
 	
 
-	n_x_ray = scale(x_ray, 1.0/len(x_ray)); //????
+	n_x_ray = scale(x_ray, 1.0/len(x_ray)); 
 	
 	free(normal);
-      } while (dot(n_x_ray, n) > eps); //????
-
+      } while (dot(n_x_ray, n) > eps); 
 
       //free(normal);
       

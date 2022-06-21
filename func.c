@@ -270,7 +270,7 @@ double x_ray_corona(parameters parameters, disk disk, vec3 observer, double * co
 	
 	{
 	  summa = summa + 1.0/pow(len(sum(p, ns)),2);
-	  /* printf("%f\t%f\t%f\t%f\n", p.x, p.y, p.z, 1.0/pow(len(sum(p, ns)),2)); */
+	  printf("%f\t%f\t%f\t%f\n", p.x, p.y, p.z, 1.0/pow(len(sum(p, ns)),2));
 	}
 
     }
@@ -299,6 +299,14 @@ double star_F(double * star_elements, parameters parameters, disk disk, vec3 obs
   double F;
   double Fx = 0;
 
+
+  int M = 100;
+  double x_0 = 1.0;
+  double x_2 = 0.0;
+  double lambda;
+  double * pho_mu_mu = rho(x_0, x_2, lambda, M);
+
+  
   
   double lambda_scat = 1.0;
   double tau = 0.03;
@@ -415,6 +423,142 @@ double star_F(double * star_elements, parameters parameters, disk disk, vec3 obs
   return result;
 
 }
+
+
+
+double star_X(double * star_elements, parameters parameters, disk disk, vec3 observer, vec3 neutron_star, double * Ix_dd, double E)
+{
+  
+  int N = star_elements[0];
+
+  double T;
+
+  vec3 p;
+  vec3 n;
+
+  double s, g;
+
+  double zeta;
+  double fx;
+
+  double F;
+  double Fx = 0;
+  
+  int M = 100;
+  double x_0 = 1.0;
+  double x_2 = 0.0;
+
+  double kappa = kappa_mm(E); // energy E in keV, kappa in cm^2
+
+  double lambda = SIGMA_THOMSON/(SIGMA_THOMSON + kappa);
+
+  double * rho_mu_mu = rho(x_0, x_2, lambda, M);
+  double * A = albedo_mu(x_0, x_2, lambda, M);
+  
+  //printf("rho_mu_mu[48] %e\n", rho_mu_mu[48]);
+
+  //printf("kappa %e\nlambda %e\n", kappa, lambda);
+  
+  int j, k;
+  double rho_i;
+  
+  
+  double lambda_scat = 1.0;
+  double tau = 0.03;
+  
+
+  vec3 ns;
+  ns.x = - 1.0;
+  ns.y = 0.0;
+  ns.z = 0.0;
+
+  int diagr_index;
+
+  double cos_on;
+  
+  double result = 0.0;
+
+  int t = 0;
+
+  
+  for (int i = 0; i < N; i++)
+    {
+      p.x = star_elements[8*i + 1];
+      p.y = star_elements[8*i + 2];
+      p.z = star_elements[8*i + 3];
+
+      n.x = star_elements[8*i + 4];
+      n.y = star_elements[8*i + 5];
+      n.z = star_elements[8*i + 6];
+
+      s = star_elements[8*i + 7];
+      g = star_elements[8*i + 8];
+
+      zeta = dot(n, scale(sum(p, ns), 1/len(sum(p, ns))));
+
+      cos_on = dot(n, observer);
+
+
+
+      //printf("observer x,y,z %f %f %f\n", observer.x, observer.x, observer.x);
+      //printf("cos_on %f\n", cos_on);
+      
+      s = s * pow(parameters.a,2);
+      
+      diagr_index = (int) floor( acos(dot(neutron_star, scale(p,1/len(p)))) * 180.0/M_PI );
+      
+      //if ( zeta < 0 && ray_disk(disk, observer, sum(p, ns)) && disk_shadow(sum(p, ns), disk) && dot(n, observer) > 0 )
+      if ( zeta < 0 && dot(n, observer) > 0 )
+      	{
+
+	  
+	  
+	  j = floor(fabs(zeta) * M);
+	  k = floor(fabs(cos_on) * M);
+	  
+	  //printf("%d %f\n", j, fabs(zeta) * M);
+	  
+	  rho_i = rho_mu_mu[j*M + k];
+
+	  
+	  
+	  //printf("rho_mu_mu %f\n", rho_mu_mu[M*M-1]);
+
+	  //printf("rho_i %f\t", rho_i);
+	  
+	  /* X-ray flux thin atmosphere */
+	  //result = result + (rho_i * fabs(zeta) * cos_on/pow(len(sum(p, ns))*parameters.a,2)) * s;
+
+
+
+	  /* mean albedo calculation */
+	  result = result + A[j];
+
+
+	  //printf("%f %f %f %f\n", p.x, p.y, p.z, (rho_i * fabs(zeta) * cos_on/pow(len(sum(p, ns))*parameters.a,2)) * s);
+
+	  t++;
+	  
+      	}
+
+
+
+    }
+
+
+  result = (double) result/t;
+  return result;
+
+}
+
+
+
+
+
+
+
+
+
 
 
 
@@ -727,7 +871,7 @@ double disk_F(double * disk_elements, parameters parameters, disk disk, vec3 obs
 	  if (zeta < 0)
 	    {
 	      fx = (parameters.Lx/(4.0 * M_PI * pow(len(p)*parameters.a,2))) * fabs(zeta) * (double) disk_shadow(p, disk);
-	      T = pow((pow(T,4) + fx/SIGMA), 1.0/4.0);
+	      //T = pow((pow(T,4) + fx/SIGMA), 1.0/4.0);
 
 	      //printf(">>>> %f\t%f\n", (double) disk_shadow(p, disk), fx);
 	    }

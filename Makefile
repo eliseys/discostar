@@ -1,23 +1,23 @@
 # Source, Executable, Includes, Library Defines
 INCL   = def.h
 #SRC    = main.c func.c intensity.c neutron_star.c operators.c star_shape.c disk_shape.c diagram_maker.c
-SRC1    = main.c volume.c func.c intensity.c operators.c star_shape.c disk_shape.c sigma_phot.c
+SRC1    = main.c volume.c func.c intensity.c operators.c star_shape.c disk_shape.c sigma_phot.c h_function.c
 SRC2    = diagram_maker.c neutron_star.c operators.c
-#SRC3    = volume.c func.c intensity.c operators.c star_shape.c disk_shape.c
+SRC3    = pulse.c operators.c
 
 OBJ1    = $(SRC1:.c=.o)
 OBJ2    = $(SRC2:.c=.o)
-#OBJ3    = $(SRC3:.c=.o)
+OBJ3    = $(SRC3:.c=.o)
 
 LIBS   = -lm -fopenmp
 
 EXE1	= disco
 EXE2	= diagram
-#EXE3    = volume
+EXE3    = pulse
 
 
 
-all: $(EXE1) $(EXE2) #$(EXE3)
+all: $(EXE1) $(EXE2) $(EXE3)
 
 # Compiler, Linker Defines
 CC      = gcc
@@ -26,7 +26,7 @@ CFLAGS  = -fopenmp -g
 LIBPATH =
 LDFLAGS1 = -o $(EXE1) $(LIBPATH) $(LIBS)
 LDFLAGS2 = -o $(EXE2) $(LIBPATH) $(LIBS)
-#LDFLAGS3 = -o $(EXE3) $(LIBPATH) $(LIBS)
+LDFLAGS3 = -o $(EXE3) $(LIBPATH) $(LIBS)
 
 #CFDEBUG = -ansi -pedantic -Wall -g -DDEBUG $(LDFLAGS)
 CFDEBUG =
@@ -43,15 +43,15 @@ $(EXE1): $(OBJ1)
 $(EXE2): $(OBJ2)
 	$(CC) $(OBJ2) $(LDFLAGS2)
 
-#$(EXE3): $(OBJ3)
-#	$(CC) $(OBJ3) $(LDFLAGS3)
+$(EXE3): $(OBJ3)
+	$(CC) $(OBJ3) $(LDFLAGS3)
 
 
 
 # Objects depend on these Libraries
 $(OBJ1): $(INCL)
 $(OBJ2): $(INCL)
-#$(OBJ3): $(INCL)
+$(OBJ3): $(INCL)
 
 
 # Create a gdb/dbx Capable Executable with DEBUG flags turned on

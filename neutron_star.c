@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
-#include "def_copy.h"
+#include "def.h"
 
 sp arcgen(double theta, double N_phi, int i)
 {

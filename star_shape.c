@@ -57,7 +57,7 @@ double * polar(double q, double omega)
 	 + d_omega_polar_z * d_omega_polar_z
 	 );
 
-  double *result = (double*) malloc(sizeof(double) * 3);
+  double * result = (double*) malloc(sizeof(double) * 3);
 
   result[0] = polar_g_abs;
   result[1] = polar_r;
@@ -107,7 +107,7 @@ double * gradient(double phi, double theta, double q, double omega)
   n_y = - d_omega_y/g_abs;
   n_z = - d_omega_z/g_abs;
   
-  double *result = (double*) malloc(sizeof(double) * 4);
+  double * result = (double*) malloc(sizeof(double) * 4);
 
   result[0] = g_abs;
   result[1] = n_x;
@@ -380,7 +380,7 @@ double * star_geometry(parameters parameters)
 
   N = 2 * N; 
 
-  double * output = (double * ) malloc(sizeof(double) * N * 8 + 1);
+  double * output = (double * ) malloc(sizeof(double) * (N * 8 + 1));
 
   output[0] = N;
   
