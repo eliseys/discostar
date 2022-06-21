@@ -13,89 +13,89 @@ double distance_to_star(vec3 p, double omega, double q)
 
 double eclipse_by_star(double omega, double q, vec3 o, vec3 p)
 {
+
+  /* Function returns: 
+     0.0 if point p is obstructed by the donor star from the observer's perspective; 
+     1.0 if point p is unobstructed by the donor star from the observer's perspective.
   
-  /* delta for calculating derivation (now equal to eps) */
-  vec3 d;
-  d.x = eps * o.x;
-  d.y = eps * o.y;
-  d.z = eps * o.z;
+     Parameters describing the donor star form (sizes are normalized to distance between donor star and neutron star centers of mass):
+     omega --- Roche Lobe filling factor for donor star (1.0 if the donor star completely fills its critical Roche lobe; 0.0 if the donor star size equals to zero);
+     q = M_x/M_v --- mass ratio of the binary system components.
 
-  /* zeroth approximation */
-  double shift0 = distance_to_star(p, omega, q);
-  vec3 position;
-  position.x = p.x + o.x * shift0;
-  position.y = p.y + o.y * shift0;
-  position.z = p.z + o.z * shift0;   
-  vec3 position_p;
-  position_p.x = position.x + d.x * 0.5;
-  position_p.y = position.y + d.y * 0.5;
-  position_p.z = position.z + d.z * 0.5;
-  vec3 position_m;
-  position_m.x = position.x - d.x * 0.5;
-  position_m.y = position.y - d.y * 0.5;
-  position_m.z = position.z - d.z * 0.5;
-  double plus_delta = distance_to_star(position_p, omega, q);
-  double mins_delta = distance_to_star(position_m, omega, q);
-  double derivative = (plus_delta - mins_delta)/len(d);
-      
-  double shift1 = shift0 - distance_to_star(position, omega, q)/derivative;
-
-
-
-  
-  /* double shift1 = shift0 + distance_to_star(position, omega, q); */
-  
-  int i = 0;
-  while (fabs(shift1 - shift0) > eps)
-    {
-      shift0 = shift1;
-
-      position.x = p.x + o.x * shift0;
-      position.y = p.y + o.y * shift0;
-      position.z = p.z + o.z * shift0;
+     Radius-vectors (vec3 structure is defined in def.h file):
+     o --- direction to the observer;
+     p --- radius-vector of the point outside the donor star.
    
-      position_p.x = position.x + d.x * 0.5;
-      position_p.y = position.y + d.y * 0.5;
-      position_p.z = position.z + d.z * 0.5;
-      position_m.x = position.x - d.x * 0.5;
-      position_m.y = position.y - d.y * 0.5;
-      position_m.z = position.z - d.z * 0.5;
-      plus_delta = distance_to_star(position_p, omega, q);
-      mins_delta = distance_to_star(position_m, omega, q);
-      derivative = (plus_delta - mins_delta)/len(d);
-      
-      shift1 = shift0 - distance_to_star(position, omega, q)/derivative;
-      
-      /* shift1 = shift0 + distance_to_star(position, omega, q); */
-      i++;
-      
-      //printf("Ray tracing iteration %d\n", i);
-      
-      if (i > 10)
-	{
-	  break;
-	}
-    }
-    
-  double result = distance_to_star(position, omega, q);
+     Below alorithm is searching for number l = l_min which minimizes the distance R between point s = p + l*o and the donor star surface (R = distance_to_star(s, omega, q)).
+     Note, that R < 0 for the point inside donor star. 
 
-  vec3 shift; 
-  shift.x = position.x - p.x;
-  shift.y = position.y - p.y;
-  shift.z = position.z - p.z;
+     To find l_min Newton's method for first derivative of R were used:
+     l_i+1 = l_i - R'(p + l_i*o)/R"( p +l_i*o)
+     Iteration stops when abs(l_i+1 - l_i) < eps. Then l_min = l_i+1.
 
-  double direction_test = dot(shift, o);
-
-  double ray;
+     Having l_min:
+     if R > 0 point p is unobstructed by the donor star (return 1.0);
+     if R < 0 point p reside behind the donor star and obstructed (return 0.0) or ahead the donor star and unobstructed (return 1.0).
+   */
   
-  if (result < eps && direction_test < 0.0)
-    ray = 1.0;
-  else if (result < eps && direction_test > 0.0 )
-    ray = 0.0;
-  else if (result > eps)
-    ray = 1.0;
 
-  return ray;
+
+  /* Initial approximation for l. */
+  double l0 = distance_to_star(p, omega, q);
+
+  /* Initial position of the point s. Function sum(a, b) adds vectors a and b. Function scale(v, q) multiply vector v by the number q. */
+  vec3 s = sum(p, scale(o, l0));
+
+  /* Constant h for finite difference derivatives. */
+  double h = l0/10;
+
+  /* */
+  vec3 s_plus_oh = sum(s, scale(o, h));
+  vec3 s_mins_oh = sum(s, scale(o, -h));
+
+  /* First derivative of R at l0 */
+  double drdl_l0 = (distance_to_star(s_plus_oh, omega, q) - distance_to_star(s_mins_oh, omega, q)) / 2*h;
+
+  /* Second derivative of R at l0 */
+  double d2rdl2_l0 = (distance_to_star(s_plus_oh, omega, q) - 2 * l0 + distance_to_star(s_mins_oh, omega, q)) / pow(h,2);
+
+  /* Next Iteration */
+  double l1 = l0 - drdl_l0/d2rdl2_l0;
+
+  /* Next Position of s */
+  s = sum(s, scale(o, l1));
+  
+  /* loop */
+  while (fabs(l1 - l0) > eps)
+    {
+
+      h = fabs(l1 - l0)/10;
+
+      l0 = l1;
+  
+      s_plus_oh = sum(s, scale(o, h));
+      s_mins_oh = sum(s, scale(o, -h));
+  
+      drdl_l0 = (distance_to_star(s_plus_oh, omega, q) - distance_to_star(s_mins_oh, omega, q)) / 2*h;
+      d2rdl2_l0 = (distance_to_star(s_plus_oh, omega, q) - 2 * l0 + distance_to_star(s_mins_oh, omega, q)) / pow(h,2);
+
+      l1 = l0 - drdl_l0/d2rdl2_l0;
+
+      s = sum(p, scale(o, l1));
+
+    }
+
+
+  /* final distance to the donor star surface */
+  double R = distance_to_star(s, omega, q);
+
+  
+  if (R > 0)
+    return 1.0;
+  else if (R < 0 && dot(sum(p, scale(s, -1)), o) < 0)
+    return 0.0;
+  else if (R < 0 && dot(sum(p, scale(s, -1)), o) > 0)
+    return 1.0;
 
 }
 
