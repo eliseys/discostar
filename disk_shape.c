@@ -180,11 +180,6 @@ double * disk_geometry(disk disk, parameters parameters)
 
 
 
-
-
-
-
-
 double radius_disk(disk disk, double phi, double theta)
 {
   double r_out = disk.R;

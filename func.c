@@ -11,7 +11,7 @@ double distance_to_star(vec3 p, double omega, double q)
 }
 
 
-double eclipse_by_star(double omega, double q, vec3 o, vec3 p)
+bool eclipse_by_star(double omega, double q, vec3 o, vec3 p)
 {
 
   /* Function returns: 
@@ -91,11 +91,11 @@ double eclipse_by_star(double omega, double q, vec3 o, vec3 p)
 
   
   if (R > 0)
-    return 1.0;
+    return true;
   else if (R < 0 && dot(sum(p, scale(s, -1)), o) < 0)
-    return 0.0;
+    return false;
   else if (R < 0 && dot(sum(p, scale(s, -1)), o) > 0)
-    return 1.0;
+    return true;
 
 }
 
@@ -133,84 +133,142 @@ double distance_to_disk(vec3 p, disk disk)
 double eclipse_by_disk(disk disk, vec3 o, vec3 p)
 {
     
-  /* delta for calculating derivation (now equal to eps) */
-  vec3 d;
-  d.x = eps * o.x;
-  d.y = eps * o.y;
-  d.z = eps * o.z;
+  /* Initial approximation for l. */
+  double l0 = distance_to_disk(p, disk);
 
-  /* zeroth approximation */
-  double shift0 = distance_to_disk(p, disk);
-  vec3 position;
-  position.x = p.x + o.x * shift0;
-  position.y = p.y + o.y * shift0;
-  position.z = p.z + o.z * shift0;
-   
-  vec3 position_p;
-  position_p.x = position.x + d.x * 0.5;
-  position_p.y = position.y + d.y * 0.5;
-  position_p.z = position.z + d.z * 0.5;  
-  vec3 position_m;	           
-  position_m.x = position.x - d.x * 0.5;
-  position_m.y = position.y - d.y * 0.5;
-  position_m.z = position.z - d.z * 0.5;
-  double plus_delta = distance_to_disk(position_p, disk);
-  double mins_delta = distance_to_disk(position_m, disk);
-  double derivative = (plus_delta - mins_delta)/len(d);
-      
-  double shift1 = shift0 - distance_to_disk(position, disk)/derivative;
+  /* Initial position of the point s. Function sum(a, b) adds vectors a and b. Function scale(v, q) multiply vector v by the number q. */
+  vec3 s = sum(p, scale(o, l0));
 
+  /* Constant h for finite difference derivatives. */
+  double h = l0/10;
+
+  /* */
+  vec3 s_plus_oh = sum(s, scale(o, h));
+  vec3 s_mins_oh = sum(s, scale(o, -h));
+
+  /* First derivative of R at l0 */
+  double drdl_l0 = (distance_to_disk(s_plus_oh, disk) - distance_to_disk(s_mins_oh, disk)) / 2*h;
+
+  /* Second derivative of R at l0 */
+  double d2rdl2_l0 = (distance_to_disk(s_plus_oh, disk) - 2 * l0 + distance_to_disk(s_mins_oh, disk)) / pow(h,2);
+
+  /* Next Iteration */
+  double l1 = l0 - drdl_l0/d2rdl2_l0;
+
+  /* Next Position of s */
+  s = sum(s, scale(o, l1));
   
-  int i = 0;
-  while (fabs(shift1 - shift0) > eps)
+  /* loop */
+  while (fabs(l1 - l0) > eps)
     {
-      shift0 = shift1;
 
-      position.x = p.x + o.x * shift0;
-      position.y = p.y + o.y * shift0;
-      position.z = p.z + o.z * shift0;
-   
-      position_p.x = position.x + d.x * 0.5;
-      position_p.y = position.y + d.y * 0.5;
-      position_p.z = position.z + d.z * 0.5;  
-      position_m.x = position.x - d.x * 0.5;
-      position_m.y = position.y - d.y * 0.5;
-      position_m.z = position.z - d.z * 0.5;
-      plus_delta = distance_to_disk(position_p, disk);
-      mins_delta = distance_to_disk(position_m, disk);
-      derivative = (plus_delta - mins_delta)/len(d);
-      
-      shift1 = shift0 - distance_to_disk(position, disk)/derivative;
+      h = fabs(l1 - l0)/10;
 
-      i++;
+      l0 = l1;
+  
+      s_plus_oh = sum(s, scale(o, h));
+      s_mins_oh = sum(s, scale(o, -h));
+  
+      drdl_l0 = (distance_to_disk(s_plus_oh, disk) - distance_to_disk(s_mins_oh, disk)) / 2*h;
+      d2rdl2_l0 = (distance_to_disk(s_plus_oh, disk) - 2 * l0 + distance_to_disk(s_mins_oh, disk)) / pow(h,2);
 
-      if (i > 10)
-	{
-	  break;
-	} 
+      l1 = l0 - drdl_l0/d2rdl2_l0;
+
+      s = sum(p, scale(o, l1));
+
     }
+
+
+  /* final distance to the donor star surface */
+  double R = distance_to_disk(s, disk);
+
   
-  double result = distance_to_disk(position, disk);
+  if (R > 0)
+    return 1.0;
+  else if (R < 0 && dot(sum(p, scale(s, -1)), o) < 0)
+    return 0.0;
+  else if (R < 0 && dot(sum(p, scale(s, -1)), o) > 0)
+    return 1.0;
 
-  /* test if the direction of the ray opposite to the direction of trace */
 
-  vec3 shift;
-  shift.x = position.x - p.x;
-  shift.y = position.y - p.y;
-  shift.z = position.z - p.z;
+  ///* delta for calculating derivation (now equal to eps) */
+  //vec3 d;
+  //d.x = eps * o.x;
+  //d.y = eps * o.y;
+  //d.z = eps * o.z;
 
-  double direction_test = dot(shift, o);
+  ///* zeroth approximation */
+  //double shift0 = distance_to_disk(p, disk);
+  //vec3 position;
+  //position.x = p.x + o.x * shift0;
+  //position.y = p.y + o.y * shift0;
+  //position.z = p.z + o.z * shift0;
+  // 
+  //vec3 position_p;
+  //position_p.x = position.x + d.x * 0.5;
+  //position_p.y = position.y + d.y * 0.5;
+  //position_p.z = position.z + d.z * 0.5;  
+  //vec3 position_m;	           
+  //position_m.x = position.x - d.x * 0.5;
+  //position_m.y = position.y - d.y * 0.5;
+  //position_m.z = position.z - d.z * 0.5;
+  //double plus_delta = distance_to_disk(position_p, disk);
+  //double mins_delta = distance_to_disk(position_m, disk);
+  //double derivative = (plus_delta - mins_delta)/len(d);
+  //    
+  //double shift1 = shift0 - distance_to_disk(position, disk)/derivative;
 
-  double ray;
-  
-  if (result < eps && direction_test < 0.0)
-    ray = 1.0;
-  else if (result < eps && direction_test > 0.0 )
-    ray = 0.0;
-  else if (result > eps)
-    ray = 1.0;
+  //
+  //int i = 0;
+  //while (fabs(shift1 - shift0) > eps)
+  //  {
+  //    shift0 = shift1;
 
-  return ray;
+  //    position.x = p.x + o.x * shift0;
+  //    position.y = p.y + o.y * shift0;
+  //    position.z = p.z + o.z * shift0;
+  // 
+  //    position_p.x = position.x + d.x * 0.5;
+  //    position_p.y = position.y + d.y * 0.5;
+  //    position_p.z = position.z + d.z * 0.5;  
+  //    position_m.x = position.x - d.x * 0.5;
+  //    position_m.y = position.y - d.y * 0.5;
+  //    position_m.z = position.z - d.z * 0.5;
+  //    plus_delta = distance_to_disk(position_p, disk);
+  //    mins_delta = distance_to_disk(position_m, disk);
+  //    derivative = (plus_delta - mins_delta)/len(d);
+  //    
+  //    shift1 = shift0 - distance_to_disk(position, disk)/derivative;
+
+  //    i++;
+
+  //    if (i > 10)
+  //	{
+  //	  break;
+  //	} 
+  //  }
+  //
+  //double result = distance_to_disk(position, disk);
+
+  ///* test if the direction of the ray opposite to the direction of trace */
+
+  //vec3 shift;
+  //shift.x = position.x - p.x;
+  //shift.y = position.y - p.y;
+  //shift.z = position.z - p.z;
+
+  //double direction_test = dot(shift, o);
+
+  //double ray;
+  //
+  //if (result < eps && direction_test < 0.0)
+  //  ray = 1.0;
+  //else if (result < eps && direction_test > 0.0 )
+  //  ray = 0.0;
+  //else if (result > eps)
+  //  ray = 1.0;
+
+  //return ray;
 }
 
 
@@ -233,10 +291,6 @@ double disk_h_diff_profile(disk disk, double r, double gamma)
   return disk.h * gamma * pow(((r - r_in)/(disk.R-r_in)), gamma)/(r - r_in);
 
 }
-
-
-
-
 
 
 
@@ -554,15 +608,6 @@ double star_X(double * star_elements, parameters parameters, disk disk, vec3 obs
 
 
 
-
-
-
-
-
-
-
-
-
 double flux_star(vec3 o, double q, double omega, double beta, double u, disk disk, double Lx_noniso, double Lx_disk, double Lx_iso, double Lx_disk_2, double albedo, int tiles, double T, double a, vec3 neutron_star, double PSI_pr, int picture, sp disk_reflection_diagr, double * r_array, double * g_array, double * phi_array, double * theta_array, double * Ix_dd, double y_tilt, double y_tilt2, double z_tilt, double z_tilt2, double phi_orb, char * filter)
 {
   /* */
@@ -863,7 +908,7 @@ double disk_F(double * disk_elements, parameters parameters, disk disk, vec3 obs
 
       
       
-      if ( ray_disk(disk, observer, p) && dot(n, observer) > 0 ) // ray_star ?
+      if ( ray_star(parameters.omega, parameters.q, observer, p) && ray_disk(disk, observer, p) && dot(n, observer) > 0 ) // ray_star ?
 	{
 	  fx = 0.0;
 	  T = 10000.0;

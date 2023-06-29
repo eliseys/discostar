@@ -3,7 +3,7 @@
 #include <math.h>
 #include "def.h"
 
-
+/* photo cross-sections */
 
 
 void ion_init()

@@ -48,12 +48,12 @@ phi_in		0.0
 # TECHNICAL
 #---------------------------------------
 
-do_lc		true
+do_lc		true	
 
 N_lc		101
 N_theta		30
 N_r		20
-OMP_threads	4
+OMP_threads	8
 
 filter	 	V
 

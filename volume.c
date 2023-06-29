@@ -27,6 +27,7 @@ bool ray_star(double omega, double q, vec3 o, vec3 p)
       return false;
     }
 
+  
 }
 
 
